@@ -22,7 +22,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { notificationService } from '../services/notificationService'
 
-export function useNotifications(userId, notifPrefs = null) {
+export function useNotifications(userId, _notifPrefs = null) {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const channelRef = useRef(null)

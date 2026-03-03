@@ -9,7 +9,7 @@
  * Provides real-time updates when authentication state changes.
  */
 
-import { useEffect, useState, useRef, useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useRef, useCallback, useMemo, useSyncExternalStore } from 'react'
 import { supabase } from '../lib/supabase'
 
 // ─── Shared singleton store ────────────────────────────────────────

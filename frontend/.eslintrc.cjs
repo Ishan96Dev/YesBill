@@ -7,6 +7,12 @@ module.exports = {
     'plugin:react-hooks/recommended',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
+  overrides: [
+    {
+      files: ['*.config.js', '*.config.ts', 'vite.config.*', 'postcss.config.*'],
+      env: { node: true },
+    },
+  ],
   parser: '@typescript-eslint/parser',
   plugins: ['react-refresh'],
   rules: {

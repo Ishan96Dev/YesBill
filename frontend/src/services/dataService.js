@@ -126,7 +126,7 @@ export const servicesService = {
       await notificationService.create(
         userId, 'service_updated',
         'Service Updated',
-        `\"${data?.name || 'Service'}\" details have been updated`,
+        `"${data?.name || 'Service'}" details have been updated`,
         { path: '/services' }
       )
     } catch (e) { console.error('[notif] service_updated failed:', e?.message ?? e) }
@@ -600,10 +600,7 @@ export const analyticsService = {
 
   /** Spending grouped by delivery_type category */
   async getCategoryBreakdown(months = 6, role = 'all') {
-    const [allServices, trend] = await Promise.all([
-      servicesService.getActive(),
-      this.getMonthlyTrend(months, role),
-    ])
+    const allServices = await servicesService.getActive()
     const svcMap = {}
     for (const svc of allServices) svcMap[svc.id] = svc
 

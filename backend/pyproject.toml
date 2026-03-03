@@ -17,6 +17,8 @@ select = [
 ignore = [
     "E501", # line too long (handled by black)
     "B904", # raise-without-from-inside-except (existing code style)
+    "W291", # trailing whitespace
+    "W293", # blank line contains whitespace
 ]
 
 [tool.mypy]
