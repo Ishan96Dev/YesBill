@@ -6,10 +6,7 @@ uvicorn[standard]==0.32.1
 pydantic==2.10.3
 pydantic-settings==2.7.0
 
-# HTTP Client
-httpx==0.28.1
-
-# Supabase Client
+# Supabase Client (manages httpx version internally)
 supabase==2.10.0
 
 # Authentication & Security
@@ -18,6 +15,3 @@ python-multipart==0.0.20
 
 # Rate Limiting
 slowapi==0.1.9
-
-# Development Tools
-ruff==0.8.4
