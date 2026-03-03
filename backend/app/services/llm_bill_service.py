@@ -15,9 +15,9 @@ from typing import Any
 
 import httpx
 
-logger = logging.getLogger("yesbill.bill_llm")
-
 from app.services.supabase import supabase_service
+
+logger = logging.getLogger("yesbill.bill_llm")
 
 # Provider API endpoints
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"

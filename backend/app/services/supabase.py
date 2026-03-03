@@ -4,12 +4,12 @@
 
 """Supabase client service for YesBill backend."""
 import logging
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
 from calendar import monthrange
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from supabase import create_client, Client
 from postgrest.exceptions import APIError
+from supabase import Client, create_client
 
 from app.core.config import settings
 
