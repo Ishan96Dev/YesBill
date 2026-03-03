@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { createPortal } from "react-dom";
@@ -45,9 +46,9 @@ function ProviderIcon({ providerId, size = 32 }) {
         </svg>
       );
     case 'anthropic':
-      return <img src="/assets/icons/anthropic.png" alt="Anthropic" width={size} height={size} className="object-contain" />;
+      return <img src={assetUrl("/assets/icons/anthropic.png")} alt="Anthropic" width={size} height={size} className="object-contain" />;
     case 'google':
-      return <img src="/assets/icons/google-ai.png" alt="Google AI" width={size} height={size} className="object-contain" />;
+      return <img src={assetUrl("/assets/icons/google-ai.png")} alt="Google AI" width={size} height={size} className="object-contain" />;
     default:
       return <Brain className="text-indigo-500" style={{ width: size, height: size }} />;
   }

@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
@@ -234,7 +235,7 @@ const AgentMessage = memo(function AgentMessage({ msg, onConfirmed, onCancelled,
     <div className="flex gap-2 items-start group">
       <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white border border-gray-200 shadow-sm overflow-hidden flex items-center justify-center">
         <img
-          src="/assets/branding/yesbill_logo_black.png"
+          src={assetUrl("/assets/branding/yesbill_logo_black.png")}
           alt="YB"
           className="w-5 h-5 object-contain"
         />
@@ -655,7 +656,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden">
             <img
-              src="/assets/branding/yesbill_logo_icon_only.png"
+              src={assetUrl("/assets/branding/yesbill_logo_icon_only.png")}
               alt="YesBill"
               className="w-6 h-6 object-contain"
               style={{ filter: "brightness(0) invert(1)" }}

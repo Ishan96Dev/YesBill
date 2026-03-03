@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import React, { useEffect, useState } from "react";
@@ -46,7 +47,7 @@ export default function Header() {
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative w-8 h-8 md:w-10 md:h-10">
               <img 
-                src="/assets/branding/yesbill_logo_black.png" 
+                src={assetUrl("/assets/branding/yesbill_logo_black.png")} 
                 alt="YesBill" 
                 className="w-full h-full object-contain transition-transform group-hover:scale-105"
               />

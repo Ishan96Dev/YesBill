@@ -35,7 +35,8 @@ import { WithTooltip } from "../ui/tooltip";
 import Background from "../landing/Background";
 import AuthLoadingScreen from "../loading/AuthLoadingScreen";
 import ServiceExpiryBanner from "../ServiceExpiryBanner";
-import { cn } from "../../lib/utils";
+import { cn } from "../../lib/utils"
+import { assetUrl } from "../../lib/utils";
 import authService from "../../services/authService";
 import notificationService from "../../services/notificationService";
 import { aiSettingsService } from "../../services/aiSettingsService";
@@ -290,7 +291,7 @@ export default function AppLayout({
               onClick={() => navigate("/dashboard")}
             >
               <img
-                src="/assets/branding/yesbill_logo_black.png"
+                src={assetUrl("/assets/branding/yesbill_logo_black.png")}
                 alt="YesBill"
                 className="w-[110px] h-[110px] object-contain"
               />

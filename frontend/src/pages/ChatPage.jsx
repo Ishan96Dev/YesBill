@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -445,7 +446,7 @@ export default function ChatPage() {
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white flex-shrink-0">
             <img
-              src="/assets/branding/yesbill_logo_black.png"
+              src={assetUrl("/assets/branding/yesbill_logo_black.png")}
               alt="YesBill"
               className="h-8 w-auto object-contain"
             />
@@ -519,7 +520,7 @@ function NewConversationState({ onSuggestedPrompt }) {
       >
         <div className="flex flex-col items-center gap-2">
           <img
-            src="/assets/branding/yesbill_logo_black.png"
+            src={assetUrl("/assets/branding/yesbill_logo_black.png")}
             alt="YesBill"
             className="h-12 w-auto object-contain"
           />
@@ -554,7 +555,7 @@ function EmptyState({ onNewChat, onSuggestedPrompt, aiConfigured }) {
       >
         <div className="flex flex-col items-center gap-2">
           <img
-            src="/assets/branding/yesbill_logo_black.png"
+            src={assetUrl("/assets/branding/yesbill_logo_black.png")}
             alt="YesBill"
             className="h-14 w-auto object-contain"
           />

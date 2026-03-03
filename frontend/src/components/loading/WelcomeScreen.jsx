@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -80,7 +81,7 @@ export default function WelcomeScreen({
               className="mb-6 flex justify-center"
             >
               <img 
-                src="/assets/branding/yesbill_logo_black.png" 
+                src={assetUrl("/assets/branding/yesbill_logo_black.png")} 
                 alt="YesBill" 
                 className="w-[200px] h-[200px] object-contain drop-shadow-sm"
               />

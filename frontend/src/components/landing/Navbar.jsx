@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
-import { cn } from "../../lib/utils";
+import { cn } from "../../lib/utils"
+import { assetUrl } from "../../lib/utils";
 import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
@@ -44,7 +45,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-full flex items-center justify-between w-full">
           <div className="flex items-center cursor-pointer group" onClick={() => navigate("/")}>
             <img
-              src="/assets/branding/yesbill_logo_black.png"
+              src={assetUrl("/assets/branding/yesbill_logo_black.png")}
               alt="YesBill"
               className="w-[140px] h-[140px] object-contain"
             />

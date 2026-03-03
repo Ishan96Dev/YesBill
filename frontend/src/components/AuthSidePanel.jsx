@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { motion } from "framer-motion";
@@ -6,8 +7,8 @@ import { motion } from "framer-motion";
 export default function AuthSidePanel({ variant }) {
   const bg =
     variant === "login"
-      ? "/assets/branding/auth_side_login.png"
-      : "/assets/branding/auth_side_signup.png";
+      ? assetUrl("/assets/branding/auth_side_login.png")
+      : assetUrl("/assets/branding/auth_side_signup.png");
 
   return (
     <div

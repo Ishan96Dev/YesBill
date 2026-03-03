@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -242,7 +243,7 @@ const AssistantMessage = memo(function AssistantMessage({
       {/* YesBill logo avatar */}
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-sm overflow-hidden flex items-center justify-center">
         <img
-          src="/assets/branding/yesbill_logo_black.png"
+          src={assetUrl("/assets/branding/yesbill_logo_black.png")}
           alt="YesBill"
           className="w-6 h-6 object-contain"
         />

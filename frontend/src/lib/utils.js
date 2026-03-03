@@ -7,3 +7,10 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Returns the correct URL for a public asset, accounting for
+ * the Vite base path (e.g. /YesBill/ on GitHub Pages).
+ */
+export const assetUrl = (path) =>
+  `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;

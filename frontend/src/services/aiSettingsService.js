@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 /**
@@ -232,7 +233,7 @@ export const aiSettingsService = {
         id: 'openai',
         name: 'OpenAI',
         description: 'GPT models for text generation, analysis, and insights',
-        logo_url: '/assets/icons/openai.png',
+        logo_url: assetUrl('/assets/icons/openai.png'),
         docs_url: 'https://platform.openai.com/api-keys',
         key_prefix: 'sk-',
         models: [
@@ -247,7 +248,7 @@ export const aiSettingsService = {
         id: 'anthropic',
         name: 'Anthropic',
         description: 'Claude models for safe, helpful AI assistance',
-        logo_url: '/assets/icons/anthropic.png',
+        logo_url: assetUrl('/assets/icons/anthropic.png'),
         docs_url: 'https://console.anthropic.com/settings/keys',
         key_prefix: 'sk-ant-',
         models: [
@@ -260,7 +261,7 @@ export const aiSettingsService = {
         id: 'google',
         name: 'Google AI',
         description: 'Gemini models for multimodal AI capabilities',
-        logo_url: '/assets/icons/google-ai.png',
+        logo_url: assetUrl('/assets/icons/google-ai.png'),
         docs_url: 'https://aistudio.google.com/apikey',
         key_prefix: 'AI',
         models: [

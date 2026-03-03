@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+﻿import { assetUrl } from "../lib/utils";
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState } from "react";
@@ -111,7 +112,7 @@ export default function CreateProject() {
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between w-full">
           <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
             <img
-              src="/assets/branding/yesbill_logo_black.png"
+              src={assetUrl("/assets/branding/yesbill_logo_black.png")}
               alt="YesBill"
               className="w-[120px] h-[120px] object-contain"
             />
