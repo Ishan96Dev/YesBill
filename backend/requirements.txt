@@ -1,27 +1,23 @@
 # FastAPI Framework
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
 
 # Data Validation
-pydantic==2.5.3
-pydantic-settings==2.1.0
+pydantic==2.10.3
+pydantic-settings==2.7.0
 
 # HTTP Client
-httpx==0.26.0
+httpx==0.28.1
 
 # Supabase Client
-supabase==2.3.4
-postgrest==0.13.2
+supabase==2.10.0
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
+python-multipart==0.0.20
 
 # Rate Limiting
 slowapi==0.1.9
 
 # Development Tools
-ruff==0.1.13
-black==24.1.1
-mypy==1.8.0
+ruff==0.8.4
