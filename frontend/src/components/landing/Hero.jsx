@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, PlayCircle, CheckCircle2, FileText, Mail } from "lucide-react";
 import { Button } from "../ui/button";
+import { assetUrl } from "../../lib/utils";
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ export default function Hero() {
               {[1, 2, 3, 4].map(u => (
                 <img
                   key={u}
-                  src={`/avatars/user${u}.png`}
+                  src={assetUrl(`/avatars/user${u}.png`)}
                   alt={`User ${u}`}
                   className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm"
                 />

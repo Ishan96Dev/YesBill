@@ -3,27 +3,28 @@
 
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
+import { assetUrl } from "../../lib/utils";
 
 export default function Testimonials() {
   const testimonials = [
     {
       name: "Ramesh Patel",
       role: "Milk Distributor, Ahmedabad",
-      image: "/testimonials/ramesh-patel.png",
+      image: assetUrl("/testimonials/ramesh-patel.png"),
       content: "I used to spend hours at the end of each month manually adding up deliveries for 40+ customers. With YesBill I just tick Yes or No daily and the bill generates itself. The email invoice saves me hours every month.",
       rating: 5
     },
     {
       name: "Neha Sharma",
       role: "Working Professional, Bengaluru",
-      image: "/testimonials/neha-sharma.png",
+      image: assetUrl("/testimonials/neha-sharma.png"),
       content: "I track my tiffin, house cleaning, and newspaper separately. The calendar view shows exactly which days each service came. No more arguments with my doodhwala about how many days he actually delivered.",
       rating: 5
     },
     {
       name: "Ajay Verma",
       role: "Apartment Manager, Pune",
-      image: "/testimonials/ajay-verma.png",
+      image: assetUrl("/testimonials/ajay-verma.png"),
       content: "We replaced three different spreadsheets with YesBill. Residents get PDF invoices via email every month. The AI summary even flags when services were irregular. It's the most transparent billing tool we've used.",
       rating: 5
     }
