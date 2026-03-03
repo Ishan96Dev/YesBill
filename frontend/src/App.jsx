@@ -211,7 +211,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/YesBill">
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
