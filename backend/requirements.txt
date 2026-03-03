@@ -3,7 +3,7 @@ fastapi==0.115.6
 uvicorn[standard]==0.32.1
 
 # Data Validation
-pydantic==2.10.3
+pydantic[email]==2.10.3
 pydantic-settings==2.7.0
 
 # Supabase Client (manages httpx version internally)
