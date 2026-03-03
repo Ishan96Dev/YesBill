@@ -22,9 +22,10 @@ Templates to create in Brevo dashboard:
 """
 
 import os
-import httpx
 from datetime import datetime, timezone
 from typing import Optional
+
+import httpx
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 BREVO_FROM_EMAIL = os.getenv("BREVO_FROM_EMAIL", "bills@yourdomain.com")
@@ -247,7 +248,7 @@ async def send_account_deleted_email(
         return False
 
     deleted_at_str = (deleted_at or datetime.now(timezone.utc)).strftime("%B %d, %Y at %H:%M UTC")
-    support_url = f"mailto:support@yesbill.com"
+    support_url = "mailto:support@yesbill.com"
     display_name = to_name or "there"
 
     brevo_params = {
