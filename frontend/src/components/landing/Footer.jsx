@@ -4,7 +4,14 @@
 
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Twitter, Instagram, Github, Heart } from "lucide-react";
+import { Twitter, Instagram, Github, Linkedin } from "lucide-react";
+
+const SOCIAL_LINKS = [
+  { Icon: Twitter,   href: "https://x.com/IshanC96",                          label: "X / Twitter" },
+  { Icon: Github,    href: "https://github.com/Ishan96Dev",                    label: "GitHub" },
+  { Icon: Instagram, href: "https://www.instagram.com/ig_ishan96/",            label: "Instagram" },
+  { Icon: Linkedin,  href: "https://www.linkedin.com/in/ishan-chakraborty-0085571a1", label: "LinkedIn" },
+];
 
 export default function Footer() {
   return (
@@ -13,7 +20,7 @@ export default function Footer() {
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-10">
           <div className="col-span-2 lg:col-span-2">
             <div className="flex items-center mb-6">
               <img
@@ -27,10 +34,13 @@ export default function Footer() {
               Simple, transparent, and effective.
             </p>
             <div className="flex gap-4">
-              {[Twitter, Github, Instagram].map((Icon, i) => (
+              {SOCIAL_LINKS.map(({ Icon, href, label }) => (
                 <motion.a
-                  key={i}
-                  href="#"
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
                   whileHover={{ y: -2, color: "#4F46E5" }}
                   className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 transition-colors hover:bg-white hover:shadow-md hover:border-gray-200"
                 >
@@ -67,6 +77,21 @@ export default function Footer() {
                   <Link to={`/${item.toLowerCase()}`} className="hover:text-primary transition-colors">{item}</Link>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-6">Community</h4>
+            <ul className="space-y-4 text-sm text-gray-500">
+              <li>
+                <a href="https://github.com/Ishan96Dev/YesBill" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub Repo</a>
+              </li>
+              <li>
+                <a href="https://github.com/Ishan96Dev/YesBill/issues" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Issues</a>
+              </li>
+              <li>
+                <a href="https://github.com/Ishan96Dev/YesBill/discussions" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Discussions</a>
+              </li>
             </ul>
           </div>
 

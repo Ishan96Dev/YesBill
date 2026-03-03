@@ -20,10 +20,22 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Validate required secrets
+        run: |
+          BACKEND_URL="${{ secrets.BACKEND_URL }}"
+          if [ -z "$BACKEND_URL" ]; then
+            echo "ERROR: BACKEND_URL secret is not set. Add it in GitHub Settings → Secrets → Actions."
+            exit 1
+          fi
+          if [ -z "${{ secrets.SCHEDULER_SECRET }}" ]; then
+            echo "WARNING: SCHEDULER_SECRET secret is not set. The endpoint may reject this request."
+          fi
+          echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
+
       - name: Trigger auto-generate endpoint
         run: |
-          HTTP_STATUS=$(curl -sf -o /tmp/response.json -w "%{http_code}" \
-            -X POST "${{ secrets.BACKEND_URL }}/bills/auto-generate" \
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "$BACKEND_URL/bills/auto-generate" \
             -H "X-Scheduler-Secret: ${{ secrets.SCHEDULER_SECRET }}" \
             -H "Content-Type: application/json")
 

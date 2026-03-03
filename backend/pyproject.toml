@@ -16,6 +16,7 @@ select = [
 ]
 ignore = [
     "E501", # line too long (handled by black)
+    "B904", # raise-without-from-inside-except (existing code style)
 ]
 
 [tool.mypy]
