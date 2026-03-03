@@ -750,9 +750,9 @@ export default function AppLayout({
             <p className="text-sm text-gray-500 hidden md:block">© 2026 YesBill. All rights reserved.</p>
             {!onboardingMode && (
               <div className="flex items-center gap-5 text-sm text-gray-500">
-                <a href="/privacy" className="hover:text-primary transition-colors hidden md:block">Privacy</a>
-                <a href="/terms" className="hover:text-primary transition-colors hidden md:block">Terms</a>
-                <a href="/contact" className="hover:text-primary transition-colors hidden md:block">Support</a>
+                <Link to="/privacy" className="hover:text-primary transition-colors hidden md:block">Privacy</Link>
+                <Link to="/terms" className="hover:text-primary transition-colors hidden md:block">Terms</Link>
+                <Link to="/contact" className="hover:text-primary transition-colors hidden md:block">Support</Link>
               </div>
             )}
           </div>

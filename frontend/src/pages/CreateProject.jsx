@@ -3,7 +3,7 @@
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, DollarSign, Calendar, Globe } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -290,9 +290,9 @@ export default function CreateProject() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">© 2026 YesBill. All rights reserved.</p>
             <div className="flex gap-6 text-sm text-gray-500">
-              <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-primary transition-colors">Terms</a>
-              <a href="/contact" className="hover:text-primary transition-colors">Support</a>
+              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link to="/contact" className="hover:text-primary transition-colors">Support</Link>
             </div>
           </div>
         </div>
