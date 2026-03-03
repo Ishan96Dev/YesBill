@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     SUPABASE_JWT_SECRET: str
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,https://ishan96dev.github.io"
 
     # JWT (for additional backend tokens if needed)
     JWT_SECRET_KEY: str
