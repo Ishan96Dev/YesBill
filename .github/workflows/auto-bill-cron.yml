@@ -1,0 +1,38 @@
+name: Auto Bill Generation
+
+# Runs every hour so bills fire at the correct local date for users in any timezone.
+# The backend computes each user's "today" using their saved timezone — the cron
+# just needs to run frequently enough to catch every timezone's midnight.
+#
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   BACKEND_URL       → e.g. https://yesbill-api.onrender.com
+#   SCHEDULER_SECRET  → must match SCHEDULER_SECRET env var in your backend
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # Every hour at :00
+  workflow_dispatch:        # Manual trigger (useful for testing from GitHub UI)
+
+jobs:
+  trigger-auto-bills:
+    name: Trigger Auto Bill Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger auto-generate endpoint
+        run: |
+          HTTP_STATUS=$(curl -sf -o /tmp/response.json -w "%{http_code}" \
+            -X POST "${{ secrets.BACKEND_URL }}/bills/auto-generate" \
+            -H "X-Scheduler-Secret: ${{ secrets.SCHEDULER_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          echo "HTTP Status: $HTTP_STATUS"
+          cat /tmp/response.json | python3 -m json.tool || cat /tmp/response.json
+
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "ERROR: Auto-generate returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "Auto-generate completed successfully."

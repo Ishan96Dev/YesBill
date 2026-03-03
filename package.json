@@ -1,0 +1,20 @@
+{
+  "name": "yesbill",
+  "version": "1.0.0",
+  "description": "> A beautiful, motivating app for tracking daily goals. Simple YES/NO check-ins that help you build consistency and see your growth.",
+  "main": "index.js",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload --port 8000",
+    "dev:docs": "cd docs-site && npm start",
+    "dev:all": "concurrently -k -n FE,API,DOCS -c cyan,green,magenta \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:docs\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "html2pdf.js": "^0.14.0"
+  }
+}

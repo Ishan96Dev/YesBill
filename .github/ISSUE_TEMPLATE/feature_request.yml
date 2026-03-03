@@ -1,0 +1,87 @@
+name: ✨ Feature Request
+description: Suggest a new feature or improvement for YesBill
+title: "[Feature]: "
+labels: ["enhancement", "needs-review"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make YesBill better? We'd love to hear it! Please describe your request in detail.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 🏷️ Feature Category
+      description: What area of YesBill does this relate to?
+      options:
+        - Bill Generation & Management
+        - Service Tracking & Calendar
+        - AI Features (Ask AI / Insights)
+        - Analytics & Reporting
+        - Notifications & Reminders
+        - User Settings & Profile
+        - Multi-user / Team Features
+        - Integrations (Payment, Banks, APIs)
+        - Mobile Experience
+        - Import / Export
+        - New Page / Section
+        - Performance / UX
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problem / Motivation
+      description: What problem does this feature solve? Describe the pain point you're experiencing.
+      placeholder: "I currently have to manually calculate my total monthly expenses across 5 different services every month..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe the feature you'd like to see. Be as specific as possible.
+      placeholder: "A monthly expense summary widget on the dashboard that automatically totals all services..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⚡ How important is this to you?
+      options:
+        - Critical — I can't use YesBill effectively without this
+        - High — This would significantly improve my workflow
+        - Medium — Nice to have, would improve my experience
+        - Low — Minor improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: 🎨 Mockup / Examples
+      description: Any wireframes, mockups, or examples from other apps that illustrate this feature?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 Additional Context
+      description: Any other context, links, or information that would help explain this request.
+    validations:
+      required: false

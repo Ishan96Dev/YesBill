@@ -1,0 +1,13 @@
+input, button {
+  height: 48px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+input {
+  padding-left: 14px;
+}
+
+button {
+  font-weight: 500;
+}

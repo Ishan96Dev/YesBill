@@ -1,0 +1,99 @@
+name: 🤖 AI Feature Issue
+description: Report a problem with YesBill's AI features (Ask AI, bill insights, AI-generated content)
+title: "[AI]: "
+labels: ["ai", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        YesBill uses AI to generate bill summaries, provide insights, and power the Ask AI chat. If you're experiencing issues with any AI feature, please describe it here.
+
+  - type: dropdown
+    id: ai_feature
+    attributes:
+      label: 🤖 Which AI Feature?
+      options:
+        - Ask AI Chat (natural language queries about your bills)
+        - Bill Generation AI Summary (AI-written bill descriptions)
+        - Analytics AI Insights
+        - AI Model Selection (model not available / wrong model)
+        - AI response is wrong / hallucinated
+        - AI response is too slow / times out
+        - AI is not responding at all
+      multiple: false
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai_model
+    attributes:
+      label: 🧠 Which AI Model Were You Using?
+      description: Check your AI Settings page to confirm which model was active.
+      options:
+        - Gemini 2.5 Flash (default)
+        - Gemini 2.5 Pro
+        - Gemini 2.0 Flash
+        - GPT-4o
+        - GPT-4o mini
+        - Claude 3.5 Sonnet
+        - Claude 3.5 Haiku
+        - Unknown / Auto
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 What Happened?
+      description: Describe the AI issue in detail.
+      placeholder: "I asked 'How much did I spend on electricity last month?' and the AI gave me the wrong amount..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: query
+    attributes:
+      label: 💬 Your Query / Prompt (if applicable)
+      description: Paste the exact message or prompt you sent to the AI.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: ai_response
+    attributes:
+      label: 🤖 AI Response Received
+      description: Paste the AI's response (or describe what happened — error, empty, timeout, etc.)
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ What Did You Expect?
+      description: What should the AI have said or done?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 📊 How often does this AI issue occur?
+      options:
+        - Every time I use this feature
+        - About half the time
+        - Occasionally / Randomly
+        - Only happened once
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 Additional Context
+      description: Any other details — your subscription type, timezone, number of services, etc.
+    validations:
+      required: false

@@ -1,0 +1,116 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in YesBill
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill in as much detail as possible to help us reproduce and fix the issue.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 🏷️ Affected Area
+      description: Which part of YesBill is affected?
+      options:
+        - Authentication (Login / Signup / Password Reset)
+        - Dashboard
+        - Services Management
+        - Bills Generation
+        - Calendar / Tracking
+        - Analytics
+        - AI Chat (Ask AI)
+        - Settings / Profile
+        - Notifications / Emails
+        - Pricing / Subscription
+        - Landing / Public Pages
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: "When I click 'Generate Bill', the page shows an error instead of creating the bill..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔁 Steps to Reproduce
+      description: Step-by-step instructions to reproduce the bug.
+      placeholder: |
+        1. Go to Bills page
+        2. Select a service and month
+        3. Click 'Generate Bill'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "The bill should be generated and appear in Previous Bills."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened? Include any error messages.
+      placeholder: "A red toast error appeared saying 'Failed to generate bill'."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 📊 How often does this happen?
+      options:
+        - Always (100%)
+        - Often (>50%)
+        - Sometimes (10–50%)
+        - Rarely (<10%)
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: 🌐 Browser & Version
+      placeholder: "Chrome 120, Firefox 121, Safari 17, Edge 119..."
+    validations:
+      required: false
+
+  - type: input
+    id: device
+    attributes:
+      label: 📱 Device / OS
+      placeholder: "Windows 11, macOS Sonoma, iPhone 15 iOS 17, Android 14..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshots / Screen Recordings
+      description: Attach any screenshots or recordings that help illustrate the bug.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 Additional Context
+      description: Any other context, logs, or information that might be helpful.
+    validations:
+      required: false

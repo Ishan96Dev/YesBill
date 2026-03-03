@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-background text-gray-900;
+    font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ━━━━━━━━━━━━━━ CUSTOM SCROLLBAR ━━━━━━━━━━━━━━ */
+@layer utilities {
+
+  /* Webkit / Chrome */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #C7D2FE, #A5B4FC);
+    /* Indigo-200 to 300 */
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #818CF8, #6366F1);
+    /* Indigo-400 to 500 */
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  /* Firefox */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #A5B4FC transparent;
+  }
+}
+
+/* ━━━━━━━━━━━━━━ GLOBAL NORMALIZATION ━━━━━━━━━━━━━━ */
+button {
+  height: 48px !important;
+  min-height: 48px !important;
+  border-radius: 12px !important;
+  padding: 0 20px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+input {
+  height: 48px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+}
+
+.auth-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  transition: all .2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-btn:hover {
+  transform: translateY(-1px);
+}
+
+img {
+  background: transparent !important;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.4);
+}
