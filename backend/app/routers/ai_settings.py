@@ -391,8 +391,6 @@ async def validate_api_key(
             detail=f"Unknown provider: {provider}",
         )
 
-    provider_info = AI_PROVIDERS[provider]
-
     # ── 1. Format validation ──
     if not api_key:
         return AIKeyValidationResponse(

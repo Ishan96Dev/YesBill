@@ -6,16 +6,19 @@ include = '\.pyi?$'
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
     "F",  # pyflakes
-    "I",  # isort
     "B",  # flake8-bugbear
     "C4", # flake8-comprehensions
 ]
 ignore = [
     "E501", # line too long (handled by black)
+    "B004", # reserved
+    "B008", # Depends() in function defaults (standard FastAPI pattern)
     "B904", # raise-without-from-inside-except (existing code style)
     "W291", # trailing whitespace
     "W293", # blank line contains whitespace

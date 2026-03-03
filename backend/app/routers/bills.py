@@ -429,7 +429,6 @@ async def generate_bill(
     # Build item list for LLM
     year, month = map(int, body.year_month.split("-"))
     month_name = datetime(year, month, 1).strftime("%B %Y")
-    service_map = {s["id"]: s for s in services}
     items_for_llm = []
     total = 0.0
     for svc in services:
