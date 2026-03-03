@@ -2,6 +2,7 @@
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
 import Background from "../components/landing/Background";
@@ -10,7 +11,8 @@ import HeroSection from "../components/HeroSection";
 import HeroContact from "../components/hero-graphics/HeroContact";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Mail, Phone, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { Mail, Phone, MapPin, CheckCircle2, Loader2, Twitter, Github, Instagram, Linkedin } from "lucide-react";
+import { assetUrl } from "../lib/utils";
 
 const EDGE_FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contact-form`;
 const INITIAL_FORM = { first_name: "", last_name: "", email: "", message: "", _hp: "" };
@@ -110,6 +112,62 @@ export default function Contact() {
                   <p className="text-gray-600">Shanta Neer Apartment, Garfa</p>
                   <p className="text-gray-600">Kolkata - 700078</p>
                 </div>
+              </div>
+
+              {/* ── Social Card ── */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Connect on Social</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  className="rounded-2xl border border-gray-100 bg-white shadow-lg shadow-gray-100/60 overflow-hidden"
+                >
+                  {/* Card header gradient */}
+                  <div className="h-20 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 relative">
+                    <div className="absolute inset-0 opacity-20"
+                      style={{ backgroundImage: "radial-gradient(circle at 70% 50%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+                    />
+                  </div>
+
+                  <div className="px-6 pb-6 -mt-10">
+                    {/* Avatar */}
+                    <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md overflow-hidden bg-gray-100 mb-4">
+                      <img
+                        src={assetUrl("/avatars/user1.png")}
+                        alt="Ishan Chakraborty"
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.classList.add('bg-gradient-to-br', 'from-indigo-400', 'to-purple-500'); }}
+                      />
+                    </div>
+
+                    <h4 className="text-lg font-bold text-gray-900 leading-tight">Ishan Chakraborty</h4>
+                    <p className="text-sm text-gray-500 mb-5">Creator &amp; Developer · YesBill</p>
+
+                    {/* Social link pills */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { Icon: Linkedin,  label: "LinkedIn",  href: "https://www.linkedin.com/in/ishan-chakraborty-0085571a1", bg: "bg-[#0A66C2]/10", text: "text-[#0A66C2]", border: "border-[#0A66C2]/20", hover: "hover:bg-[#0A66C2]/20" },
+                        { Icon: Github,    label: "GitHub",    href: "https://github.com/Ishan96Dev",                          bg: "bg-gray-100",        text: "text-gray-800",   border: "border-gray-200",     hover: "hover:bg-gray-200" },
+                        { Icon: Twitter,   label: "X / Twitter",href: "https://x.com/IshanC96",                                bg: "bg-gray-900/10",    text: "text-gray-900",  border: "border-gray-900/20", hover: "hover:bg-gray-900/20" },
+                        { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/ig_ishan96/",                  bg: "bg-pink-50",         text: "text-pink-600",  border: "border-pink-200",    hover: "hover:bg-pink-100" },
+                      ].map(({ Icon, label, href, bg, text, border, hover }) => (
+                        <motion.a
+                          key={label}
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border ${bg} ${text} ${border} ${hover} transition-colors`}
+                        >
+                          <Icon className="w-4 h-4 shrink-0" />
+                          <span className="text-sm font-medium truncate">{label}</span>
+                        </motion.a>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </div>
 
