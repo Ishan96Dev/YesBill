@@ -12,8 +12,6 @@ import re
 import time
 from datetime import datetime, timedelta, timezone
 from typing import AsyncGenerator
-
-logger = logging.getLogger("yesbill.agent")
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
@@ -21,8 +19,6 @@ except ImportError:
 
 import httpx
 
-from app.services.supabase import supabase_service
-from app.services.pricing import calculate_cost
 from app.services.chat_service import (
     get_user_ai_settings,
     ensure_model_available,
@@ -43,6 +39,10 @@ from app.services.chat_service import (
     _GOOGLE_EFFORT_TO_BUDGET,
     _GOOGLE_EFFORT_TO_READ_TIMEOUT,
 )
+from app.services.pricing import calculate_cost
+from app.services.supabase import supabase_service
+
+logger = logging.getLogger("yesbill.agent")
 
 AGENT_SYSTEM_PROMPT = (
     YESBILL_SYSTEM_PROMPT

@@ -16,10 +16,10 @@ from typing import AsyncGenerator, Dict, List, Optional, Tuple
 
 import httpx
 
-logger = logging.getLogger("yesbill.chat")
-
-from app.services.supabase import supabase_service
 from app.services.pricing import calculate_cost
+from app.services.supabase import supabase_service
+
+logger = logging.getLogger("yesbill.chat")
 
 # Provider endpoints
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
