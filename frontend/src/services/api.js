@@ -20,7 +20,7 @@ import { supabase } from '../lib/supabase'
 
 /** Base Axios instance — all API calls use this client */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://yesbill.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },

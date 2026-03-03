@@ -7,7 +7,7 @@
  */
 import { supabase } from '../lib/supabase'
 
-const BASE = (import.meta.env.VITE_API_URL || '/api') + '/chat'
+const BASE = (import.meta.env.VITE_API_BASE_URL || 'https://yesbill.onrender.com') + '/chat'
 
 /**
  * Get the current Supabase JWT for Authorization header.
