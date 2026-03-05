@@ -45,6 +45,25 @@ jobs:
         working-directory: frontend-next
         run: npm run type-check
 
+      # ── Configure Vercel: ignore gh-pages branch deployments ────────────────
+      # Vercel's GitHub integration auto-deploys every branch, including the
+      # gh-pages branch (static Docusaurus output). That branch has no
+      # frontend-next/ directory so Vercel fails immediately. Setting the
+      # commandForIgnoringBuildStep via API tells Vercel to skip gh-pages builds.
+      # This is idempotent — safe to run on every deploy.
+      - name: Configure Vercel ignored build step for gh-pages
+        run: |
+          curl -s -X PATCH \
+            "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}?teamId=${VERCEL_ORG_ID}" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"commandForIgnoringBuildStep":"if [ \"$VERCEL_GIT_COMMIT_REF\" = \"gh-pages\" ]; then exit 0; else exit 1; fi"}'
+          echo "Ignored build step configured"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
       # ── Deploy to Vercel (Vercel builds on its own servers) ─────────────────
       # Uses vercel deploy --prod without --prebuilt so Vercel handles the full
       # build on its infrastructure. This guarantees public/ assets are included.
