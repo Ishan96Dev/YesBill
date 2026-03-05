@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'frontend-next/**'
+      - '.github/workflows/deploy-vercel.yml'
   workflow_dispatch:
 
 concurrency:
