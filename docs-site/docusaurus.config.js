@@ -7,8 +7,9 @@ const config = {
   tagline: 'Smart billing tracking for Indian households',
   favicon: 'img/yesbill_logo_icon_only.png',
 
-  url: 'https://ishan96dev.github.io',
-  baseUrl: '/YesBill/docs/',
+  // On Vercel the docs live at the domain root; on GitHub Pages at /YesBill/docs/
+  url: process.env.DOCS_SITE_URL || 'https://yesbill-docs.vercel.app',
+  baseUrl: process.env.DOCS_BASE_URL || '/',
 
   organizationName: 'ishan96dev',
   projectName: 'YesBill',
