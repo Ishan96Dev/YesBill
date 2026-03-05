@@ -37,6 +37,11 @@ export const metadata: Metadata = {
     images: ['/assets/og-image.png'],
     creator: '@ishan96dev',
   },
+  icons: {
+    icon: '/assets/branding/yesbill_logo_icon_only.png',
+    shortcut: '/assets/branding/yesbill_logo_icon_only.png',
+    apple: '/assets/branding/yesbill_logo_icon_only.png',
+  },
   robots: {
     index: true,
     follow: true,

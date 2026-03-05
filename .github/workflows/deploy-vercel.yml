@@ -45,24 +45,11 @@ jobs:
         working-directory: frontend-next
         run: npm run type-check
 
-      # ── Vercel: pull → build → deploy (all run from repo root) ──────────────
-      # Vercel CLI uses rootDirectory from project settings to locate the app.
-      # Running from working-directory: frontend-next would double the path
-      # (frontend-next/frontend-next/package.json). Run from repo root instead.
-      - name: Pull Vercel environment info
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build (vercel build)
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
+      # ── Deploy to Vercel (Vercel builds on its own servers) ─────────────────
+      # Uses vercel deploy --prod without --prebuilt so Vercel handles the full
+      # build on its infrastructure. This guarantees public/ assets are included.
       - name: Deploy to Vercel (production)
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
