@@ -43,3 +43,15 @@ yarn-error.log*
 # Docusaurus generated cache
 docs-site/.docusaurus/
 docs-site/build/
+
+# Next.js build output
+frontend-next/.next/
+frontend-next/out/
+frontend-next/.vercel/
+
+# Next.js cache
+frontend-next/.turbo/
+
+# TypeScript build info
+frontend-next/*.tsbuildinfo
+frontend-next/next-env.d.ts
