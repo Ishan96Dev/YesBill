@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 // /analytics/[tab] — tabs: overview | trends | services
 import type { Metadata } from 'next'
 import AnalyticsTabClient from '@/components/pages/AnalyticsTabClient'

@@ -1,4 +1,7 @@
+// @ts-nocheck
 'use client'
-export default function AnalyticsTabClient(props: Record<string, unknown>) {
-  return <div className="min-h-screen" />
+import AnalyticsClient from './AnalyticsClient'
+
+export default function AnalyticsTabClient(_props: Record<string, unknown>) {
+  return <AnalyticsClient />
 }

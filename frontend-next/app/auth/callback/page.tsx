@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 // Auth callback handler — Supabase redirects here after OAuth or magic-link auth.
 // Must be CSR because it reads the URL hash and calls supabase.auth.exchangeCodeForSession().
 import type { Metadata } from 'next'

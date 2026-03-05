@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import LoginClient from '@/components/pages/LoginClient'
 
@@ -8,5 +10,9 @@ export const metadata: Metadata = {
 }
 
 export default function LoginPage() {
-  return <LoginClient />
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <LoginClient />
+    </Suspense>
+  )
 }

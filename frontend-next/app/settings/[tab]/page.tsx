@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 // /settings/[tab] — tabs: profile | billing | notifications | security | ai
 import type { Metadata } from 'next'
 import SettingsTabClient from '@/components/pages/SettingsTabClient'
@@ -17,10 +18,6 @@ export function generateStaticParams() {
   ]
 }
 
-export default function SettingsTabPage({
-  params,
-}: {
-  params: { tab: string }
-}) {
-  return <SettingsTabClient tab={params.tab} />
+export default function SettingsTabPage() {
+  return <SettingsTabClient />
 }

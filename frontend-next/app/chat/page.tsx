@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 // Chat page — SSE streaming from FastAPI backend
 // Must be CSR because EventSource is browser-only.
 import type { Metadata } from 'next'

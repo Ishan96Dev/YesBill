@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { usePathname } from 'next/navigation';
 import { cn } from "../lib/utils";
 
-export default function PageWrapper({ children, className }) {
+export default function PageWrapper({ children, className = '' }) {
   const pathname = usePathname();
 
   useEffect(() => {

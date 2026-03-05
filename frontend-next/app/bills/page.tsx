@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import BillsClient from '@/components/pages/BillsClient'
 

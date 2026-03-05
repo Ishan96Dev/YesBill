@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import SettingsClient from '@/components/pages/SettingsClient'
 

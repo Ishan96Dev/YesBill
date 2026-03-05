@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, AlertCircle, XCircle, X } from "lucide-react";
 import { useState, createContext, useContext, useCallback } from "react";
 
-const ToastContext = createContext({});
+const ToastContext = createContext({ toast: /** @type {(opts: any) => void} */ (() => {}) });
 
 export const useToast = () => useContext(ToastContext);
 

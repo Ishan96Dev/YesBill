@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 // /services/[serviceId]/calendar — CSR + generateStaticParams placeholder.
 // serviceId values are user-specific (Supabase) so we cannot pre-enumerate them
 // at build time. We return an empty array and fall back to full CSR at runtime.
@@ -15,10 +16,6 @@ export function generateStaticParams() {
   return []
 }
 
-export default function ServiceCalendarPage({
-  params,
-}: {
-  params: { serviceId: string }
-}) {
-  return <ServiceCalendarClient serviceId={params.serviceId} />
+export default function ServiceCalendarPage() {
+  return <ServiceCalendarClient />
 }

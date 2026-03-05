@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import CalendarViewClient from '@/components/pages/CalendarViewClient'
 

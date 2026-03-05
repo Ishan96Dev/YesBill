@@ -5,7 +5,7 @@
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
 
-export default function HeroSection({ title, subtitle, graphic, badge, className }) {
+export default function HeroSection({ title, subtitle, graphic, badge = null, className = '' }) {
   return (
     <section className={cn("relative pt-32 pb-16 lg:pt-48 lg:pb-24 px-6 overflow-hidden min-h-screen flex items-center", className)}>
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center w-full">
