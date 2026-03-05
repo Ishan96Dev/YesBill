@@ -10,8 +10,8 @@ export function cn(...inputs) {
 }
 
 /**
- * Returns the correct URL for a public asset, accounting for
- * the Vite base path (e.g. /YesBill/ on GitHub Pages).
+ * Returns the correct URL for a public asset.
+ * In Next.js on Vercel, public assets are always served from root /.
  */
 export const assetUrl = (path) =>
-  `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+  `/${path.replace(/^\//, '')}`;

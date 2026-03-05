@@ -60,6 +60,6 @@ export function suppressSupabaseAbortErrors() {
 }
 
 // Auto-enable in development mode
-if (import.meta.env.DEV) {
+if (process.env.NODE_ENV !== 'production') {
   suppressSupabaseAbortErrors()
 }
