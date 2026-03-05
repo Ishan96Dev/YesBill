@@ -78,7 +78,7 @@ export default function ChangeEmailPage() {
     }
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
-  }, [state, countdown, navigate]);
+  }, [state, countdown, router]);
 
   return (
     <div className="flex w-full h-screen min-h-screen">

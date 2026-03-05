@@ -27,7 +27,7 @@ export default function Footer() {
               <img
                 src={assetUrl("/assets/branding/yesbill_logo_black.png")}
                 alt="YesBill"
-                className="h-10 w-auto object-contain"
+                className="w-[140px] h-[140px] object-contain"
               />
             </div>
             <p className="text-gray-500 text-sm leading-relaxed max-w-sm mb-8">

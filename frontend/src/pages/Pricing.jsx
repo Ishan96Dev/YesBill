@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
@@ -86,13 +87,18 @@ export default function Pricing() {
 
         <section className="py-12 md:py-24 max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
-            {plans.map((plan) => (
-              <div
+            {plans.map((plan, i) => (
+              <motion.div
                 key={plan.name}
-                className={`rounded-2xl p-8 relative ${
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                whileHover={{ y: plan.highlight ? -4 : -7, scale: plan.highlight ? 1.005 : 1.02, transition: { duration: 0.2, ease: "easeOut" } }}
+                className={`rounded-2xl p-8 relative cursor-default transition-shadow duration-200 ${
                   plan.highlight
-                    ? "bg-white shadow-xl ring-2 ring-primary scale-105 z-10"
-                    : "bg-white shadow-lg border border-gray-100"
+                    ? "bg-white shadow-xl ring-2 ring-primary scale-105 z-10 hover:shadow-2xl"
+                    : "bg-white shadow-lg border border-gray-100 hover:shadow-xl hover:border-primary/20"
                 } ${!plan.available ? "opacity-80" : ""}`}
               >
                 {plan.highlight && (
@@ -139,7 +145,7 @@ export default function Pricing() {
                 >
                   {plan.cta}
                 </Button>
-              </div>
+              </motion.div>
             ))}
           </div>
 

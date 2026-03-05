@@ -42,11 +42,11 @@ export default function TopBar({ currentMonth, onMonthChange }) {
   const handleLogout = async () => {
     try {
       await authService.signOut();
-      router.push('/login', { replace: true });
+      router.replace('/login');
     } catch (error) {
       console.error('Logout error:', error);
       // Force navigate even if signOut fails
-      router.push('/login', { replace: true });
+      router.replace('/login');
     }
   }
 

@@ -4,6 +4,7 @@
 
 """Main FastAPI application."""
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,11 +36,26 @@ logging.getLogger("yesbill.agent").setLevel(logging.INFO)
 # Rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan: startup and shutdown events."""
+    print("\n" + "=" * 52)
+    print("  YesBill API is running!")
+    print("  API:     http://127.0.0.1:8000")
+    print("  Docs:    http://127.0.0.1:8000/docs")
+    print("  ReDoc:   http://127.0.0.1:8000/redoc")
+    print("  OpenAPI: http://127.0.0.1:8000/openapi.json")
+    print("=" * 52 + "\n")
+    yield
+
+
 # FastAPI app
 app = FastAPI(
     title="YesBill API",
     description="Binary billing tracker with daily YES/NO marking",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Rate limiting
@@ -96,18 +112,6 @@ app.include_router(auth.router)
 app.include_router(bills.router)
 app.include_router(ai_settings.router)
 app.include_router(chat.router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Print useful URLs on startup."""
-    print("\n" + "=" * 52)
-    print("  YesBill API is running!")
-    print("  API:     http://127.0.0.1:8000")
-    print("  Docs:    http://127.0.0.1:8000/docs")
-    print("  ReDoc:   http://127.0.0.1:8000/redoc")
-    print("  OpenAPI: http://127.0.0.1:8000/openapi.json")
-    print("=" * 52 + "\n")
 
 
 if __name__ == "__main__":

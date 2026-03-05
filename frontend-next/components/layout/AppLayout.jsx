@@ -123,9 +123,9 @@ export default function AppLayout({
   // ── Cross-tab logout: redirect when Supabase fires SIGNED_OUT on other tabs ──
   useEffect(() => {
     if (!loading && !user && !isLoggingOut) {
-      router.push("/login", { replace: true });
+      router.push("/login");
     }
-  }, [user, loading, isLoggingOut, navigate]);
+  }, [user, loading, isLoggingOut, router]);
 
   // ── AI config check: notify if unconfigured, or auto-clear stale notification once configured ──
   useEffect(() => {
@@ -250,7 +250,7 @@ export default function AppLayout({
         new Promise((resolve) => setTimeout(resolve, 3000)),
       ]);
     } catch { /* ignore */ }
-    router.push("/login", { replace: true, state: { fromLogout: true } });
+    router.replace("/login");
   };
 
   // ── Nav items ──

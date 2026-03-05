@@ -61,7 +61,7 @@ export default function AuthCallback() {
       setTimeout(() => router.replace("/login"), 2000);
     }, 20000);
     return () => clearTimeout(timer);
-  }, [status, navigate]);
+  }, [status, router]);
 
   useEffect(() => {
     let mounted = true;
@@ -184,7 +184,7 @@ export default function AuthCallback() {
 
     handleCallback();
     return () => { mounted = false; };
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">

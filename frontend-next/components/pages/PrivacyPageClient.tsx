@@ -3,6 +3,7 @@
 // Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
+import { motion } from "framer-motion";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import Background from "@/components/landing/Background";
@@ -12,11 +13,16 @@ export default function PrivacyPageClient() {
     <div className="relative min-h-screen font-sans selection:bg-primary/20 text-gray-900">
       <Background />
       <Navbar />
-      <main className="pt-32 pb-24 px-6 max-w-4xl mx-auto">
+      <motion.main
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-32 pb-24 px-6 max-w-4xl mx-auto"
+      >
         <h1 className="text-4xl font-bold mb-3">Privacy Policy</h1>
         <p className="text-gray-400 text-sm mb-10">Last updated: March 3, 2026</p>
 
-        <div className="prose prose-gray max-w-none space-y-8 text-gray-600">
+        <div className="prose prose-gray max-w-none space-y-8 text-gray-600 [&>section]:rounded-xl [&>section]:px-5 [&>section]:py-3 [&>section]:-mx-5 [&>section]:transition-colors [&>section]:duration-200 [&>section]:cursor-default [&>section:hover]:bg-indigo-50/40">
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. What We Collect</h2>
             <p>When you use YesBill, we collect the following information:</p>
@@ -91,7 +97,7 @@ export default function PrivacyPageClient() {
             </p>
           </section>
         </div>
-      </main>
+      </motion.main>
       <Footer />
     </div>
   );

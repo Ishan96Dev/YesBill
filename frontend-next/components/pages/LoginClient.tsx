@@ -93,27 +93,29 @@ export default function Login() {
   }, [searchParams.toString(), toast]);
 
   // Show error from OAuth callback if any
+  const errorFromCallback = searchParams.get('error');
+  const errorDescriptionFromCallback = searchParams.get('error_description');
   useEffect(() => {
-    if (null) {
+    if (errorFromCallback) {
       toast({
         title: "Authentication Error",
-        description: null.error,
+        description: errorDescriptionFromCallback || errorFromCallback,
         type: "error",
       });
     }
-  }, [null, toast]);
+  }, [errorFromCallback, errorDescriptionFromCallback, toast]);
 
   // Redirect if already logged in (but only after auth state is loaded)
   // Use ?redirect= path when sent from 401 so user returns to e.g. /bills
   // Skip redirect if we just came from logout — UNLESS user actively submitted login
   useEffect(() => {
-    if (!authLoading && user && (!null || hasLoginAttempt.current)) {
+    if (!authLoading && user && !showWelcome && !isAuthenticating) {
       const params = searchParams;
       const redirectTo = params.get('redirect');
       const target = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
       router.replace(target);
     }
-  }, [user, authLoading, router, searchParams]);
+  }, [user, authLoading, router, searchParams, showWelcome, isAuthenticating]);
 
   // Show verifying screen ONLY during active login attempt
   if (isAuthenticating) {

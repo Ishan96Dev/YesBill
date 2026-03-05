@@ -82,10 +82,10 @@ export default function Signup() {
   // Redirect if already logged in (but only after auth state is loaded)
   useEffect(() => {
     if (!authLoading && user) {
-      console.log('? User already logged in, redirecting to dashboard');
+      console.log('✓ User already logged in, redirecting to dashboard');
       router.replace("/dashboard");
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, router]);
 
   // Show creating account screen ONLY during active signup attempt
   if (isCreatingAccount) {

@@ -65,7 +65,8 @@ export default function Roadmap() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className={`p-8 rounded-3xl border ${q.completed ? 'bg-green-50/50 border-green-100' : 'bg-white/60 border-gray-200'}`}
+              whileHover={{ y: -5, scale: 1.01, transition: { duration: 0.2, ease: "easeOut" } }}
+              className={`p-8 rounded-3xl border cursor-default transition-shadow duration-200 hover:shadow-lg ${q.completed ? 'bg-green-50/50 border-green-100 hover:border-green-200' : 'bg-white/60 border-gray-200 hover:border-indigo-200'}`}
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">{q.quarter}</h3>

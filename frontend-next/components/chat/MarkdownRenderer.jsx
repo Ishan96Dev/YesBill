@@ -118,7 +118,7 @@ export default function MarkdownRenderer({ content, className = "", compact = fa
         {children}
       </a>
     );
-  }, [navigate]);
+  }, [router]);
 
   const proseClass = compact
     ? "prose prose-xs max-w-none prose-p:my-0.5 prose-ul:my-0.5 prose-li:my-0 prose-headings:my-1 text-gray-800"

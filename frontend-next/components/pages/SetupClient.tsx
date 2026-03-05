@@ -580,7 +580,7 @@ export default function OnboardingPage() {
     profileService.getOnboardingStatus(userId).then((status) => {
       if (status?.onboarding_completed) router.replace("/dashboard");
     }).catch(() => { });
-  }, [navigate]);
+  }, [router]);
 
   const handleProfileNext = (savedName) => {
     if (savedName) {

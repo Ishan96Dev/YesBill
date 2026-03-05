@@ -149,7 +149,7 @@ export default function ServiceCalendarPage() {
         setDataLoading(true);
         load();
         return () => { cancelled = true; };
-    }, [user, serviceId, currentDate, toast, navigate]);
+    }, [user, serviceId, currentDate, toast]);
 
     if (!service) return null;
 

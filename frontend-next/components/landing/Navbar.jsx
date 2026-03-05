@@ -49,7 +49,7 @@ export default function Navbar() {
             <img
               src={assetUrl("/assets/branding/yesbill_logo_black.png")}
               alt="YesBill"
-              className="h-10 w-auto object-contain"
+              className="w-[140px] h-[140px] object-contain"
             />
           </div>
 

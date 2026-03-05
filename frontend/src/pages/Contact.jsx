@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
+import { motion } from "framer-motion";
 import { useState } from "react";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
@@ -77,7 +78,10 @@ export default function Contact() {
             <div className="space-y-8">
               <h3 className="text-2xl font-bold text-gray-900">Contact Information</h3>
               
-              <div className="flex items-start gap-4">
+              <motion.div
+                className="flex items-start gap-4 p-4 -mx-4 rounded-xl hover:bg-indigo-50/40 cursor-default transition-colors duration-200"
+                whileHover={{ x: 4, transition: { duration: 0.2, ease: "easeOut" } }}
+              >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Mail className="w-6 h-6 text-primary" />
                 </div>
@@ -87,9 +91,12 @@ export default function Contact() {
                   <br />
                   <a href="mailto:ishanchakraborty2496@gmail.com" className="text-gray-600 hover:text-primary transition-colors">ishanchakraborty2496@gmail.com</a>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex items-start gap-4">
+              <motion.div
+                className="flex items-start gap-4 p-4 -mx-4 rounded-xl hover:bg-indigo-50/40 cursor-default transition-colors duration-200"
+                whileHover={{ x: 4, transition: { duration: 0.2, ease: "easeOut" } }}
+              >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Phone className="w-6 h-6 text-primary" />
                 </div>
@@ -98,9 +105,12 @@ export default function Contact() {
                   <p className="text-gray-600">+91 7021133070</p>
                   <p className="text-sm text-gray-500">Mon-Fri, 9am to 6pm IST</p>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex items-start gap-4">
+              <motion.div
+                className="flex items-start gap-4 p-4 -mx-4 rounded-xl hover:bg-indigo-50/40 cursor-default transition-colors duration-200"
+                whileHover={{ x: 4, transition: { duration: 0.2, ease: "easeOut" } }}
+              >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <MapPin className="w-6 h-6 text-primary" />
                 </div>
@@ -110,10 +120,16 @@ export default function Contact() {
                   <p className="text-gray-600">Shanta Neer Apartment, Garfa</p>
                   <p className="text-gray-600">Kolkata - 700078</p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="bg-white rounded-2xl p-8 shadow-xl shadow-gray-200/50 hover:shadow-2xl border border-gray-100 transition-shadow duration-200"
+            >
               {status === "success" ? (
                 <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                   <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
@@ -213,7 +229,7 @@ export default function Contact() {
                   </Button>
                 </form>
               )}
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>
