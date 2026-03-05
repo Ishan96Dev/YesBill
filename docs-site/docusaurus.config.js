@@ -64,6 +64,11 @@ const config = {
         },
         items: [
           {
+            href: 'https://yesbill.vercel.app',
+            label: 'Launch App',
+            position: 'right',
+          },
+          {
             href: 'https://github.com/ishan96dev/YesBill',
             label: 'GitHub',
             position: 'right',
@@ -85,7 +90,7 @@ const config = {
           {
             title: 'App',
             items: [
-              { label: 'Launch YesBill', href: 'https://ishan96dev.github.io/YesBill/' },
+              { label: 'Launch App', href: 'https://yesbill.vercel.app' },
               { label: 'GitHub', href: 'https://github.com/ishan96dev/YesBill' },
             ],
           },
