@@ -93,7 +93,7 @@ export default function AppLayout({
   onboardingMode = false,
 }) {
   const router = useRouter();
-  const location = useLocation();
+  const pathname = usePathname();
   const { displayName, avatarUrl, user, profile, loading } = useUser();
   const notifPrefs = profile?.notification_prefs || null;
   // Filter out notification types the user has disabled
@@ -600,7 +600,7 @@ export default function AppLayout({
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
+            const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
             const itemContent = (
               <motion.span
                 whileHover={lockedNav ? {} : { x: 8, scale: 1.02 }}
@@ -679,7 +679,7 @@ export default function AppLayout({
           <nav className="p-4 space-y-1">
             {navItems.map((item, index) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
+              const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
               const mobileItemContent = (
                 <motion.span
                   initial={{ x: -50, opacity: 0 }}

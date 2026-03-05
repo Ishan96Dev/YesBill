@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from "../lib/utils";
 
 export default function PageWrapper({ children, className }) {
-  const { pathname } = useLocation();
+  const pathname = usePathname();
 
   useEffect(() => {
     window.scrollTo(0, 0);

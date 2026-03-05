@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function Header() {
   // Close mobile menu on route change
   useEffect(() => {
     setIsOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   const navLinks = [
     { name: "Features", href: "/features" },
@@ -64,9 +64,9 @@ export default function Header() {
             {navLinks.map((link) => (
               <Link 
                 key={link.name} 
-                to={link.href}
+                href={link.href}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.href ? "text-primary" : "text-slate-600"
+                  pathname === link.href ? "text-primary" : "text-slate-600"
                 }`}
               >
                 {link.name}
@@ -113,9 +113,9 @@ export default function Header() {
                 {navLinks.map((link) => (
                   <Link 
                     key={link.name} 
-                    to={link.href}
+                    href={link.href}
                     className={`text-lg font-medium py-2 border-b border-gray-50 flex justify-between items-center ${
-                      location.pathname === link.href ? "text-primary" : "text-slate-600"
+                      pathname === link.href ? "text-primary" : "text-slate-600"
                     }`}
                   >
                     {link.name}

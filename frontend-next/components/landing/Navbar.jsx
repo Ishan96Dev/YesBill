@@ -13,7 +13,7 @@ import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const router = useRouter();
-  const location = useLocation();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
@@ -71,16 +71,16 @@ export default function Navbar() {
                 ) : (
                   <Link
                     key={link.name}
-                    to={link.href}
+                    href={link.href}
                     className={cn(
                       "text-sm font-medium transition-colors relative group",
-                      location.pathname === link.href ? "text-primary" : "text-gray-600 hover:text-primary"
+                      pathname === link.href ? "text-primary" : "text-gray-600 hover:text-primary"
                     )}
                   >
                     {link.name}
                     <span className={cn(
                       "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
-                      location.pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
+                      pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
                     )} />
                   </Link>
                 )
@@ -139,11 +139,11 @@ export default function Navbar() {
                 ) : (
                   <Link
                     key={link.name}
-                    to={link.href}
+                    href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       "text-base font-medium p-2 rounded-lg transition-colors",
-                      location.pathname === link.href ? "bg-primary/5 text-primary" : "text-gray-600 hover:bg-gray-50"
+                      pathname === link.href ? "bg-primary/5 text-primary" : "text-gray-600 hover:bg-gray-50"
                     )}
                   >
                     {link.name}
