@@ -9,7 +9,7 @@
  * Uses environment variables for configuration.
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 // Supabase configuration from environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
@@ -21,20 +21,12 @@ if (typeof window !== 'undefined' && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !
 
 /**
  * Supabase client instance
- * 
- * Configured with:
- * - localStorage session persistence
- * - Auto-refresh tokens (proactively refreshes before JWT expiry)
- * - No artificial fetch timeouts — requests complete naturally
+ *
+ * Uses @supabase/ssr createBrowserClient which stores the session in
+ * HTTP cookies (not localStorage). This allows Next.js middleware to
+ * read the session server-side and avoid infinite redirect loops.
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-})
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
 // ─── Shared helpers ──────────────────────────────────────────────
 //

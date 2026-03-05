@@ -1,3 +1,4 @@
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -18,18 +19,40 @@ const PROTECTED = [
 // ── Auth-only routes (redirect authed users away) ──────────────────────────
 const AUTH_ONLY = ['/login', '/signup', '/forgot-password']
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  // Start with a passthrough response so we can attach refreshed cookies
+  const response = NextResponse.next({ request })
+
+  // createServerClient reads/writes session cookies — requires @supabase/ssr
+  // (createBrowserClient used in lib/supabase.ts stores the session in cookies
+  //  automatically, so the middleware can now reliably detect auth state)
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // getUser() validates the JWT with Supabase — never trust a stale cookie
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const isAuthed = !!user
   const { pathname } = request.nextUrl
-
-  // Read Supabase session cookie (set by @supabase/auth-helpers or raw supabase-js)
-  const sbAccessToken =
-    request.cookies.get('sb-access-token')?.value ||
-    // Next-generation cookie names used by supabase-js v2 with storage key
-    [...request.cookies.getAll()].find((c) =>
-      c.name.startsWith('sb-') && c.name.endsWith('-auth-token')
-    )?.value
-
-  const isAuthed = Boolean(sbAccessToken)
 
   // Redirect unauthenticated users away from protected routes
   if (!isAuthed && PROTECTED.some((p) => pathname.startsWith(p))) {
@@ -43,7 +66,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {
