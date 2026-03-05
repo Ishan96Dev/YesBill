@@ -1,0 +1,74 @@
+name: Deploy Next.js Frontend to Vercel
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend-next/**'
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy to Vercel
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Node.js ───────────────────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend-next/package-lock.json
+
+      # ── Install Vercel CLI ────────────────────────────────────────────────────
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      # ── Install app dependencies ──────────────────────────────────────────────
+      - name: Install dependencies
+        working-directory: frontend-next
+        run: npm ci
+
+      # ── Type check ─────────────────────────────────────────────────────────────
+      - name: Type check
+        working-directory: frontend-next
+        run: npm run type-check
+
+      # ── Build (next build validates SSG + SSR routes) ────────────────────────
+      - name: Build Next.js
+        working-directory: frontend-next
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+
+      # ── Pull Vercel project config ────────────────────────────────────────────
+      - name: Pull Vercel environment info
+        working-directory: frontend-next
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # ── Deploy to Vercel ──────────────────────────────────────────────────────
+      - name: Deploy to Vercel (production)
+        working-directory: frontend-next
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deployment complete
+        run: echo "YesBill Next.js app deployed to Vercel 🚀"
