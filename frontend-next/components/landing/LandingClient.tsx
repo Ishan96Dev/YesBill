@@ -10,7 +10,10 @@ import Features from './Features'
 import Testimonials from './Testimonials'
 import Footer from './Footer'
 import Background from './Background'
-import { useToast } from '@/components/ui/toaster-custom'
+import { useToast as _useToast } from '@/components/ui/toaster-custom'
+
+type ToastFn = (opts: { title: string; description?: string; type?: string; duration?: number }) => void
+const useToast = _useToast as () => { toast: ToastFn }
 
 export default function LandingClient() {
   const { toast } = useToast()
