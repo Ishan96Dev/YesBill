@@ -83,7 +83,6 @@ export default function Login() {
 
   // Check for expired confirmation link
   useEffect(() => {
-    const searchParams = searchParams;
     if (searchParams.get('expired') === 'true') {
       toast({
         title: "Confirmation Link Expired",

@@ -89,7 +89,7 @@ export default function AuthCallback() {
 
     const handleCallback = async () => {
       try {
-        const query = new URLSearchParams(window.searchParams.toString());
+        const query = new URLSearchParams(window.location.search);
         const hash = new URLSearchParams(window.location.hash.slice(1));
 
         const accessToken = hash.get("access_token");
