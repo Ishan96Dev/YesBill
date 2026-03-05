@@ -57,6 +57,12 @@ function getSnapshot() {
   return _snapshot
 }
 
+// Server-side snapshot: no localStorage on server, return empty/loading state
+const _serverSnapshot = { user: null, profile: null, session: null, loading: true, profileLoading: false }
+function getServerSnapshot() {
+  return _serverSnapshot
+}
+
 function subscribe(listener) {
   _listeners.add(listener)
   return () => _listeners.delete(listener)
@@ -169,10 +175,12 @@ function handleSessionSync(newSession) {
     _loading = false
     _profileLoading = false
     saveCachedProfile(null)
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user_id')
-    localStorage.removeItem('user_email')
-    localStorage.removeItem('user_name')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('user_id')
+      localStorage.removeItem('user_email')
+      localStorage.removeItem('user_name')
+    }
     notify()
   }
 }
@@ -249,7 +257,7 @@ export function useUser() {
   }
 
   // Subscribe to the shared store
-  const snap = useSyncExternalStore(subscribe, getSnapshot)
+  const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
   const { user, profile, session, loading, profileLoading } = snap
 
