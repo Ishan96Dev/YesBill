@@ -6,13 +6,28 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, Cpu } from "lucide-react";
 import { chatService } from "../../services/chatService";
 
-export default function ModelSelector({ selectedModel, onModelChange, onModelStatusChange }) {
-  const [models, setModels] = useState([]);
-  const [configured, setConfigured] = useState(true);
+export default function ModelSelector({ selectedModel, onModelChange, onModelStatusChange, initialData }) {
+  const [models, setModels] = useState(() =>
+    initialData?.models ? initialData.models.filter((m) => !m.is_deprecated) : []
+  );
+  const [configured, setConfigured] = useState(() => initialData ? (initialData.configured ?? true) : true);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [serverSelectedModel, setServerSelectedModel] = useState(null);
-  const [serverSelectedInfo, setServerSelectedInfo] = useState(null);
+  const [loading, setLoading] = useState(() => !initialData);
+  const [serverSelectedModel, setServerSelectedModel] = useState(() => initialData?.selected_model || null);
+  const [serverSelectedInfo, setServerSelectedInfo] = useState(() => initialData?.selected_model_info || null);
+
+  // Auto-select on mount when initialData is provided (no fetch needed)
+  useEffect(() => {
+    if (!initialData || selectedModel) return;
+    const sid = initialData.selected_model;
+    const modelList = initialData.models ? initialData.models.filter((m) => !m.is_deprecated) : [];
+    if (sid && modelList.find((m) => m.id === sid)) {
+      onModelChange(sid);
+    } else {
+      const preferred = modelList.find((m) => m.availability_status === "available") || modelList[0];
+      if (preferred) onModelChange(preferred.id);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchModels = useCallback(() => {
     let mounted = true;
@@ -58,7 +73,10 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const cleanup = fetchModels();
+    // Skip initial fetch if caller already provided data; still re-fetch on visibility change
+    // so user picks up model changes made in Settings→AI without a full page reload.
+    let didInitialFetch = !!initialData;
+    const cleanup = didInitialFetch ? undefined : fetchModels();
 
     // Re-fetch when the user navigates back to this page (e.g., after changing Settings)
     const handleVisibility = () => {

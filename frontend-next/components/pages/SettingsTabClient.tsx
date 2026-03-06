@@ -556,8 +556,8 @@ export default function Settings() {
     return 'Unknown OS';
   };
 
-  // Page-level loading gate (shows branded loading screen briefly)
-  const pageReady = usePageReady(0, !loading);
+  // Page-level loading gate: wait for auth AND profile data
+  const pageReady = usePageReady(0, !loading && !profileLoading);
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },

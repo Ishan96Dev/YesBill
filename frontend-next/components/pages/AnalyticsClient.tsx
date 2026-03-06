@@ -616,7 +616,7 @@ export default function Analytics() {
   return (
     <AppLayout>
       <AnimatePresence>
-        {!pageReady && <AppLoadingScreen key="loading" pageName="Analytics" pageType="analytics" />}
+        {(!pageReady || loading) && <AppLoadingScreen key="loading" pageName="Analytics" pageType="analytics" />}
       </AnimatePresence>
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
 

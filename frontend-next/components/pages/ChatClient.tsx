@@ -40,6 +40,8 @@ export default function ChatPage() {
   const [modelBlockedReason, setModelBlockedReason] = useState("");
   const [reasoningEffort, setReasoningEffort] = useState("none");
   const [modelSupportsReasoning, setModelSupportsReasoning] = useState(false);
+  // Pre-fetched model data passed to ModelSelector so it skips its own redundant API call.
+  const [preloadedModelsData, setPreloadedModelsData] = useState(null);
   // Per-model effort levels sourced from DB (supported_effort_levels column).
   // null = fall back to all options (when model has no DB metadata yet).
   const [availableEffortLevels, setAvailableEffortLevels] = useState(null);
@@ -78,6 +80,8 @@ export default function ChatPage() {
         }
         if (modelData.status === "fulfilled") {
           setAiConfigured(modelData.value?.configured ?? false);
+          // Store raw model data for ModelSelector so it doesn't need to re-fetch.
+          setPreloadedModelsData(modelData.value);
           // Priority: user's saved setting first, then model DB default, then "none".
           // default_reasoning_effort = what the user explicitly saved in Settings.
           // default_effort_level     = model's own DB default (e.g. "low" for 3.1 Pro).
@@ -492,6 +496,7 @@ export default function ChatPage() {
                   selectedModel={selectedModel}
                   onModelChange={setSelectedModel}
                   onModelStatusChange={handleModelStatusChange}
+                  initialData={preloadedModelsData}
                 />
                 {modelSupportsReasoning && (
                   <>
