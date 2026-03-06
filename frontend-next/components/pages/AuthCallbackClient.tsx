@@ -94,7 +94,9 @@ export default function AuthCallback() {
 
         const accessToken = hash.get("access_token");
         const refreshToken = hash.get("refresh_token");
+        const tokenType = hash.get("type");
         const code = query.get("code");
+        const codeType = query.get("type");
         const errorParam = query.get("error") || hash.get("error");
         const errorDescription = query.get("error_description") || hash.get("error_description");
         const errorCode = query.get("error_code") || hash.get("error_code");
@@ -126,6 +128,10 @@ export default function AuthCallback() {
               if (!mounted) return;
               setStatus("success");
               persistSession(data.session);
+              if (tokenType === "recovery") {
+                router.replace("/auth/reset-password");
+                return;
+              }
               await routeToDestination(data.session.user.id);
               return;
             }
@@ -170,6 +176,10 @@ export default function AuthCallback() {
             if (!mounted) return;
             setStatus("success");
             persistSession(data.session);
+            if (codeType === "recovery") {
+              router.replace("/auth/reset-password");
+              return;
+            }
             await routeToDestination(data.session.user.id);
             return;
           }

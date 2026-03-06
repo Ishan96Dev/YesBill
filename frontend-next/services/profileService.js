@@ -46,10 +46,12 @@ export const profileService = {
    */
   async updateProfile(userId, updates) {
 
-    // ── 1. Quick session check (no ensureAuth — it reads a custom localStorage key
-    //    that may be missing, causing false "expired" errors before any API call)
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Your session has expired. Please sign in again.')
+    // ── 1. Auth check — use getUser() (server-validated) rather than getSession()
+    //    because createBrowserClient stores the session in chunked cookies that can
+    //    occasionally return null during rapid client-side navigation, while getUser()
+    //    always validates against the Supabase Auth server.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Your session has expired. Please sign in again.')
 
     // ── 2. Clean and validate updates ──
     const validColumns = ['full_name', 'display_name', 'phone', 'company', 'website', 'location', 'bio', 'country', 'country_code', 'currency', 'currency_code', 'avatar_url', 'cover_image_url', 'timezone', 'language', 'theme', 'notifications_enabled', 'email_notifications', 'onboarding_completed', 'onboarding_skipped_steps', 'ai_config_reminder_shown']

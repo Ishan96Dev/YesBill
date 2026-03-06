@@ -38,6 +38,7 @@ import { notificationService } from "@/services/notificationService";
 import { COUNTRY_TIMEZONE } from "@/lib/timezone";
 import { COUNTRIES, getCountryByName } from "@/lib/countries";
 import { useUser } from "@/hooks/useUser";
+import { useToast } from "@/components/ui/toaster-custom";
 
 function ProviderIcon({ providerId, size = 32 }) {
   switch (providerId) {
@@ -552,6 +553,7 @@ function AIStep({ userName, onComplete }) {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const { displayName, fullName, avatarUrl, user, loading: authLoading } = useUser();
   const [step, setStep] = useState(1);
   const [userName, setUserName] = useState(() => localStorage.getItem("user_name") || "");
@@ -592,15 +594,37 @@ export default function OnboardingPage() {
 
   const handleComplete = async (skippedAI = true) => {
     setIsCompleting(true);
-    const userId = localStorage.getItem("user_id");
+    const userId = localStorage.getItem("user_id") || user?.id;
     if (userId) {
-      try {
-        const updates = { onboarding_completed: true };
-        if (skippedAI) updates.onboarding_skipped_steps = { ai_config: true };
-        await profileService.updateProfile(userId, updates);
+      // Attempt to mark onboarding complete — retry once on failure so a transient
+      // session-cookie miss doesn't permanently lock users into the setup loop.
+      let saved = false;
+      for (let attempt = 1; attempt <= 2 && !saved; attempt++) {
+        try {
+          const updates = { onboarding_completed: true };
+          if (skippedAI) updates.onboarding_skipped_steps = { ai_config: true };
+          await profileService.updateProfile(userId, updates);
+          saved = true;
+        } catch (err) {
+          console.error(`Onboarding save error (attempt ${attempt}):`, err);
+          if (attempt < 2) {
+            // Short delay before retry
+            await new Promise((r) => setTimeout(r, 800));
+          } else {
+            // Both attempts failed — warn the user so they know to try logging in again
+            toast({
+              title: "Setup saved partially",
+              description: "We couldn't save your setup status. If you're redirected to setup on next login, please complete it again or contact support.",
+              type: "warning",
+              duration: 6000,
+            });
+          }
+        }
+      }
 
-        // Welcome notification ? always fires on first-time completion
-        await notificationService.create(
+      if (saved) {
+        // Welcome notification — fire-and-forget
+        notificationService.create(
           userId, "general",
           "Welcome to YesBill! 🎉",
           "Your account is set up. Start by adding a service or exploring the dashboard.",
@@ -608,15 +632,13 @@ export default function OnboardingPage() {
         ).catch(() => { });
 
         if (skippedAI) {
-          // Only create if no existing ai_config_incomplete notification (read or unread)
-          const existingNotifs = await notificationService.getAll(userId).catch(() => []);
-          const alreadyHasAiNotif = existingNotifs.some((n) => n.type === "ai_config_incomplete");
-          if (!alreadyHasAiNotif) {
-            await notificationService.create(userId, "ai_config_incomplete", "AI features not configured", "Set up an API key in Settings -> AI Configuration to enable bill generation, chat, and agent features.", { path: "/settings/ai" }).catch((e) => console.error("Notification create failed:", e));
-          }
+          notificationService.getAll(userId).catch(() => []).then((existingNotifs) => {
+            const alreadyHasAiNotif = existingNotifs.some((n) => n.type === "ai_config_incomplete");
+            if (!alreadyHasAiNotif) {
+              notificationService.create(userId, "ai_config_incomplete", "AI features not configured", "Set up an API key in Settings -> AI Configuration to enable bill generation, chat, and agent features.", { path: "/settings/ai" }).catch((e) => console.error("Notification create failed:", e));
+            }
+          });
         }
-      } catch (err) {
-        console.error("Onboarding save error:", err);
       }
     }
     router.replace("/dashboard");

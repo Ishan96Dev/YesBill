@@ -33,25 +33,56 @@ export default function ResetPasswordPage() {
 
   // Listen for the PASSWORD_RECOVERY event — Supabase fires this when the user
   // arrives via a password-reset email link (access_token + type=recovery in the URL hash).
+  // For PKCE flow: the link contains ?code=... which must be exchanged first.
   useEffect(() => {
+    let settled = false;
+
+    const settle = (ready: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (ready) setSessionReady(true);
+      else setSessionError(true);
+    };
+
+    // Subscribe to auth state changes (implicit flow: PASSWORD_RECOVERY event)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" && session) {
-        setSessionReady(true);
+      if ((event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") && session) {
+        settle(true);
       }
     });
 
-    // Also check if there's already a session (e.g. page refresh after recovery link clicked)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSessionReady(true);
-      } else {
-        // Give Supabase a moment to process the URL hash tokens, then give up
-        const timeout = setTimeout(() => {
-          if (!sessionReady) setSessionError(true);
-        }, 3000);
-        return () => clearTimeout(timeout);
+    const init = async () => {
+      // PKCE flow: the reset link arrives as ?code=... query param.
+      // createBrowserClient does NOT exchange PKCE codes automatically —
+      // we must call exchangeCodeForSession to establish the recovery session.
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (!error && data?.session) {
+            // Clean up code from URL so the user can't accidentally reset twice
+            window.history.replaceState({}, "", window.location.pathname);
+            settle(true);
+            return;
+          }
+        } catch {
+          // Fall through to session check below
+        }
       }
-    });
+
+      // Check if there's already a valid session (e.g. page refresh after recovery link clicked
+      // or implicit flow where the browser client auto-detected the URL hash)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        settle(true);
+      } else {
+        // Give the auth state change listener a moment to fire, then give up
+        setTimeout(() => settle(false), 3000);
+      }
+    };
+
+    init();
 
     return () => subscription.unsubscribe();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

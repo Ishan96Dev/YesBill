@@ -17,7 +17,10 @@ const PROTECTED = [
 ]
 
 // ── Auth-only routes (redirect authed users away) ──────────────────────────
-const AUTH_ONLY = ['/login', '/signup', '/forgot-password']
+// NOTE: /forgot-password is intentionally NOT in this list so that
+// authenticated users (e.g. Google OAuth users without a password) can
+// still request a password reset email.
+const AUTH_ONLY = ['/login', '/signup']
 
 export async function middleware(request: NextRequest) {
   // Start with a passthrough response so we can attach refreshed cookies

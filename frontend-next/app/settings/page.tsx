@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
-import SettingsClient from '@/components/pages/SettingsClient'
+import SettingsTabClient from '@/components/pages/SettingsTabClient'
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function SettingsPage() {
-  return <SettingsClient />
+  return <SettingsTabClient />
 }
