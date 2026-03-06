@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/next'
 import { ToastProvider } from '@/components/ui/toaster-custom'
 import ErrorBoundaryWrapper from '@/components/ErrorBoundaryWrapper'
 
@@ -60,6 +61,7 @@ export default function RootLayout({
         <ErrorBoundaryWrapper>
           <ToastProvider>{children}</ToastProvider>
         </ErrorBoundaryWrapper>
+        <Analytics />
       </body>
     </html>
   )

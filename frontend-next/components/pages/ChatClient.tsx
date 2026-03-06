@@ -81,8 +81,12 @@ export default function ChatPage() {
         }
         if (modelData.status === "fulfilled") {
           setAiConfigured(modelData.value?.configured ?? false);
-          // Store raw model data for ModelSelector so it doesn't need to re-fetch.
-          setPreloadedModelsData(modelData.value);
+          // Only preload when the backend returned an actual model list.
+          // If models:[] (Supabase cold-start fallback), pass null so ModelSelector
+          // starts with its own loading skeleton and retries independently.
+          if (modelData.value?.models?.length > 0) {
+            setPreloadedModelsData(modelData.value);
+          }
           // Priority: user's saved setting first, then model DB default, then "none".
           // default_reasoning_effort = what the user explicitly saved in Settings.
           // default_effort_level     = model's own DB default (e.g. "low" for 3.1 Pro).

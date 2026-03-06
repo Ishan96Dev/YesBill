@@ -122,7 +122,7 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
     </div>
   );
 
-  if (!configured || models.length === 0) {
+  if (!configured) {
     return (
       <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
         <Cpu className="w-3.5 h-3.5" />
@@ -133,6 +133,18 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
           </a>{" "}
           to use chat
         </span>
+      </div>
+    );
+  }
+
+  // User IS configured but backend couldn't provide a model list yet (e.g. cold-start
+  // timeout fell back to Supabase which returns models:[]). Show current model as a
+  // non-interactive label so the page doesn't falsely claim AI is unconfigured.
+  if (models.length === 0) {
+    return (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-500">
+        <Cpu className="w-3.5 h-3.5 text-gray-400" />
+        <span>{serverSelectedModel || "AI Model"}</span>
       </div>
     );
   }
