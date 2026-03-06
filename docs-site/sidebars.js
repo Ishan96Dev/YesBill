@@ -50,6 +50,7 @@ const sidebars = {
         'ai-features/overview',
         'ai-features/ask-ai',
         'ai-features/agent-chatbot',
+        'ai-features/agent-actions',
         'ai-features/ai-bill-generation',
         'ai-features/ai-configuration',
       ],

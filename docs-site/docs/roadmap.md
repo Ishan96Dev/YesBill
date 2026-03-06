@@ -37,6 +37,13 @@ Upgrade the current keyword-based documentation search (which already injects re
 
 ---
 
+### Agent: Create & Manage Services for Provider Role
+> **Status:** Planned
+
+Extend the AI Agent to support **Provider-role** service creation and management. Currently the Agent can create consumer-facing services. Provider-side workflows — creating services for multiple customers, setting up billing templates, and managing customer accounts — require a dedicated UI and permission model being built as part of the Service Provider Portal.
+
+---
+
 ## Calendar
 
 ### Bulk Day Marking

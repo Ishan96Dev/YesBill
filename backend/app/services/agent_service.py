@@ -53,12 +53,20 @@ AGENT_SYSTEM_PROMPT = (
     "For multiple dates, call update_calendar_day once per date in the same response. "
     "Accepted date input formats: today, yesterday, YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY. "
     "If date parsing fails, explain the accepted formats. "
+    "For generate_bill: call search_services first if you don't have service IDs. "
+    "Always ask the user which month to generate the bill for, then ask if they want an email — then call generate_bill. "
+    "For create_service: required fields are name, price, delivery_type. "
+    "All other fields (type, schedule, icon, notes, billing_day, start_date, end_date) are optional — infer sensible defaults. "
+    "Consumer role only — never set provider role via agent. "
+    "For edit_service: use the service_name the user provides — do NOT call search_services first. "
+    "Collect only the fields the user wants to change; any field not mentioned is left unchanged. "
+    "At minimum one editable field must be provided (name, price, notes, billing_day, schedule, icon, type, delivery_type, start_date, end_date). "
     "Be concise and confirm what you did."
 )
 
 # Tool categories
 IMMEDIATE_TOOLS = {"search_services", "get_service_details", "get_bills", "get_calendar_month", "search_docs"}
-CONFIRM_TOOLS = {"update_service", "toggle_service_active", "mark_bill_paid", "update_calendar_day"}
+CONFIRM_TOOLS = {"update_service", "toggle_service_active", "mark_bill_paid", "update_calendar_day", "generate_bill", "create_service", "edit_service"}
 
 # ──────────────────────────────────────────────
 # Tool schema (provider-agnostic)
@@ -77,6 +85,62 @@ _TOOL_SCHEMAS = [
             "type": "object",
             "properties": {"service_id": {"type": "string", "description": "Service UUID"}},
             "required": ["service_id"],
+        },
+    },
+    {
+        "name": "edit_service",
+        "description": (
+            "REQUIRES CONFIRMATION. Edit one or more fields of an existing user service by its name. "
+            "Provide service_name and only the fields to change — unchanged fields are omitted. "
+            "Use this instead of update_service when the user asks to edit/change/update a service "
+            "by name or wants to change multiple fields at once."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "service_name": {
+                    "type": "string",
+                    "description": "Exact or close name of the service to edit",
+                },
+                "name": {"type": "string", "description": "New service name"},
+                "price": {"type": "number", "description": "New price"},
+                "notes": {"type": "string", "description": "New notes/description"},
+                "billing_day": {
+                    "type": "integer",
+                    "description": "Day of month for billing (1-31)",
+                },
+                "schedule": {
+                    "type": "string",
+                    "enum": ["morning", "afternoon", "evening", "anytime"],
+                    "description": "Delivery schedule",
+                },
+                "icon": {"type": "string", "description": "Icon identifier"},
+                "type": {
+                    "type": "string",
+                    "enum": ["daily", "weekly", "monthly", "custom"],
+                    "description": "Service frequency type",
+                },
+                "delivery_type": {
+                    "type": "string",
+                    "enum": [
+                        "home_delivery",
+                        "utility",
+                        "subscription",
+                        "payment",
+                        "visit_based",
+                    ],
+                    "description": "Delivery/billing type",
+                },
+                "start_date": {
+                    "type": "string",
+                    "description": "Service start date (YYYY-MM-DD)",
+                },
+                "end_date": {
+                    "type": "string",
+                    "description": "Service end date (YYYY-MM-DD)",
+                },
+            },
+            "required": ["service_name"],
         },
     },
     {
@@ -171,6 +235,79 @@ _TOOL_SCHEMAS = [
                 "query": {"type": "string", "description": "Search query describing what the user wants to know"},
             },
             "required": ["query"],
+        },
+    },
+    {
+        "name": "generate_bill",
+        "description": (
+            "REQUIRES CONFIRMATION. Generate an AI bill for one or more services for a specific month. "
+            "Call search_services first to discover service IDs if needed. "
+            "Always ask the user which month and whether to send the bill by email before calling this tool."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "service_ids": {
+                    "type": "string",
+                    "description": "Comma-separated service UUID(s) to include in the bill",
+                },
+                "year_month": {
+                    "type": "string",
+                    "description": "Month to generate the bill for (YYYY-MM format, e.g. 2026-02)",
+                },
+                "send_email": {
+                    "type": "boolean",
+                    "description": "Whether to email the generated bill to the user",
+                },
+            },
+            "required": ["service_ids", "year_month", "send_email"],
+        },
+    },
+    {
+        "name": "create_service",
+        "description": (
+            "REQUIRES CONFIRMATION. Create a new consumer-role service for the user. "
+            "Required: name, price, delivery_type. "
+            "Optional: type (billing frequency), schedule, icon, notes, billing_day, start_date, end_date. "
+            "Do not use provider role — consumer only."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "description": "Service name (e.g. 'Morning Milk')"},
+                "price": {"type": "number", "description": "Price amount (e.g. 50.0)"},
+                "delivery_type": {
+                    "type": "string",
+                    "enum": ["home_delivery", "utility", "visit_based", "subscription", "payment"],
+                    "description": "Billing model for this service",
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["daily", "weekly", "monthly", "yearly"],
+                    "description": "Billing frequency (default: daily)",
+                },
+                "schedule": {
+                    "type": "string",
+                    "enum": ["morning", "evening", "custom"],
+                    "description": "Delivery schedule (default: morning)",
+                },
+                "icon": {
+                    "type": "string",
+                    "description": (
+                        "Icon key (default: package). Options: coffee, newspaper, car, utensils, package, "
+                        "bike, home, dumbbell, wifi, shirt, droplets, zap, flame, tv, phone, "
+                        "heart-pulse, wrench, music, book-open, bus, credit-card, banknote, building-2"
+                    ),
+                },
+                "notes": {"type": "string", "description": "Optional notes about the service"},
+                "billing_day": {
+                    "type": "integer",
+                    "description": "Day of month for billing (1–31, default: 1)",
+                },
+                "start_date": {"type": "string", "description": "Service start date (YYYY-MM-DD, optional)"},
+                "end_date": {"type": "string", "description": "Service end date (YYYY-MM-DD, optional)"},
+            },
+            "required": ["name", "price", "delivery_type"],
         },
     },
 ]
@@ -882,6 +1019,195 @@ async def _build_confirm_action(
             action["summary_text"] = summary
             return action
 
+        elif name == "generate_bill":
+            service_ids_raw = args.get("service_ids", "")
+            year_month = str(args.get("year_month", "")).strip()
+            send_email = bool(args.get("send_email", False))
+
+            # Accept comma-separated string OR a list from the LLM
+            if isinstance(service_ids_raw, list):
+                service_ids = [s.strip() for s in service_ids_raw if str(s).strip()]
+            else:
+                service_ids = [s.strip() for s in str(service_ids_raw).split(",") if s.strip()]
+
+            if not service_ids or not re.match(r"^\d{4}-\d{2}$", year_month):
+                return None
+
+            services = await supabase_service.get_services_by_ids(user_id, service_ids)
+            if not services:
+                return None
+
+            confirmations = await supabase_service.get_confirmations_for_month_services(
+                user_id, year_month, service_ids
+            )
+
+            # Quick estimated total (no LLM) — same logic as bills router
+            year_i, month_i = map(int, year_month.split("-"))
+            month_name = datetime(year_i, month_i, 1).strftime("%B %Y")
+            estimated_total = 0.0
+            for svc in services:
+                price = float(svc.get("price") or 0)
+                delivery_type = svc.get("delivery_type", "home_delivery")
+                svc_confs = [c for c in confirmations if c.get("service_id") == svc["id"]]
+                delivered = [c for c in svc_confs if c.get("status") == "delivered"]
+                if delivery_type in ("subscription", "payment", "visit_based"):
+                    estimated_total += price
+                elif delivery_type == "utility":
+                    estimated_total += price if delivered else 0.0
+                else:
+                    estimated_total += sum(float(c.get("custom_amount") or price) for c in delivered)
+
+            service_names = ", ".join(s.get("name", "") for s in services)
+            email_note = " · Email: Yes" if send_email else ""
+            diff = {
+                "label": "Estimated Total",
+                "old": "Not generated",
+                "new": f"₹{estimated_total:.2f}",
+            }
+            summary = (
+                f"Generate {month_name} bill for {service_names}"
+                f" — Est. ₹{estimated_total:.2f}{email_note}"
+            )
+            action = await supabase_service.create_agent_action(
+                conv_id, user_id,
+                action_type="generate_bill",
+                action_params={
+                    "service_ids": service_ids,
+                    "year_month": year_month,
+                    "send_email": send_email,
+                },
+                old_value={"generated": False},
+                new_value={"service_ids": service_ids, "year_month": year_month},
+            )
+            action["diff"] = diff
+            action["summary_text"] = summary
+            return action
+
+        elif name == "create_service":
+            svc_name = str(args.get("name", "")).strip()
+            price_raw = args.get("price")
+            delivery_type = str(args.get("delivery_type", "home_delivery"))
+
+            if not svc_name or price_raw is None:
+                return None
+            try:
+                price_f = float(price_raw)
+            except (ValueError, TypeError):
+                return None
+
+            svc_type = args.get("type", "daily")
+            schedule = args.get("schedule", "morning")
+            icon = args.get("icon", "package")
+            notes = str(args.get("notes") or "")
+            billing_day = int(args.get("billing_day") or 1)
+            start_date = args.get("start_date") or None
+            end_date = args.get("end_date") or None
+
+            # Multi-row diff for the confirmation card
+            rows = [
+                {"label": "Name", "old": "—", "new": svc_name},
+                {"label": "Price", "old": "—", "new": f"₹{price_f:.2f}/{svc_type}"},
+                {"label": "Type", "old": "—", "new": delivery_type.replace("_", " ").title()},
+                {"label": "Schedule", "old": "—", "new": schedule.capitalize()},
+            ]
+            if notes:
+                rows.append({"label": "Notes", "old": "—", "new": notes})
+            if start_date:
+                rows.append({"label": "Start Date", "old": "—", "new": start_date})
+
+            diff = {"rows": rows}
+            summary = (
+                f"Create service '{svc_name}'"
+                f" — ₹{price_f:.2f}/{svc_type}, {delivery_type.replace('_', ' ')}"
+            )
+            action = await supabase_service.create_agent_action(
+                conv_id, user_id,
+                action_type="create_service",
+                action_params={
+                    "name": svc_name,
+                    "price": price_f,
+                    "delivery_type": delivery_type,
+                    "type": svc_type,
+                    "schedule": schedule,
+                    "icon": icon,
+                    "notes": notes,
+                    "billing_day": billing_day,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                },
+                old_value={},
+                new_value={"name": svc_name, "price": price_f, "delivery_type": delivery_type},
+            )
+            action["diff"] = diff
+            action["summary_text"] = summary
+            return action
+
+        elif name == "edit_service":
+            service_name = str(args.get("service_name", "")).strip()
+            if not service_name:
+                return None
+
+            # Editable fields the LLM may provide
+            EDITABLE = ("name", "price", "notes", "billing_day", "schedule", "icon", "type", "delivery_type", "start_date", "end_date")
+            changes = {k: args[k] for k in EDITABLE if k in args and args[k] is not None}
+            if not changes:
+                return None
+
+            # Look up existing service
+            existing = await supabase_service.get_service_by_name(user_id, service_name)
+            if not existing:
+                return None
+
+            service_id = existing["id"]
+
+            # Build rows — only changed fields
+            LABELS = {
+                "name": "Name", "price": "Price", "notes": "Notes",
+                "billing_day": "Billing Day", "schedule": "Schedule",
+                "icon": "Icon", "type": "Frequency", "delivery_type": "Delivery Type",
+                "start_date": "Start Date", "end_date": "End Date",
+            }
+            rows = []
+            clean_changes: dict = {}
+            for field, new_raw in changes.items():
+                old_raw = existing.get(field)
+                if field == "price":
+                    new_val = float(new_raw)
+                    old_disp = f"₹{float(old_raw):.2f}" if old_raw is not None else "—"
+                    new_disp = f"₹{new_val:.2f}"
+                    clean_changes[field] = new_val
+                elif field == "billing_day":
+                    new_val = int(new_raw)
+                    old_disp = str(old_raw) if old_raw is not None else "—"
+                    new_disp = str(new_val)
+                    clean_changes[field] = new_val
+                else:
+                    new_val = str(new_raw)
+                    old_disp = str(old_raw) if old_raw is not None else "—"
+                    new_disp = new_val.replace("_", " ").title() if field in ("delivery_type", "schedule", "type") else new_val
+                    old_disp_pretty = old_disp.replace("_", " ").title() if field in ("delivery_type", "schedule", "type") else old_disp
+                    clean_changes[field] = new_val
+                    old_disp = old_disp_pretty
+                rows.append({"label": LABELS.get(field, field.title()), "old": old_disp, "new": new_disp})
+
+            if not rows:
+                return None
+
+            diff = {"rows": rows} if len(rows) > 1 else {"label": rows[0]["label"], "old": rows[0]["old"], "new": rows[0]["new"]}
+            fields_summary = ", ".join(LABELS.get(f, f) for f in clean_changes)
+            summary = f"Edit '{existing.get('name', service_name)}' — update: {fields_summary}"
+
+            action = await supabase_service.create_agent_action(
+                conv_id, user_id,
+                action_type="edit_service",
+                action_params={"service_id": service_id, "changes": clean_changes},
+                old_value={f: existing.get(f) for f in clean_changes},
+                new_value=clean_changes,
+            )
+            action["diff"] = diff
+            action["summary_text"] = summary
+            return action
+
         return None
     except Exception:
         return None
@@ -922,6 +1248,12 @@ async def execute_confirmed_action(action_id: str, user_id: str) -> dict:
                 params["service_id"], user_id, {field: cast_val}
             )
             result = f"Updated service {field} to '{new_val}' successfully."
+            await supabase_service.create_notification(
+                user_id, "service_updated",
+                "Service Updated",
+                result,
+                {"path": "/services"},
+            )
 
         elif action_type == "toggle_service_active":
             await supabase_service.update_user_service_field(
@@ -929,6 +1261,12 @@ async def execute_confirmed_action(action_id: str, user_id: str) -> dict:
             )
             state = "activated" if params["active"] else "deactivated"
             result = f"Service {state} successfully."
+            await supabase_service.create_notification(
+                user_id, "service_updated",
+                f"Service {state.capitalize()}",
+                f"Your service has been {state}",
+                {"path": "/services"},
+            )
 
         elif action_type == "mark_bill_paid":
             await supabase_service.mark_bill_paid(
@@ -938,12 +1276,148 @@ async def execute_confirmed_action(action_id: str, user_id: str) -> dict:
             )
             state = "paid" if params["is_paid"] else "unpaid"
             result = f"Bill marked as {state} successfully."
+            if params.get("is_paid"):
+                await supabase_service.create_notification(
+                    user_id, "payment_recorded",
+                    "Payment Recorded",
+                    result,
+                    {"path": "/bills"},
+                )
 
         elif action_type == "update_calendar_day":
             await supabase_service.upsert_service_confirmation(
                 params["service_id"], user_id, params["date"], params["status"]
             )
             result = f"Calendar updated: {params['date']} → {params['status']}."
+
+        elif action_type == "generate_bill":
+            from app.routers.bills import _build_bill_payload, _send_bill_email_via_edge
+            from app.services.llm_bill_service import generate_bill_insights
+
+            service_ids = params["service_ids"]
+            year_month = params["year_month"]
+            send_email = bool(params.get("send_email", False))
+
+            services = await supabase_service.get_services_by_ids(user_id, service_ids)
+            if not services:
+                raise ValueError("Services not found.")
+
+            confirmations = await supabase_service.get_confirmations_for_month_services(
+                user_id, year_month, service_ids
+            )
+
+            year_i, month_i = map(int, year_month.split("-"))
+            month_name = datetime(year_i, month_i, 1).strftime("%B %Y")
+
+            # Build items for LLM (same logic as /bills/generate route)
+            items_for_llm = []
+            for svc in services:
+                sid = svc["id"]
+                price = float(svc.get("price") or 0)
+                delivery_type = svc.get("delivery_type", "home_delivery")
+                confs = [c for c in confirmations if c.get("service_id") == sid]
+                delivered = [c for c in confs if c.get("status") == "delivered"]
+                skipped = [c for c in confs if c.get("status") == "skipped"]
+                if delivery_type in ("subscription", "payment", "visit_based"):
+                    service_total = price
+                elif delivery_type == "utility":
+                    service_total = price if delivered else 0.0
+                else:
+                    service_total = sum(float(c.get("custom_amount") or price) for c in delivered)
+                items_for_llm.append({
+                    "service": svc.get("name", ""),
+                    "icon": svc.get("icon", "package"),
+                    "schedule": svc.get("type", "daily"),
+                    "delivery_type": delivery_type,
+                    "days_delivered": len(delivered),
+                    "days_skipped": len(skipped),
+                    "total": service_total,
+                })
+
+            total_est = sum(i["total"] for i in items_for_llm)
+            ai_summary, recommendation, ai_model_used, refined_note = await generate_bill_insights(
+                user_id, month_name, items_for_llm, total_est, "INR", None
+            )
+            payload, total_amount, bill_title = _build_bill_payload(
+                year_month, services, confirmations,
+                ai_summary, recommendation, ai_model_used, refined_note
+            )
+            row = await supabase_service.insert_generated_bill(
+                user_id=user_id,
+                year_month=year_month,
+                service_ids=service_ids,
+                payload=payload,
+                total_amount=total_amount,
+                currency="INR",
+                ai_model_used=ai_model_used,
+                bill_title=bill_title,
+                custom_note=refined_note,
+            )
+
+            if row:
+                svc_label = ", ".join(s.get("name", "") for s in services[:2])
+                if len(services) > 2:
+                    svc_label += f" +{len(services) - 2} more"
+                await supabase_service.create_notification(
+                    user_id, "bill_added",
+                    f"Bill generated: {bill_title}",
+                    f"₹{total_amount:.2f} for {month_name}" + (f" — {svc_label}" if svc_label else ""),
+                    {"path": "/bills"},
+                )
+
+            if send_email and row:
+                try:
+                    profile = await supabase_service.get_user_profile(user_id)
+                    if profile:
+                        to_email = profile.get("email") or ""
+                        if to_email and profile.get("email_notifications", True):
+                            await _send_bill_email_via_edge(
+                                to_email=to_email,
+                                to_name=profile.get("display_name") or profile.get("full_name") or "there",
+                                user_name=profile.get("display_name") or profile.get("full_name") or "there",
+                                month=month_name,
+                                total=total_amount,
+                                currency="INR",
+                                bill_title=bill_title,
+                                services_count=len(services),
+                                ai_summary=ai_summary,
+                                recommendation=recommendation,
+                                services=[{"name": i["service"], "total": i["total"]} for i in items_for_llm],
+                            )
+                except Exception as email_err:
+                    logger.warning("[AGENT] bill email failed: %s", email_err)
+
+            result = f"Bill generated: {bill_title} — Total: ₹{total_amount:.2f}."
+
+        elif action_type == "create_service":
+            svc = await supabase_service.create_user_service(user_id, params)
+            if not svc:
+                raise ValueError("Service creation failed.")
+            await supabase_service.create_notification(
+                user_id, "service_created",
+                "New Service Added",
+                f"\"{params.get('name', 'Service')}\" has been set up in your account",
+                {"path": "/services"},
+            )
+            result = f"Service '{params.get('name')}' created successfully."
+
+        elif action_type == "edit_service":
+            service_id = params["service_id"]
+            changes: dict = params["changes"]
+            if not changes:
+                raise ValueError("No changes to apply.")
+            updated = await supabase_service.update_user_service_field(service_id, user_id, changes)
+            if not updated:
+                raise ValueError("Service edit failed — service not found.")
+            svc_name = updated.get("name") or service_id
+            changed_fields = ", ".join(changes.keys())
+            await supabase_service.create_notification(
+                user_id, "service_updated",
+                f"Service Updated: {svc_name}",
+                f"Updated {changed_fields}",
+                {"path": "/services"},
+            )
+            result = f"Service '{svc_name}' updated ({changed_fields}) successfully."
 
         else:
             raise ValueError(f"Unknown action type: {action_type}")

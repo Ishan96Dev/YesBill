@@ -916,6 +916,21 @@ class SupabaseService:
         except APIError:
             return None
 
+    async def get_service_by_name(self, user_id: str, name: str) -> Optional[Dict[str, Any]]:
+        """Find a user service by name (case-insensitive, first match)."""
+        try:
+            response = (
+                self.client.table("user_services")
+                .select("*")
+                .eq("user_id", user_id)
+                .ilike("name", name)
+                .limit(1)
+                .execute()
+            )
+            return response.data[0] if response.data else None
+        except APIError:
+            return None
+
     async def update_user_service_field(
         self, service_id: str, user_id: str, fields: dict
     ) -> Optional[Dict[str, Any]]:
@@ -931,6 +946,37 @@ class SupabaseService:
             return response.data[0] if response.data else None
         except APIError:
             return None
+
+    async def create_user_service(
+        self, user_id: str, fields: dict
+    ) -> Optional[Dict[str, Any]]:
+        """Create a new consumer-role user service and return the created row."""
+        try:
+            response = (
+                self.client.table("user_services")
+                .insert({
+                    "user_id": user_id,
+                    "name": fields["name"],
+                    "type": fields.get("type", "daily"),
+                    "price": round(float(fields.get("price", 0)), 2),
+                    "schedule": fields.get("schedule", "morning"),
+                    "icon": fields.get("icon", "package"),
+                    "notes": fields.get("notes") or "",
+                    "delivery_type": fields.get("delivery_type", "home_delivery"),
+                    "billing_day": int(fields.get("billing_day") or 1),
+                    "billing_month": int(fields.get("billing_month") or 1),
+                    "auto_generate_bill": fields.get("auto_generate_bill", True),
+                    "active": True,
+                    "service_role": "consumer",
+                    "start_date": fields.get("start_date") or None,
+                    "end_date": fields.get("end_date") or None,
+                })
+                .select()
+                .execute()
+            )
+            return response.data[0] if response.data else None
+        except APIError as e:
+            raise Exception(f"Database error: {str(e)}")
 
     async def upsert_service_confirmation(
         self, service_id: str, user_id: str, date_str: str, conf_status: str

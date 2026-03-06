@@ -36,6 +36,7 @@ export default function Roadmap() {
         "Customer-facing bill view link",
         "Bulk day marking via calendar",
         "Pin AI conversations",
+        "Agent: Create & manage services for Provider role",
       ]
     },
     {

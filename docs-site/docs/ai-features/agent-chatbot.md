@@ -31,19 +31,16 @@ Type your question or command in the chat input. The Agent understands natural l
 
 ![AI agent action confirmation](/img/screenshots/Intercom-Agentic-AI-Chat-02.png)
 
-- "Mark today's milk as delivered"
-- "Mark yesterday's tiffin as skipped"
-- "Add ₹80 to my milk daily rate"
+The Agent can perform write actions on your account — generating bills, creating or editing services, marking deliveries, and more. Every action shows a confirmation card before anything is saved.
 
-When the Agent wants to take an action, it shows a **confirmation card**:
+See **[Agent Actions](/ai-features/agent-actions)** for the full list with examples and tips:
 
-```
-Agent: I'll mark today's milk delivery as Delivered.
-
-[✅ Confirm]  [❌ Cancel]
-```
-
-You must confirm before any changes are made.
+- [Generate Bill](/ai-features/agent-actions#generate-bill)
+- [Create Service](/ai-features/agent-actions#create-service)
+- [Edit Service](/ai-features/agent-actions#edit-service)
+- [Toggle Service Active/Inactive](/ai-features/agent-actions#toggle-service-active--inactive)
+- [Mark Bill as Paid](/ai-features/agent-actions#mark-bill-as-paid--unpaid)
+- [Update Calendar Day](/ai-features/agent-actions#update-calendar-day)
 
 ## Conversation History
 
