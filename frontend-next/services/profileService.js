@@ -333,12 +333,27 @@ export const profileService = {
   async getOnboardingStatus(userId) {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('onboarding_completed, onboarding_skipped_steps, ai_config_reminder_shown')
+      .select('onboarding_completed, onboarding_skipped_steps, ai_config_reminder_shown, full_name, country')
       .eq('id', userId)
       .maybeSingle()
 
     if (error) throw error
-    return data || { onboarding_completed: false, onboarding_skipped_steps: {}, ai_config_reminder_shown: false }
+    if (!data) return { onboarding_completed: false, onboarding_skipped_steps: {}, ai_config_reminder_shown: false }
+
+    // If onboarding_completed is not set but the user has configured their profile
+    // (has full_name + country), treat them as onboarded and silently update the flag.
+    // This handles users who completed setup before this column was tracked.
+    if (!data.onboarding_completed && data.full_name && data.country) {
+      supabase
+        .from('user_profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', userId)
+        .then(() => {})
+        .catch(() => {})
+      return { ...data, onboarding_completed: true }
+    }
+
+    return data
   },
 
   /**

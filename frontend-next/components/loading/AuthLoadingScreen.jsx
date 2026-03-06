@@ -41,7 +41,7 @@ export default function AuthLoadingScreen({
       glowColor: 'rgba(59, 130, 246, 0.15)',
     },
     logout: {
-      title: 'See you soon!',
+      title: userName ? `See you soon, ${userName}!` : 'See you soon!',
       subtitle: message || 'Signing you out safely...',
       accentColor: 'from-indigo-500 to-purple-600',
       dotColor: '#6366F1',

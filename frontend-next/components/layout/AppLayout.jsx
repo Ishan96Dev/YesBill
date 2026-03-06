@@ -265,7 +265,7 @@ export default function AppLayout({
   ];
 
   if (isLoggingOut) {
-    return <AuthLoadingScreen type="logout" message="Signing you out" />;
+    return <AuthLoadingScreen type="logout" message="Signing you out safely..." userName={displayName || ''} />;
   }
 
   return (

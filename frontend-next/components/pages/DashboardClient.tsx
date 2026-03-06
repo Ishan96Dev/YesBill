@@ -240,6 +240,8 @@ export default function Dashboard() {
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     setCurrentMonth(ym);
 
+    const uid = user?.id || localStorage.getItem("user_id") || "";
+
     const load = async () => {
       try {
         const [stats, todayData, monthData] = await Promise.all([
@@ -259,25 +261,23 @@ export default function Dashboard() {
       }
     };
     load();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // -- Profile + AI reminder (runs when user auth state is available) --------
-  useEffect(() => {
-    const uid = user?.id;
-    if (!uid) return;
-    profileService.getProfile(uid).then((profile) => {
-      setUserName(profile?.display_name || profile?.full_name || "");
-      if (
-        profile?.onboarding_skipped_steps?.ai_config === true &&
-        profile?.ai_config_reminder_shown !== true
-      ) {
-        aiSettingsService.getAllSettings(uid).then((allAI) => {
-          const hasKey = allAI.some((s) => s.api_key_encrypted);
-          if (!hasKey) setShowAIReminder(true);
-        }).catch(() => { setShowAIReminder(true); });
-      }
-    }).catch(() => { /* silent — name is optional */ });
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Profile + AI reminder — use synchronous localStorage uid so it fires immediately
+    if (uid) {
+      profileService.getProfile(uid).then((profile) => {
+        setUserName(profile?.display_name || profile?.full_name || "");
+        if (
+          profile?.onboarding_skipped_steps?.ai_config === true &&
+          profile?.ai_config_reminder_shown !== true
+        ) {
+          aiSettingsService.getAllSettings(uid).then((allAI) => {
+            const hasKey = allAI.some((s) => s.api_key_encrypted);
+            if (!hasKey) setShowAIReminder(true);
+          }).catch(() => { setShowAIReminder(true); });
+        }
+      }).catch(() => { /* silent — name is optional */ });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Today's services (filter monthly to billing day only) -----------------
   const todayServices = useMemo(() => {
@@ -385,7 +385,7 @@ export default function Dashboard() {
 
   const dismissAIReminder = async (goToSettings = false) => {
     setShowAIReminder(false);
-    const uid = user?.id;
+    const uid = user?.id || localStorage.getItem("user_id") || "";
     if (uid) {
       profileService.updateProfile(uid, { ai_config_reminder_shown: true }).catch(() => {});
     }

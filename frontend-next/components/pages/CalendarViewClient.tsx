@@ -48,7 +48,7 @@ export default function CalendarView() {
   const { toast } = useToast();
   const { user, profile, loading: authLoading } = useUser();
   const { isToday: isTodayInTz } = useTimezone();
-  const pageReady = usePageReady(1500, !authLoading);
+  const pageReady = usePageReady(500, !authLoading);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Services with month stats

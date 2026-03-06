@@ -73,27 +73,66 @@ export const aiSettingsService = {
 
   /**
    * Save (upsert) AI settings for a provider
+   * Saves directly to Supabase first for reliability; falls back to backend API if needed.
    * @param {string} userId - User's ID
    * @param {object} settings - { provider, api_key_encrypted, selected_model, enable_insights }
    * @returns {Promise<object>} Saved settings
    */
   async saveSettings(userId, settings) {
+    const provider = settings.provider || 'openai'
+    const upsertData = {
+      user_id: userId,
+      provider,
+      api_key_encrypted: settings.api_key_encrypted || '',
+      selected_model: settings.selected_model || '',
+      enable_insights: settings.enable_insights ?? true,
+      is_key_valid: settings.is_key_valid ?? false,
+    }
+    // Include reasoning effort only if the column exists (added in migration 023)
+    if (settings.default_reasoning_effort !== undefined) {
+      upsertData.default_reasoning_effort = settings.default_reasoning_effort || 'none'
+    }
+
+    // Primary path: save directly to Supabase (no backend dependency)
     try {
-      const response = await api.post('/ai/settings', {
-        provider: settings.provider || 'openai',
-        api_key: settings.api_key_encrypted,
-        selected_model: settings.selected_model,
-        enable_insights: settings.enable_insights ?? true,
-        default_reasoning_effort: settings.default_reasoning_effort || 'none',
-      })
+      const { data, error } = await supabase
+        .from('user_ai_settings')
+        .upsert(upsertData, { onConflict: 'user_id,provider' })
+        .select()
+        .single()
+      if (error) throw error
       return {
-        ...response.data,
+        ...data,
         api_key_encrypted: settings.api_key_encrypted,
-        is_key_valid: settings.is_key_valid ?? false,
+        is_key_valid: settings.is_key_valid ?? data.is_key_valid ?? false,
       }
-    } catch (error) {
-      console.error('Error saving AI settings via backend:', error)
-      throw error
+    } catch (supabaseError) {
+      // If reasoning_effort column missing, retry without it
+      if (supabaseError?.message?.includes('default_reasoning_effort')) {
+        const { default_reasoning_effort, ...safeData } = upsertData
+        const { data, error } = await supabase
+          .from('user_ai_settings')
+          .upsert(safeData, { onConflict: 'user_id,provider' })
+          .select()
+          .single()
+        if (!error && data) {
+          return { ...data, api_key_encrypted: settings.api_key_encrypted, is_key_valid: settings.is_key_valid ?? false }
+        }
+      }
+      // Fallback: try backend API (may be sleeping on Render free tier)
+      try {
+        const response = await api.post('/ai/settings', {
+          provider,
+          api_key: settings.api_key_encrypted,
+          selected_model: settings.selected_model,
+          enable_insights: settings.enable_insights ?? true,
+          default_reasoning_effort: settings.default_reasoning_effort || 'none',
+        })
+        return { ...response.data, api_key_encrypted: settings.api_key_encrypted, is_key_valid: settings.is_key_valid ?? false }
+      } catch (backendError) {
+        console.error('Error saving AI settings (both paths failed):', backendError)
+        throw new Error('Could not save AI settings. Please try again.')
+      }
     }
   },
 
@@ -105,20 +144,36 @@ export const aiSettingsService = {
    * @returns {Promise<object>} Updated settings
    */
   async updateSettings(userId, provider, updates) {
+    // Primary: direct Supabase update
     try {
-      const response = await api.patch(`/ai/settings/${provider}`, {
-        api_key: updates.api_key,
-        selected_model: updates.selected_model,
-        enable_insights: updates.enable_insights,
-        default_reasoning_effort: updates.default_reasoning_effort,
-      })
-      return {
-        ...response.data,
-        api_key_encrypted: updates.api_key || '',
+      const updateData = {}
+      if (updates.api_key !== undefined) updateData.api_key_encrypted = updates.api_key
+      if (updates.selected_model !== undefined) updateData.selected_model = updates.selected_model
+      if (updates.enable_insights !== undefined) updateData.enable_insights = updates.enable_insights
+      if (updates.default_reasoning_effort !== undefined) updateData.default_reasoning_effort = updates.default_reasoning_effort
+      const { data, error } = await supabase
+        .from('user_ai_settings')
+        .update(updateData)
+        .eq('user_id', userId)
+        .eq('provider', provider)
+        .select()
+        .single()
+      if (error) throw error
+      return { ...data, api_key_encrypted: updates.api_key || data.api_key_encrypted || '' }
+    } catch (supabaseError) {
+      // Fallback to backend API
+      try {
+        const response = await api.patch(`/ai/settings/${provider}`, {
+          api_key: updates.api_key,
+          selected_model: updates.selected_model,
+          enable_insights: updates.enable_insights,
+          default_reasoning_effort: updates.default_reasoning_effort,
+        })
+        return { ...response.data, api_key_encrypted: updates.api_key || '' }
+      } catch (backendError) {
+        console.error('Error updating AI settings via backend:', backendError)
+        throw backendError
       }
-    } catch (error) {
-      console.error('Error updating AI settings via backend:', error)
-      throw error
     }
   },
 
