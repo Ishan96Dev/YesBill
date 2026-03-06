@@ -20,7 +20,9 @@ export default function AuthLoadingScreen({
 }) {
   const variants = {
     login: {
-      title: userName ? `Welcome back, ${userName}!` : 'Welcome back!',
+      title: userName
+        ? <>Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">{userName}</span>!</>
+        : 'Welcome back!',
       subtitle: message || 'Signing you in...',
       accentColor: 'from-indigo-500 to-purple-600',
       dotColor: '#6366F1',
@@ -41,7 +43,9 @@ export default function AuthLoadingScreen({
       glowColor: 'rgba(59, 130, 246, 0.15)',
     },
     logout: {
-      title: userName ? `See you soon, ${userName}!` : 'See you soon!',
+      title: userName
+        ? <>See you soon, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">{userName}</span>!</>
+        : 'See you soon!',
       subtitle: message || 'Signing you out safely...',
       accentColor: 'from-indigo-500 to-purple-600',
       dotColor: '#6366F1',

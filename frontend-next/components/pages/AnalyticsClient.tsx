@@ -402,7 +402,7 @@ function AIUsageTab() {
 // --- Main Analytics Page -----------------------------------
 export default function Analytics() {
   const { loading: authLoading } = useUser();
-  const pageReady = usePageReady(500, !authLoading);
+  const pageReady = usePageReady(0, !authLoading);
   const { tab: urlTab } = useParams();
   const router = useRouter();
 

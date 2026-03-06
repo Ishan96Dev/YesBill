@@ -121,8 +121,8 @@ export default function MarkdownRenderer({ content, className = "", compact = fa
   }, [router]);
 
   const proseClass = compact
-    ? "prose prose-xs max-w-none prose-p:my-0.5 prose-ul:my-0.5 prose-li:my-0 prose-headings:my-1 text-gray-800"
-    : "prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-2 text-gray-800";
+    ? "prose prose-xs max-w-none prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0 prose-headings:my-1 prose-headings:text-gray-800 prose-h1:text-sm prose-h2:text-sm prose-h3:text-xs prose-strong:text-gray-800 prose-em:text-gray-700 prose-li:marker:text-gray-400 text-gray-800"
+    : "prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2 prose-headings:text-gray-800 prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-strong:text-gray-800 prose-em:text-gray-700 prose-li:marker:text-gray-400 text-gray-800";
 
   return (
     <div className={`${proseClass} ${className}`}>

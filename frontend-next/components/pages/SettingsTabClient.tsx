@@ -557,7 +557,7 @@ export default function Settings() {
   };
 
   // Page-level loading gate (shows branded loading screen briefly)
-  const pageReady = usePageReady(500, !loading);
+  const pageReady = usePageReady(0, !loading);
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },

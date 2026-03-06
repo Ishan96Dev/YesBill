@@ -6,7 +6,7 @@ import { assetUrl } from "@/lib/utils";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Brain, ChevronDown } from "lucide-react";
+import { MessageSquare, Brain, ChevronDown, Check } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import AppLoadingScreen from "@/components/loading/AppLoadingScreen";
 import { useToast } from "@/components/ui/toaster-custom";
@@ -665,7 +665,7 @@ function ReasoningEffortSelector({ value, onChange, availableLevels }) {
               <Brain className={`w-3.5 h-3.5 flex-shrink-0 ${o.value === value ? "text-violet-500" : "text-gray-300"}`} />
               <span className="flex-1">{o.label}</span>
               {o.value === value && (
-                <span className="text-violet-500 text-xs font-bold">?</span>
+                <Check className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" />
               )}
             </button>
           ))}
