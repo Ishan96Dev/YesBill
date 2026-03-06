@@ -2007,8 +2007,8 @@ export default function Settings() {
                                   {(() => {
                                     const probe = modelProbeMap[selectedProvider]?.[model.id];
                                     if (!probe) return null;
-                                    if (probe.status === 'available') return <span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" title="Available" />;
-                                    if (probe.status === 'unavailable') return <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" title={probe.message || 'Unavailable'} />;
+                                    if (probe.status === 'available') return <WithTooltip tip="Available" side="right"><span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" /></WithTooltip>;
+                                    if (probe.status === 'unavailable') return <WithTooltip tip={probe.message || 'Unavailable'} side="right"><span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" /></WithTooltip>;
                                     return null;
                                   })()}
                                 </div>

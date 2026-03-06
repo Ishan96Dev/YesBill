@@ -783,6 +783,7 @@ export default function Services() {
                       {iconOptions.map((iconOption) => {
                         const IconComponent = iconOption.icon;
                         return (
+                          <WithTooltip tip={iconOption.label} side="top">
                           <button
                             key={iconOption.value}
                             type="button"
@@ -792,13 +793,13 @@ export default function Services() {
                                 ? "border-primary bg-primary/5"
                                 : "border-gray-200 hover:border-gray-300"
                             }`}
-                            title={iconOption.label}
                           >
                             <IconComponent className="w-4 h-4 text-gray-700 shrink-0" />
                             <span className="text-xs text-gray-500 truncate w-full text-center leading-tight">
                               {iconOption.label.split("/")[0]}
                             </span>
                           </button>
+                          </WithTooltip>
                         );
                       })}
                     </div>

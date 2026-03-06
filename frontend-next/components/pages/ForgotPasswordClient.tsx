@@ -76,9 +76,11 @@ export default function ForgotPassword() {
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
-                    Email
-                  </label>
+                  <WithTooltip tip="Enter your registered email address" side="right">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-default" htmlFor="email">
+                      Email
+                    </label>
+                  </WithTooltip>
                   <Input
                     id="email"
                     type="email"

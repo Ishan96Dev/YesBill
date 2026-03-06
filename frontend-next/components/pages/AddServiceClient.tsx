@@ -55,6 +55,7 @@ import { useUser } from "@/hooks/useUser";
 import { servicesService } from "@/services/dataService";
 import { generatedBillsAPI } from "@/services/api";
 import { DatePicker, strToDate, dateToStr } from "@/components/ui/DatePicker";
+import { WithTooltip } from "@/components/ui/tooltip";
 
 export default function AddService() {
   const router = useRouter();
@@ -412,6 +413,7 @@ export default function AddService() {
                 {iconOptions.map((iconOption) => {
                   const IconComponent = iconOption.icon;
                   return (
+                    <WithTooltip tip={iconOption.label} side="top">
                     <button
                       key={iconOption.value}
                       type="button"
@@ -421,13 +423,13 @@ export default function AddService() {
                           ? "border-primary bg-primary/5 shadow-lg shadow-primary/20"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
-                      title={iconOption.label}
                     >
                       <IconComponent className="w-5 h-5 text-gray-700 shrink-0" />
                       <span className="text-xs text-gray-500 truncate w-full text-center leading-tight">
                         {iconOption.label.split("/")[0]}
                       </span>
                     </button>
+                    </WithTooltip>
                   );
                 })}
               </div>

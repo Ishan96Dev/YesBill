@@ -280,9 +280,11 @@ export default function Signup() {
 
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="relative w-full">
-                <span className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${fieldIconClass('name')}`}>
-                  <User className="w-5 h-5" />
-                </span>
+                <WithTooltip tip="Full name" side="right">
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${fieldIconClass('name')}`}>
+                    <User className="w-5 h-5" />
+                  </span>
+                </WithTooltip>
                 <input
                   placeholder="Full Name"
                   value={formData.name}
@@ -308,9 +310,11 @@ export default function Signup() {
               )}
 
               <div className="relative w-full">
-                <span className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${fieldIconClass('email')}`}>
-                  <Mail className="w-5 h-5" />
-                </span>
+                <WithTooltip tip="Email address" side="right">
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${fieldIconClass('email')}`}>
+                    <Mail className="w-5 h-5" />
+                  </span>
+                </WithTooltip>
                 <input
                   type="email"
                   placeholder="Email address"
@@ -337,9 +341,11 @@ export default function Signup() {
               )}
 
               <div className="relative w-full">
-                <span className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${fieldIconClass('password')}`}>
-                  <Lock className="w-5 h-5" />
-                </span>
+                <WithTooltip tip="Password (min. 6 characters)" side="right">
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${fieldIconClass('password')}`}>
+                    <Lock className="w-5 h-5" />
+                  </span>
+                </WithTooltip>
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Create password"
@@ -365,15 +371,17 @@ export default function Signup() {
               <PasswordStrengthBar password={formData.password} />
 
               <div className="relative w-full">
-                <span className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${
-                  formData.confirmPassword
-                    ? formData.confirmPassword === formData.password
-                      ? 'text-emerald-500'
-                      : 'text-red-400'
-                    : 'text-gray-400'
-                }`}>
-                  <Lock className="w-5 h-5" />
-                </span>
+                <WithTooltip tip="Confirm password" side="right">
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${
+                    formData.confirmPassword
+                      ? formData.confirmPassword === formData.password
+                        ? 'text-emerald-500'
+                        : 'text-red-400'
+                      : 'text-gray-400'
+                  }`}>
+                    <Lock className="w-5 h-5" />
+                  </span>
+                </WithTooltip>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm password"
