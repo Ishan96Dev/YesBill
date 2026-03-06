@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AuthLoadingScreen from "@/components/loading/AuthLoadingScreen";
 import { profileService } from "@/services/profileService";
+import { setWelcomeTransition } from "@/lib/welcomeSession";
 
 async function getDestination(userId) {
   try {
@@ -66,9 +67,23 @@ export default function AuthCallback() {
   useEffect(() => {
     let mounted = true;
 
-    const routeToDestination = async (userId) => {
+    // Stores a welcome transition config in sessionStorage then navigates immediately.
+    // The root-layout WelcomeOverlay picks up the flag and renders WelcomeScreen
+    // on the destination page so the full animation plays without interruption.
+    const showWelcomeAndRoute = async (user, userId) => {
       const destination = await getDestination(userId);
-      if (mounted) router.replace(destination);
+      if (!mounted) return;
+      const isNewUser = destination === '/setup';
+      const name =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.email?.split('@')[0] ||
+        'User';
+      // Prefetch bundle so the route swap is instant
+      router.prefetch(destination);
+      setStatus('success'); // stops the 20 s timeout
+      setWelcomeTransition({ name, isNewUser });
+      router.replace(destination);
     };
 
     const redirectLoginWithError = (message, delay = 3000) => {
@@ -126,13 +141,12 @@ export default function AuthCallback() {
             if (setErrorResult) throw setErrorResult;
             if (data?.session) {
               if (!mounted) return;
-              setStatus("success");
               persistSession(data.session);
               if (tokenType === "recovery") {
                 router.replace("/auth/reset-password");
                 return;
               }
-              await routeToDestination(data.session.user.id);
+              await showWelcomeAndRoute(data.session.user, data.session.user.id);
               return;
             }
           } catch (setSessionErr) {
@@ -160,13 +174,12 @@ export default function AuthCallback() {
               const { data: { session: abortSession } } = await supabase.auth.getSession();
               if (abortSession?.user) {
                 if (!mounted) return;
-                setStatus("success");
                 persistSession(abortSession);
                 if (codeType === "recovery") {
                   router.replace("/auth/reset-password");
                   return;
                 }
-                await routeToDestination(abortSession.user.id);
+                await showWelcomeAndRoute(abortSession.user, abortSession.user.id);
                 return;
               }
               // Session was not established — send to login; do NOT fall back to a
@@ -181,13 +194,12 @@ export default function AuthCallback() {
 
           if (data?.session?.user) {
             if (!mounted) return;
-            setStatus("success");
             persistSession(data.session);
             if (codeType === "recovery") {
               router.replace("/auth/reset-password");
               return;
             }
-            await routeToDestination(data.session.user.id);
+            await showWelcomeAndRoute(data.session.user, data.session.user.id);
             return;
           }
 
@@ -201,8 +213,7 @@ export default function AuthCallback() {
         const existing = await tryReadExistingSession();
         if (existing) {
           if (!mounted) return;
-          setStatus("success");
-          await routeToDestination(existing.user.id);
+          await showWelcomeAndRoute(existing.user, existing.user.id);
           return;
         }
         redirectLoginWithError("No authentication code found. Please try signing in again.");

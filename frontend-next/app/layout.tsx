@@ -4,6 +4,7 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/next'
 import { ToastProvider } from '@/components/ui/toaster-custom'
 import ErrorBoundaryWrapper from '@/components/ErrorBoundaryWrapper'
+import WelcomeOverlay from '@/components/loading/WelcomeOverlay'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -59,7 +60,13 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen font-sans selection:bg-primary/20 text-gray-900 bg-background">
         <ErrorBoundaryWrapper>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            {/* WelcomeOverlay persists across all route changes — shows the    */}
+            {/* branded welcome animation on the *destination* page so it is   */}
+            {/* never cut short when the source page (login/callback) unmounts. */}
+            <WelcomeOverlay />
+            {children}
+          </ToastProvider>
         </ErrorBoundaryWrapper>
         <Analytics />
       </body>

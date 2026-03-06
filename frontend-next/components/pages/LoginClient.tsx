@@ -18,8 +18,8 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import authService from "@/services/authService";
 import { profileService } from "@/services/profileService";
 import { useUser } from "@/hooks/useUser";
-import WelcomeScreen from "@/components/loading/WelcomeScreen";
 import AuthLoadingScreen from "@/components/loading/AuthLoadingScreen";
+import { setWelcomeTransition } from "@/lib/welcomeSession";
 import { supabase } from "@/lib/supabase";
 import { WithTooltip } from "@/components/ui/tooltip";
 
@@ -29,16 +29,12 @@ export default function Login() {
   const { toast } = useToast();
   const { user, profile, loading: authLoading, fullName } = useUser();
   const [loading, setLoading] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [isAuthenticating, setIsAuthenticating] = useState(false); // New state for actual login attempt
+  const [isAuthenticating, setIsAuthenticating] = useState(false); // Shows auth loading screen during login attempt
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [resendingEmail, setResendingEmail] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false });
   const hasLoginAttempt = useRef(false);
-  const loginUserId = useRef(null);
-  const resolvedNavTarget = useRef<string | null>(null);
 
   // Field validation helpers
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -111,58 +107,17 @@ export default function Login() {
   // Use ?redirect= path when sent from 401 so user returns to e.g. /bills
   // Skip redirect if we just came from logout — UNLESS user actively submitted login
   useEffect(() => {
-    if (!authLoading && user && !showWelcome && !isAuthenticating) {
+    if (!authLoading && user && !isAuthenticating) {
       const params = searchParams;
       const redirectTo = params.get('redirect');
       const target = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
       router.replace(target);
     }
-  }, [user, authLoading, router, searchParams, showWelcome, isAuthenticating]);
-
-  // Pre-resolve onboarding status + prefetch the destination the moment WelcomeScreen
-  // begins showing, so router.replace() is near-instant when onComplete fires.
-  useEffect(() => {
-    if (!showWelcome) return;
-    const params = searchParams;
-    const redirectTo = params.get('redirect');
-    const defaultTarget = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
-
-    const resolveTarget = async () => {
-      let target = defaultTarget;
-      try {
-        if (loginUserId.current) {
-          const status = await profileService.getOnboardingStatus(loginUserId.current);
-          if (!status?.onboarding_completed) target = '/setup';
-        }
-      } catch {}
-      resolvedNavTarget.current = target;
-      router.prefetch(target);
-    };
-    resolveTarget();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showWelcome]);
+  }, [user, authLoading, router, searchParams, isAuthenticating]);
 
   // Show verifying screen ONLY during active login attempt
   if (isAuthenticating) {
     return <AuthLoadingScreen type="verifying" message="Verifying your credentials" />;
-  }
-
-  // Show welcome screen after successful login
-  if (showWelcome) {
-    const params = searchParams;
-    const redirectTo = params.get('redirect');
-    const target = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
-    return (
-      <WelcomeScreen 
-        userName={userName}
-        isNewUser={false}
-        onComplete={() => {
-          // Target is pre-resolved via the showWelcome useEffect above.
-          // Fall back to computed target in case the async check didn't finish.
-          router.replace(resolvedNavTarget.current ?? target);
-        }}
-      />
-    );
   }
 
   const handleLogin = async (e) => {
@@ -174,16 +129,31 @@ export default function Login() {
     try {
       const result = await authService.signIn(formData.email, formData.password);
 
-      // Get user data to show personalized welcome
-      const userName = result.user?.user_metadata?.full_name || 
-                      result.user?.user_metadata?.name || 
-                      result.user?.email?.split('@')[0] || 
-                      'User';
-      
-      loginUserId.current = result.user?.id || null;
-      setIsAuthenticating(false); // Hide auth loading screen
-      setUserName(userName);
-      setShowWelcome(true);
+      const name =
+        result.user?.user_metadata?.full_name ||
+        result.user?.user_metadata?.name ||
+        result.user?.email?.split('@')[0] ||
+        'User';
+      const userId = result.user?.id;
+
+      // Determine destination while AuthLoadingScreen is still showing.
+      const redirectTo = searchParams.get('redirect');
+      let destination =
+        redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+          ? redirectTo
+          : '/dashboard';
+      try {
+        if (userId) {
+          const status = await profileService.getOnboardingStatus(userId);
+          if (!status?.onboarding_completed) destination = '/setup';
+        }
+      } catch { /* fall through to /dashboard */ }
+
+      // Store welcome config for WelcomeOverlay (in root layout) to pick up
+      // after navigation completes — ensures the full animation plays on the
+      // destination page rather than being cut short when LoginClient unmounts.
+      setWelcomeTransition({ name, isNewUser: destination === '/setup' });
+      router.replace(destination);
 
     } catch (err) {
       console.error("Login error:", err);
