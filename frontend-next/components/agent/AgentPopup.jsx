@@ -330,6 +330,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
   const bottomRef = useRef(null);
   const skipConvFetchRef = useRef(false); // prevents useEffect overwriting in-progress messages when handleSend creates a new conv
   const lastAnalyticsRef = useRef(null); // stores analytics from last done event (for action_required flow)
+  const isSubmittingRef = useRef(false); // blocks re-entry during the async gap before setStreaming(true)
   const { displayName, avatarUrl } = useUser();
 
   // Check if AI is configured and capture the user's default reasoning effort preference
@@ -431,7 +432,9 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
-    if (!trimmed || streaming || waitingForConfirm) return;
+    if (!trimmed || streaming || waitingForConfirm || isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
 
     let activeConvId = convId;
     if (!activeConvId) {
@@ -445,6 +448,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
           ...prev,
           { role: "assistant", content: "Failed to start session. Please try again.", id: Date.now() },
         ]);
+        isSubmittingRef.current = false;
         return;
       }
     }
@@ -617,6 +621,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
       ]);
     } finally {
       if (flushFrame) cancelAnimationFrame(flushFrame);
+      isSubmittingRef.current = false;
       setStreaming(false);
     }
   }, [input, streaming, waitingForConfirm, convId]);

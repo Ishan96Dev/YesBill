@@ -52,6 +52,7 @@ export default function ChatPage() {
   // This allows re-fetching when activeConvId is preserved but messages were
   // cleared (e.g. after Vite HMR resets component state).
   const hasLoadedMessagesRef = useRef(false);
+  const isSubmittingRef = useRef(false); // blocks re-entry during the async gap before setStreaming(true)
   useEffect(() => {
     hasLoadedMessagesRef.current = messages.length > 0;
   }, [messages]);
@@ -192,11 +193,13 @@ export default function ChatPage() {
   };
 
   const handleSend = async (content, contextTags) => {
-    if (streaming) return;
+    if (streaming || isSubmittingRef.current) return;
     if (modelBlockedReason) {
       toast({ title: "Model unavailable", description: modelBlockedReason, type: "error" });
       return;
     }
+
+    isSubmittingRef.current = true;
 
     let convId = activeConvId;
     if (!convId) {
@@ -208,6 +211,7 @@ export default function ChatPage() {
         convId = conv.id;
       } catch {
         toast({ title: "Error", description: "Could not start conversation", type: "error" });
+        isSubmittingRef.current = false;
         return;
       }
     }
@@ -379,6 +383,7 @@ export default function ChatPage() {
       toast({ title: "Connection Error", description: "Streaming failed. Please try again.", type: "error" });
     } finally {
       if (flushFrame) cancelAnimationFrame(flushFrame);
+      isSubmittingRef.current = false;
       setStreaming(false);
     }
   };
