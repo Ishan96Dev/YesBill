@@ -55,6 +55,40 @@ export const notificationService = {
   },
 
   /**
+   * Create a notification only if no notification of the same type already
+   * exists for this user. Prevents duplicates for "singleton" types like
+   * ai_config_incomplete that should never show more than once.
+   *
+   * @param {string} userId
+   * @param {string} type
+   * @param {string} title
+   * @param {string} [message]
+   * @param {object} [data]
+   * @returns {Promise<object|null>} Created notification, or null if already present
+   */
+  async createIfAbsent(userId, type, title, message = null, data = {}) {
+    if (!userId) return null
+
+    // DB-level existence check first
+    const { data: existing, error: checkError } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('type', type)
+      .limit(1)
+      .maybeSingle()
+
+    if (checkError) {
+      console.error('notificationService.createIfAbsent check error:', checkError.message)
+      // Fail-open: proceed with creation attempt
+    }
+
+    if (existing) return null // already present, skip
+
+    return this.create(userId, type, title, message, data)
+  },
+
+  /**
    * Create a new notification — respects the user's notification_prefs.
    * If the type is disabled in user_profiles.notification_prefs, the
    * notification is silently skipped.

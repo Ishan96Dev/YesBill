@@ -99,9 +99,18 @@ export default function AppLayout({
   // Filter out notification types the user has disabled
   const { notifications: allNotifs, unreadCount, markAsRead, markAllAsRead, deleteOne, loading: notifsLoading } =
     useNotifications(user?.id);
+
+  // Notification types where only one instance should ever be visible.
+  // Deduplicating at render-time cleans up any pre-existing DB duplicates without a migration.
+  const SINGLETON_NOTIF_TYPES = new Set(["ai_config_incomplete"]);
+  const dedupedNotifs = allNotifs.filter((n, idx, arr) => {
+    if (!SINGLETON_NOTIF_TYPES.has(n.type)) return true;
+    return arr.findIndex((x) => x.type === n.type) === idx; // keep only first (newest, array is sorted desc)
+  });
+
   const notifications = notifPrefs
-    ? allNotifs.filter((n) => notifPrefs[n.type] !== false)
-    : allNotifs;
+    ? dedupedNotifs.filter((n) => notifPrefs[n.type] !== false)
+    : dedupedNotifs;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -141,26 +150,20 @@ export default function AppLayout({
         const hasAiKey = settings?.some((s) => s.api_key_encrypted?.trim());
 
         if (hasAiKey) {
-          // AI IS configured — silently purge any stale "AI not configured" notifications.
-          // This handles the case where the user configured AI but the banner persists.
+          // AI IS configured — silently purge any stale "AI not configured" notifications
+          // (including any duplicates that may have slipped in).
           notificationService.deleteByType(user.id, "ai_config_incomplete").catch(() => {});
           return;
         }
 
-        // AI is NOT configured — create a notification (once, if not already present).
-        // Fresh DB check — don't rely on potentially-stale in-memory allNotifs
-        const freshNotifs = await notificationService.getAll(user.id).catch(() => []);
-        const alreadyNotified = freshNotifs.some(
-          (n) => n.type === "ai_config_incomplete"
-        );
-        if (!alreadyNotified) {
-          notificationService.create(
-            user.id, "ai_config_incomplete",
-            "AI not configured",
-            "Add an API key in Settings → AI Providers to start using AI features",
-            { path: "/settings" }
-          ).catch(() => { aiConfigNotifRef.current = false; });
-        }
+        // AI is NOT configured — use createIfAbsent to prevent duplicates even when
+        // multiple AppLayout instances race (React 18 concurrent rendering / navigation).
+        notificationService.createIfAbsent(
+          user.id, "ai_config_incomplete",
+          "AI not configured",
+          "Add an API key in Settings → AI Providers to start using AI features",
+          { path: "/settings" }
+        ).catch(() => { aiConfigNotifRef.current = false; });
       } catch {
         aiConfigNotifRef.current = false; // allow retry on error
       }

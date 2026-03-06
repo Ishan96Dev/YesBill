@@ -153,11 +153,30 @@ export default function AuthCallback() {
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             if (exchangeError.name === "AbortError") {
-              // AbortError: request was superseded. Fall through to existing-session check.
-            } else {
-              redirectLoginWithError(exchangeError.message || "Authentication failed. Please try again.");
+              // AbortError means the HTTP request was cancelled (e.g. React 18 strict-mode
+              // double-effect, or the user navigated away before the response arrived).
+              // The PKCE code may have been consumed server-side already — check whether
+              // Supabase already set a session for us before aborting.
+              const { data: { session: abortSession } } = await supabase.auth.getSession();
+              if (abortSession?.user) {
+                if (!mounted) return;
+                setStatus("success");
+                persistSession(abortSession);
+                if (codeType === "recovery") {
+                  router.replace("/auth/reset-password");
+                  return;
+                }
+                await routeToDestination(abortSession.user.id);
+                return;
+              }
+              // Session was not established — send to login; do NOT fall back to a
+              // potentially different pre-existing session (that would route the wrong user).
+              redirectLoginWithError("Authentication was interrupted. Please click the link in your email again.");
               return;
             }
+            // Non-abort error (expired link, invalid code, etc.)
+            redirectLoginWithError(exchangeError.message || "Authentication failed. Please try again.");
+            return;
           }
 
           if (data?.session?.user) {
@@ -171,22 +190,14 @@ export default function AuthCallback() {
             await routeToDestination(data.session.user.id);
             return;
           }
-        }
 
-        // No code / hash tokens — fall back to an existing active session.
-        if (!code && !accessToken) {
-          const existing = await tryReadExistingSession();
-          if (existing) {
-            if (!mounted) return;
-            setStatus("success");
-            await routeToDestination(existing.user.id);
-            return;
-          }
-          redirectLoginWithError("No authentication code found. Please try signing in again.");
+          // Code exchanged without error but no session returned (shouldn't normally happen).
+          redirectLoginWithError("No session created. Please try again.");
           return;
         }
 
-        // Code was present but exchange produced no session — try existing session as last resort.
+        // No code / hash tokens — fall back to an existing active session.
+        // This path handles direct /auth/callback visits without any auth parameters.
         const existing = await tryReadExistingSession();
         if (existing) {
           if (!mounted) return;
@@ -194,8 +205,7 @@ export default function AuthCallback() {
           await routeToDestination(existing.user.id);
           return;
         }
-
-        redirectLoginWithError("No session created. Please try again.");
+        redirectLoginWithError("No authentication code found. Please try signing in again.");
       } catch (err) {
         if (err?.name === "AbortError") return;
         redirectLoginWithError(err?.message || "Something went wrong. Please try again.");
