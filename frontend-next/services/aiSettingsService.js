@@ -183,11 +183,20 @@ export const aiSettingsService = {
    * @param {string} provider - Provider name
    */
   async deleteSettings(userId, provider) {
+    // Primary: delete directly from Supabase
+    const { error: supaErr } = await supabase
+      .from('user_ai_settings')
+      .delete()
+      .eq('user_id', userId)
+      .eq('provider', provider)
+    if (supaErr) {
+      console.warn('Supabase deleteSettings error:', supaErr.message)
+    }
+    // Also notify backend to clear any server-side cached state (ignore if unavailable)
     try {
       await api.delete(`/ai/settings/${provider}`)
-    } catch (error) {
-      console.error('Error deleting AI settings via backend:', error)
-      throw error
+    } catch (backendError) {
+      console.warn('Backend delete request failed (record removed from Supabase):', backendError.message)
     }
   },
 

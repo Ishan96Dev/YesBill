@@ -90,7 +90,42 @@ export const chatService = {
   // ── Models ──────────────────────────────────────────────
 
   async getModels() {
-    return request('GET', '/models')
+    try {
+      return await request('GET', '/models')
+    } catch (backendError) {
+      // Backend sleeping or CORS-blocked — build response from Supabase user_ai_settings
+      console.warn('chatService.getModels: backend unavailable, using Supabase fallback:', backendError.message)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id || localStorage.getItem('user_id') || ''
+        if (!userId) {
+          return { configured: false, provider: null, selected_model: null, selected_model_info: null, models: [], default_reasoning_effort: 'none' }
+        }
+        const { data } = await supabase
+          .from('user_ai_settings')
+          .select('provider, selected_model, default_reasoning_effort, api_key_encrypted')
+          .eq('user_id', userId)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (!data || !data.api_key_encrypted) {
+          return { configured: false, provider: null, selected_model: null, selected_model_info: null, models: [], default_reasoning_effort: 'none' }
+        }
+        const selectedModelInfo = data.selected_model
+          ? { id: data.selected_model, name: data.selected_model, availability_status: 'unknown' }
+          : null
+        return {
+          configured: true,
+          provider: data.provider,
+          selected_model: data.selected_model,
+          selected_model_info: selectedModelInfo,
+          models: [],
+          default_reasoning_effort: data.default_reasoning_effort || 'none',
+        }
+      } catch {
+        return { configured: false, provider: null, selected_model: null, selected_model_info: null, models: [], default_reasoning_effort: 'none' }
+      }
+    }
   },
 
   async probeModels(provider = null, forceRefresh = true) {

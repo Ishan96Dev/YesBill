@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,https://ishan96dev.github.io,https://yesbill.vercel.app"
+    # Regex to allow all YesBill Vercel preview deployments (auto-generated URLs)
+    CORS_ORIGIN_REGEX: str = r"https://yesbill[^.]*\.vercel\.app"
 
     # JWT (for additional backend tokens if needed)
     JWT_SECRET_KEY: str
