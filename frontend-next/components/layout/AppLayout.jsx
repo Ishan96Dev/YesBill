@@ -119,6 +119,8 @@ export default function AppLayout({
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const aiConfigNotifRef = useRef(false);
+  // Snapshot the display name at logout-start so resetUserStore() can't change it to 'User'
+  const logoutNameRef = useRef('');
 
   // ── Cross-tab logout: redirect when Supabase fires SIGNED_OUT on other tabs ──
   useEffect(() => {
@@ -240,6 +242,7 @@ export default function AppLayout({
   // ── Logout ──
   const handleLogout = async () => {
     setProfileOpen(false);
+    logoutNameRef.current = displayName || '';  // capture before resetUserStore clears it
     setIsLoggingOut(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     resetUserStore();
@@ -265,7 +268,7 @@ export default function AppLayout({
   ];
 
   if (isLoggingOut) {
-    return <AuthLoadingScreen type="logout" message="Signing you out safely..." userName={displayName || ''} />;
+    return <AuthLoadingScreen type="logout" message="Signing you out safely..." userName={logoutNameRef.current} />;
   }
 
   return (
