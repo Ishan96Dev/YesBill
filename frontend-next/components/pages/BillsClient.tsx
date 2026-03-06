@@ -1099,7 +1099,7 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
         </div>
       </div>
 
-      {/* Action Buttons */
+      {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 mt-8">
         <Button
           onClick={onDownloadPDF}
