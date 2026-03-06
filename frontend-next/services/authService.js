@@ -56,6 +56,14 @@ export const authService = {
       throw new Error("User creation failed - no user data returned");
     }
 
+    // Supabase email-enumeration protection: when an email already exists, signUp()
+    // returns a fake user with an empty identities array instead of an error.
+    // Detect this and surface a clear "already registered" error.
+    if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      console.warn("⚠️ signUp returned empty identities — email already registered:", email);
+      throw new Error("User already registered");
+    }
+
     // Store session data immediately if available
     if (data.session) {
       localStorage.setItem('access_token', data.session.access_token);

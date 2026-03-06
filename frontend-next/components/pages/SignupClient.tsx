@@ -30,6 +30,7 @@ export default function Signup() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [userName, setUserName] = useState('');
   const [isCreatingAccount, setIsCreatingAccount] = useState(false); // New state for actual signup attempt
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null); // Email awaiting confirmation
   const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -102,6 +103,17 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
 
+    // Block re-submission if this email is already awaiting confirmation
+    const normalizedEmail = formData.email.trim().toLowerCase();
+    if (pendingEmail === normalizedEmail) {
+      toast({
+        title: "Check your inbox",
+        description: `A confirmation link was already sent to ${normalizedEmail}. Please check your email (including spam).`,
+        type: "info",
+      });
+      return;
+    }
+
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -171,6 +183,7 @@ export default function Signup() {
       if (result.requiresEmailConfirmation) {
         console.log("📧 Email confirmation required");
         setIsCreatingAccount(false); // Hide loading screen
+        setPendingEmail(normalizedEmail); // Prevent duplicate submissions for this email
         toast({
           title: "Check your email!",
           description: "We've sent you a confirmation link. Please verify your email before logging in.",
@@ -223,8 +236,8 @@ export default function Signup() {
       let errorTitle = "Signup failed";
       
       if (err.message.includes("User already registered")) {
-        errorMessage = "This email is already registered. Please sign in instead.";
-        errorTitle = "Email already exists";
+        errorTitle = "Email already registered";
+        errorMessage = "An account with this email already exists. Please sign in, or use the Forgot Password option if needed.";
       } else if (err.message.includes("Password")) {
         errorMessage = err.message;
       } else if (err.message.includes("Invalid email")) {

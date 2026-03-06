@@ -143,33 +143,21 @@ export default function AuthCallback() {
           }
         }
 
-        const existing = await tryReadExistingSession();
-        if (existing) {
-          if (!mounted) return;
-          setStatus("success");
-          await routeToDestination(existing.user.id);
-          return;
-        }
-
-        if (!code && !accessToken) {
-          redirectLoginWithError("No authentication code found. Please try signing in again.");
-          return;
-        }
-
+        // Process PKCE code BEFORE checking for an existing session.
+        // The email verification link always provides a `code`. If we checked the
+        // existing session first, a user who was already signed-in to a different
+        // (or previously-incomplete) account would be routed based on that old
+        // session instead of the newly-verified account, landing on /dashboard
+        // without ever going through /setup.
         if (code) {
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             if (exchangeError.name === "AbortError") {
-              const retry = await tryReadExistingSession();
-              if (retry) {
-                if (!mounted) return;
-                setStatus("success");
-                await routeToDestination(retry.user.id);
-                return;
-              }
+              // AbortError: request was superseded. Fall through to existing-session check.
+            } else {
+              redirectLoginWithError(exchangeError.message || "Authentication failed. Please try again.");
+              return;
             }
-            redirectLoginWithError(exchangeError.message || "Authentication failed. Please try again.");
-            return;
           }
 
           if (data?.session?.user) {
@@ -183,6 +171,28 @@ export default function AuthCallback() {
             await routeToDestination(data.session.user.id);
             return;
           }
+        }
+
+        // No code / hash tokens — fall back to an existing active session.
+        if (!code && !accessToken) {
+          const existing = await tryReadExistingSession();
+          if (existing) {
+            if (!mounted) return;
+            setStatus("success");
+            await routeToDestination(existing.user.id);
+            return;
+          }
+          redirectLoginWithError("No authentication code found. Please try signing in again.");
+          return;
+        }
+
+        // Code was present but exchange produced no session — try existing session as last resort.
+        const existing = await tryReadExistingSession();
+        if (existing) {
+          if (!mounted) return;
+          setStatus("success");
+          await routeToDestination(existing.user.id);
+          return;
         }
 
         redirectLoginWithError("No session created. Please try again.");
