@@ -198,7 +198,7 @@ NAVIGATION: When referring to app pages in your response, use markdown link synt
 
 EMPTY DATA HANDLING (important):
 - If the context shows the user has no services yet, do NOT say you lack access. Instead tell them they haven't set up any services and guide them to [Services](/services) to add their first one.
-- If no bills exist, tell them bills are generated after tracking services for a month and suggest visiting [Bills](/bills).
+- If no bills exist, tell them bills can be manually generated from [Bills](/bills) by selecting a month and clicking Generate Bill, or are auto-generated at month-end. Guide them to try it.
 - If no calendar data, explain they can start tracking at [Calendar](/calendar).
 - Always be helpful and guide the user toward the relevant feature, never give a dead-end response.
 
@@ -841,6 +841,24 @@ async def build_context_string(user_id: str, context_tags: list[str], query: str
             ]
             parts.append("Relevant documentation:\n\n" + "\n\n---\n\n".join(doc_snippets))
 
+    # ── Always auto-load: recent bills (so bill queries work without @bills) ──
+    bills_auto = await supabase_service.list_generated_bills(user_id)
+    if bills_auto:
+        bill_lines = [
+            (
+                f"  - {b.get('year_month')} - {currency_code}{b.get('total_amount')} "
+                f"({'Paid' if b.get('is_paid') else 'Unpaid'}, {b.get('bill_title', '') or 'Bill'})"
+            )
+            for b in bills_auto[:6]
+        ]
+        parts.append("Recent bills (newest first):\n" + "\n".join(bill_lines))
+    else:
+        parts.append(
+            "Bills: No generated bills yet. "
+            "Bills can be manually generated from [Bills](/bills) — select a month, choose services, "
+            "and click Generate Bill. They are also auto-generated at the end of each month."
+        )
+
     if not context_tags:
         return "\n\n".join(parts) if parts else ""
 
@@ -866,20 +884,8 @@ async def build_context_string(user_id: str, context_tags: list[str], query: str
             ]
             parts.append("Detailed service info:\n" + "\n".join(lines))
 
-    # @bills
-    if "bills" in context_tags:
-        bills = await supabase_service.list_generated_bills(user_id)
-        if bills:
-            bill_lines = [
-                (
-                    f"  - {b.get('year_month')} - {currency_code}{b.get('total_amount')} "
-                    f"({'Paid' if b.get('is_paid') else 'Unpaid'}, {b.get('bill_title', '')})"
-                )
-                for b in bills[:6]
-            ]
-            parts.append("Recent bills:\n" + "\n".join(bill_lines))
-        else:
-            parts.append("Bills: No generated bills yet. Bills are created at [Bills](/bills) after a month of service tracking.")
+    # @bills — bills are now always auto-loaded above, so this tag is a no-op
+    # (intentionally left empty to avoid duplicating the already-included summary)
 
     # @calendar (detailed — day-by-day)
     if "calendar" in context_tags:

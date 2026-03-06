@@ -71,7 +71,7 @@ export default function ServiceCalendarPage() {
     const [yearRangeStart, setYearRangeStart] = useState(() => new Date().getFullYear() - 5);
 
     const currencySymbol = useMemo(() => {
-        return profile?.currency_code || "?";
+        return profile?.currency_code || "₹";
     }, [profile]);
 
     const iconComponents = {

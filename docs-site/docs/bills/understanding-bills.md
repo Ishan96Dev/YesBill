@@ -33,6 +33,8 @@ Each bill contains:
 
 ![Bills screen](/img/screenshots/Bill-Screen-01.png)
 
+![Bills screen with generated bill](/img/screenshots/Bill-Screen-02.png)
+
 1. Go to **Bills** in the sidebar
 2. Use the month/year selector to browse bills by period
 3. Click any bill to see the full breakdown

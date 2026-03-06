@@ -33,11 +33,14 @@ When YesBill generates a new bill, it sends you an email notification summarisin
 
 ## Manual Generation
 
+![Generate Bill button and form](/img/screenshots/Generate-bill-button-001.png)
+
 To generate a bill immediately:
 1. Go to **Bills**
-2. Click **Generate Bills** (top right)
-3. Select the month/year
-4. Click **Generate**
+2. Select the **month** from the month picker at the top
+3. Choose one or more **services** from the service selector
+4. Optionally add **Bill Notes** (e.g. "Vacation week excluded")
+5. Click **Generate Bill** — the AI creates an itemised bill with an optional summary
 
 ## What If Data Is Missing?
 

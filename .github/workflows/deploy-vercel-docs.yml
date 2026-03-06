@@ -47,16 +47,17 @@ jobs:
           DOCS_BASE_URL: '/'
 
       # ── Vercel Deploy ─────────────────────────────────────────────────────────
-      - name: Pull Vercel environment info
-        working-directory: docs-site
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
-
+      # No `vercel pull` needed — VERCEL_ORG_ID + VERCEL_PROJECT_ID env vars are
+      # sufficient for the CLI to locate the project. Using `vercel deploy --prod`
+      # (same pattern as the working frontend workflow) lets Vercel handle the
+      # build on its own servers using the buildCommand/outputDirectory from
+      # docs-site/vercel.json. This avoids the "Project not found" error that
+      # `vercel pull` raises when VERCEL_DOCS_PROJECT_ID is stale.
+      # If this step still fails, update the VERCEL_DOCS_PROJECT_ID GitHub secret
+      # to the current Vercel project ID for the docs site.
       - name: Deploy to Vercel (production)
         working-directory: docs-site
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
