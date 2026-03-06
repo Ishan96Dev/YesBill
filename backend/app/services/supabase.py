@@ -858,6 +858,34 @@ class SupabaseService:
     # User Services helpers (for AI agent context)
     # ============================================================
 
+    async def get_user_profile_for_context(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Return context-safe profile fields (no email, phone, or IDs)."""
+        try:
+            resp = (
+                self.client.table("user_profiles")
+                .select("display_name, full_name, country, currency, currency_code, timezone")
+                .eq("id", user_id)
+                .maybe_single()
+                .execute()
+            )
+            return resp.data or {}
+        except Exception:
+            return {}
+
+    async def get_inactive_services_count(self, user_id: str) -> int:
+        """Return the count of inactive services for a user."""
+        try:
+            resp = (
+                self.client.table("user_services")
+                .select("id", count="exact")
+                .eq("user_id", user_id)
+                .eq("active", False)
+                .execute()
+            )
+            return resp.count or 0
+        except Exception:
+            return 0
+
     async def get_active_user_services(self, user_id: str) -> List[Dict[str, Any]]:
         """Get all active user services for context injection."""
         try:

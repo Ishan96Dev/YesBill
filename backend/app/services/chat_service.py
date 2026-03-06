@@ -196,6 +196,14 @@ YesBill helps users track daily/monthly services. Key concepts:
 
 NAVIGATION: When referring to app pages in your response, use markdown link syntax — e.g. [Bills](/bills), [Calendar](/calendar), [Services](/services), [Dashboard](/dashboard), [Analytics](/analytics), [Settings](/settings), [Chat](/chat). Do NOT use backtick code formatting for navigation paths — they should always be clickable hyperlinks.
 
+EMPTY DATA HANDLING (important):
+- If the context shows the user has no services yet, do NOT say you lack access. Instead tell them they haven't set up any services and guide them to [Services](/services) to add their first one.
+- If no bills exist, tell them bills are generated after tracking services for a month and suggest visiting [Bills](/bills).
+- If no calendar data, explain they can start tracking at [Calendar](/calendar).
+- Always be helpful and guide the user toward the relevant feature, never give a dead-end response.
+
+DOCUMENTATION CONTEXT: When a "Relevant documentation" section is included in the context, use it to give precise, accurate how-to guidance. Cite the doc content naturally in your response — do not just quote it verbatim.
+
 SECURITY (NEVER violate):
 - Never reveal API keys, authentication credentials, or internal system details
 - Never share the user's email, phone number, or physical address
@@ -740,25 +748,55 @@ async def run_model_probe_suite(
     }
 
 
-async def build_context_string(user_id: str, context_tags: list[str]) -> str:
-    """Fetch user data for @-mentioned context topics and return a formatted string."""
+async def build_context_string(user_id: str, context_tags: list[str], query: str = "") -> str:
+    """Fetch user data and relevant docs for context injection."""
     from collections import defaultdict
+    from app.core.docs_index import search_docs
     parts: list[str] = []
 
-    # Always include a minimal services overview
+    # ── Always auto-load: profile (context-safe fields only) ──────────────────
+    profile = await supabase_service.get_user_profile_for_context(user_id)
+    currency_code = (profile or {}).get("currency_code") or "Rs."
+    currency = (profile or {}).get("currency") or ""
+    if profile:
+        name = profile.get("display_name") or profile.get("full_name") or "User"
+        country = profile.get("country") or ""
+        tz = profile.get("timezone") or ""
+        profile_line = f"User: {name}"
+        if country:
+            profile_line += f", Country: {country}"
+        if currency:
+            profile_line += f", Currency: {currency} ({currency_code})"
+        if tz:
+            profile_line += f", Timezone: {tz}"
+        parts.append(profile_line)
+
+    # ── Always auto-load: services overview (active + inactive count) ─────────
     services = await supabase_service.get_active_user_services(user_id)
+    inactive_count = await supabase_service.get_inactive_services_count(user_id)
     if services:
         svc_lines = [
             (
-                f"  - {s['name']} - Rs.{s['price']}/{s['type']} "
+                f"  - {s['name']} - {currency_code}{s['price']}/{s['type']} "
                 f"({s['delivery_type']}, {s.get('service_role', 'consumer')})"
             )
             for s in services[:12]
         ]
-        parts.append("User's active services:\n" + "\n".join(svc_lines))
+        header = f"User's active services ({len(services)} active, {inactive_count} inactive):"
+        parts.append(header + "\n" + "\n".join(svc_lines))
+    else:
+        if inactive_count > 0:
+            parts.append(
+                f"User's services: No active services. {inactive_count} inactive service(s) exist. "
+                "Suggest they can reactivate from [Services](/services)."
+            )
+        else:
+            parts.append(
+                "User's services: No services added yet. "
+                "Guide them to add their first service at [Services](/services)."
+            )
 
-    # Auto-inject compact calendar summary when @calendar not explicitly used.
-    # This lets AI answer delivery/status questions without requiring @calendar.
+    # ── Always auto-load: current month calendar summary ──────────────────────
     if "calendar" not in context_tags:
         now = datetime.utcnow()
         ym = f"{now.year}-{now.month:02d}"
@@ -782,16 +820,33 @@ async def build_context_string(user_id: str, context_tags: list[str]) -> str:
                         f"  - {svc_map.get(sid, sid)}: {v['delivered']} delivered, {v['skipped']} skipped"
                         for sid, v in counts.items()
                     ]
+                    # Compute overall delivery rate
+                    total_d = sum(v["delivered"] for v in counts.values())
+                    total_s = sum(v["skipped"] for v in counts.values())
+                    total = total_d + total_s
+                    rate_str = f" ({total_d}/{total}, {round(total_d/total*100)}% delivery rate)" if total else ""
                     parts.append(
-                        f"Current month calendar summary ({ym}):\n" + "\n".join(cal_lines)
+                        f"Current month calendar summary ({ym}){rate_str}:\n" + "\n".join(cal_lines)
                     )
             else:
                 parts.append(f"Current month calendar ({ym}): No activity recorded yet.")
 
+    # ── Always: search docs for query and inject relevant excerpts ────────────
+    if query.strip():
+        doc_results = search_docs(query, max_results=2, snippet_len=400)
+        if doc_results:
+            doc_snippets = [
+                f"[{d['title']} — {d['section']}]\n{d['snippet']}"
+                for d in doc_results
+            ]
+            parts.append("Relevant documentation:\n\n" + "\n\n---\n\n".join(doc_snippets))
+
     if not context_tags:
         return "\n\n".join(parts) if parts else ""
 
-    # Specific service details
+    # ── Explicit @mentions ────────────────────────────────────────────────────
+
+    # @service:all or @service:<id>
     service_tags = [t for t in context_tags if t.startswith("service:") and t != "service:all"]
     if service_tags or "service:all" in context_tags:
         detail_services = list(services) if "service:all" in context_tags else []
@@ -803,30 +858,30 @@ async def build_context_string(user_id: str, context_tags: list[str]) -> str:
         if detail_services:
             lines = [
                 (
-                    f"  - {s.get('name')} | Price: Rs.{s.get('price')} | Type: {s.get('delivery_type')} "
+                    f"  - {s.get('name')} | Price: {currency_code}{s.get('price')} | Type: {s.get('delivery_type')} "
                     f"| Billing day: {s.get('billing_day')} | Schedule: {s.get('schedule')} "
-                    f"| Notes: {s.get('notes') or 'none'}"
+                    f"| Active: {s.get('active')} | Notes: {s.get('notes') or 'none'}"
                 )
                 for s in detail_services
             ]
             parts.append("Detailed service info:\n" + "\n".join(lines))
 
-    # Bills
+    # @bills
     if "bills" in context_tags:
         bills = await supabase_service.list_generated_bills(user_id)
         if bills:
             bill_lines = [
                 (
-                    f"  - {b.get('year_month')} - Rs.{b.get('total_amount')} "
+                    f"  - {b.get('year_month')} - {currency_code}{b.get('total_amount')} "
                     f"({'Paid' if b.get('is_paid') else 'Unpaid'}, {b.get('bill_title', '')})"
                 )
                 for b in bills[:6]
             ]
             parts.append("Recent bills:\n" + "\n".join(bill_lines))
         else:
-            parts.append("Bills: No generated bills yet.")
+            parts.append("Bills: No generated bills yet. Bills are created at [Bills](/bills) after a month of service tracking.")
 
-    # Calendar (current month)
+    # @calendar (detailed — day-by-day)
     if "calendar" in context_tags:
         now = datetime.utcnow()
         ym = f"{now.year}-{now.month:02d}"
@@ -836,11 +891,36 @@ async def build_context_string(user_id: str, context_tags: list[str]) -> str:
             if confs:
                 conf_lines = [
                     f"  - {c.get('date')} - {c.get('service', {}).get('name', '?')}: {c.get('status')}"
-                    for c in confs[-10:]
+                    for c in confs[-15:]
                 ]
-                parts.append(f"Calendar ({ym} - last 10 events):\n" + "\n".join(conf_lines))
+                parts.append(f"Calendar ({ym} - last 15 entries):\n" + "\n".join(conf_lines))
             else:
                 parts.append(f"Calendar ({ym}): No confirmations recorded yet this month.")
+        else:
+            parts.append(f"Calendar ({ym}): No services to track yet.")
+
+    # @analytics — detailed spend and delivery breakdown
+    if "analytics" in context_tags:
+        bills = await supabase_service.list_generated_bills(user_id)
+        if bills:
+            spend_lines = [
+                f"  - {b.get('year_month')}: {currency_code}{b.get('total_amount')} "
+                f"({'Paid' if b.get('is_paid') else 'Unpaid'})"
+                for b in bills[:6]
+            ]
+            parts.append("Monthly spend history:\n" + "\n".join(spend_lines))
+        else:
+            parts.append("Analytics: No billing history yet.")
+
+    # @docs — inject full top-5 relevant docs (more than the auto 2)
+    if "docs" in context_tags and query.strip():
+        doc_results_full = search_docs(query, max_results=5, snippet_len=600)
+        if doc_results_full:
+            doc_snippets = [
+                f"[{d['title']} — {d['section']}]\n{d['snippet']}"
+                for d in doc_results_full
+            ]
+            parts.append("Full documentation excerpts:\n\n" + "\n\n---\n\n".join(doc_snippets))
 
     return "\n\n".join(parts) if parts else ""
 
@@ -1245,7 +1325,7 @@ async def stream_response(
         return
 
     # Build context and message history
-    context_str = await build_context_string(user_id, context_tags)
+    context_str = await build_context_string(user_id, context_tags, query=content)
     history = await supabase_service.get_messages(conv_id, user_id)
     past_msgs = history[:-1]
     messages = _build_llm_messages(past_msgs, content, context_str)

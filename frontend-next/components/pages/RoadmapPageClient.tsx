@@ -45,6 +45,7 @@ export default function Roadmap() {
       items: [
         "Mobile App (PWA & native — under consideration)",
         "Regenerate AI response",
+        "Semantic search for AI documentation",
         "UPI Auto-Pay reminders",
         "Tax report generation",
       ]

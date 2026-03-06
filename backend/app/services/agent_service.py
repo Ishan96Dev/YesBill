@@ -57,7 +57,7 @@ AGENT_SYSTEM_PROMPT = (
 )
 
 # Tool categories
-IMMEDIATE_TOOLS = {"search_services", "get_service_details", "get_bills", "get_calendar_month"}
+IMMEDIATE_TOOLS = {"search_services", "get_service_details", "get_bills", "get_calendar_month", "search_docs"}
 CONFIRM_TOOLS = {"update_service", "toggle_service_active", "mark_bill_paid", "update_calendar_day"}
 
 # ──────────────────────────────────────────────
@@ -156,6 +156,21 @@ _TOOL_SCHEMAS = [
                 },
             },
             "required": ["service_id", "date", "status"],
+        },
+    },
+    {
+        "name": "search_docs",
+        "description": (
+            "Search YesBill documentation for how-to guides and feature explanations. "
+            "Use when user asks how to use a feature, what something means, "
+            "or needs step-by-step instructions."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search query describing what the user wants to know"},
+            },
+            "required": ["query"],
         },
     },
 ]
@@ -714,6 +729,18 @@ async def _execute_immediate_tool(user_id: str, name: str, args: dict) -> str:
                 for c in confs
             ]
             return f"Calendar for {ym}:\n" + "\n".join(lines)
+
+        elif name == "search_docs":
+            from app.core.docs_index import search_docs
+            query_str = args.get("query", "")
+            results = search_docs(query_str, max_results=3, snippet_len=500)
+            if not results:
+                return "No relevant documentation found for that query."
+            lines = [
+                f"**{r['title']}** ({r['section']}):\n{r['snippet']}"
+                for r in results
+            ]
+            return "Documentation search results:\n\n" + "\n\n---\n\n".join(lines)
 
         else:
             return f"Unknown tool: {name}"

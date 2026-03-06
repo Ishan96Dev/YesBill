@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
     Check,
     X,
     ArrowLeft,
@@ -40,6 +41,7 @@ import {
     CheckCircle,
     Clock,
     ExternalLink,
+    Calendar as CalendarIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WithTooltip } from "@/components/ui/tooltip";
@@ -65,6 +67,8 @@ export default function ServiceCalendarPage() {
     const [confirmations, setConfirmations] = useState({});
     const [dataLoading, setDataLoading] = useState(true);
     const [paidBillInfo, setPaidBillInfo] = useState(null);
+    const [pickerMode, setPickerMode] = useState<'days' | 'months' | 'years'>('days');
+    const [yearRangeStart, setYearRangeStart] = useState(() => new Date().getFullYear() - 5);
 
     const currencySymbol = useMemo(() => {
         return profile?.currency_code || "?";
@@ -170,6 +174,9 @@ export default function ServiceCalendarPage() {
         return calendarService.getMonthIndexed(yearMonth, serviceId);
     };
 
+    const handlePrevMonth = () => { setCurrentDate(new Date(year, month - 1)); setPickerMode('days'); };
+    const handleNextMonth = () => { setCurrentDate(new Date(year, month + 1)); setPickerMode('days'); };
+
     // --- Day calendar (daily / weekly / monthly) ------------------
     const formatDate = (day) =>
         `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -193,8 +200,8 @@ export default function ServiceCalendarPage() {
             setConfirmations(updated);
             const isVisit = service.delivery_type === "visit_based";
             const labels = isVisit
-                ? { delivered: "? Visited", skipped: "? Missed", pending: "? Not Tracked" }
-                : { delivered: "? Delivered", skipped: "? Skipped", pending: "? Not Tracked" };
+                ? { delivered: "✓ Visited", skipped: "✗ Missed", pending: "⚪ Not Tracked" }
+                : { delivered: "✓ Delivered", skipped: "✗ Skipped", pending: "⚪ Not Tracked" };
             toast({ title: labels[newStatus], description: `${service.name} updated`, type: newStatus === "delivered" ? "success" : newStatus === "skipped" ? "error" : "default" });
         } catch (err) {
             console.error("Update error:", err);
@@ -245,7 +252,7 @@ export default function ServiceCalendarPage() {
             await calendarService.upsertConfirmation(serviceId, dateKey, newStatus);
             const updated = await reloadConfirmations();
             setConfirmations(updated);
-            toast({ title: newStatus === "delivered" ? "? Paid" : "? Unpaid", description: `${shortMonthNames[m]} ${year}`, type: newStatus === "delivered" ? "success" : "default" });
+            toast({ title: newStatus === "delivered" ? "✓ Paid" : "⚪ Unpaid", description: `${shortMonthNames[m]} ${year}`, type: newStatus === "delivered" ? "success" : "default" });
         } catch (err) {
             toast({ title: "Error", description: "Could not update", type: "error" });
         }
@@ -362,8 +369,8 @@ export default function ServiceCalendarPage() {
                                         <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-5 py-3 border border-gray-200/50 shadow-lg">
                                             <p className="text-sm text-gray-500 mb-1">{isVisitBased ? "Attendance" : "Status"}</p>
                                             <div className="flex gap-3 text-sm font-medium">
-                                                <span className="text-green-600">? {stats.delivered} {isVisitBased ? "visited" : ""}</span>
-                                                <span className="text-red-600">? {stats.skipped} {isVisitBased ? "missed" : ""}</span>
+                                                <span className="text-green-600">✓ {stats.delivered} {isVisitBased ? "visited" : ""}</span>
+                                                <span className="text-red-600">✗ {stats.skipped} {isVisitBased ? "missed" : ""}</span>
                                             </div>
                                         </div>
                                     )}
@@ -372,6 +379,108 @@ export default function ServiceCalendarPage() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* -- Month / Year Navigation Bar (non-yearly services only) -- */}
+                {!isYearly && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 }}
+                        className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-black/5 border border-gray-200/50 p-4 mb-6"
+                    >
+                        {pickerMode === 'days' ? (
+                            <div className="flex items-center justify-between">
+                                <WithTooltip tip="Previous month" side="bottom">
+                                    <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="hover:bg-gray-100 rounded-xl">
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </Button>
+                                </WithTooltip>
+                                <button
+                                    onClick={() => { setYearRangeStart(year - 5); setPickerMode('months'); }}
+                                    className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-primary transition-colors px-3 py-1 rounded-xl hover:bg-gray-50 group"
+                                >
+                                    <CalendarIcon className="w-5 h-5 text-primary" />
+                                    {monthNames[month]} {year}
+                                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+                                </button>
+                                <WithTooltip tip="Next month" side="bottom">
+                                    <Button variant="ghost" size="icon" onClick={handleNextMonth} className="hover:bg-gray-100 rounded-xl">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </Button>
+                                </WithTooltip>
+                            </div>
+                        ) : pickerMode === 'months' ? (
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <button
+                                        onClick={() => setPickerMode('years')}
+                                        className="flex items-center gap-1 text-lg font-bold text-gray-900 hover:text-primary px-2 py-1 rounded-xl hover:bg-gray-50 transition-colors"
+                                    >
+                                        {year}
+                                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    </button>
+                                    <button
+                                        onClick={() => setPickerMode('days')}
+                                        className="text-sm text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {monthNames.map((name, idx) => (
+                                        <button
+                                            key={name}
+                                            onClick={() => { setCurrentDate(new Date(year, idx)); setPickerMode('days'); }}
+                                            className={`py-2.5 px-2 rounded-xl text-sm font-semibold transition-all ${
+                                                idx === month
+                                                    ? 'bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md shadow-primary/25'
+                                                    : 'hover:bg-gray-100 text-gray-700'
+                                            }`}
+                                        >
+                                            {name.slice(0, 3)}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-lg font-bold text-gray-900 px-2">Select Year</span>
+                                    <button
+                                        onClick={() => setPickerMode('months')}
+                                        className="text-sm text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Button variant="ghost" size="icon" onClick={() => setYearRangeStart(s => s - 12)} className="hover:bg-gray-100 rounded-xl h-8 w-8">
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </Button>
+                                    <span className="text-sm text-gray-500 flex-1 text-center">{yearRangeStart} – {yearRangeStart + 11}</span>
+                                    <Button variant="ghost" size="icon" onClick={() => setYearRangeStart(s => s + 12)} className="hover:bg-gray-100 rounded-xl h-8 w-8">
+                                        <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map(y => (
+                                        <button
+                                            key={y}
+                                            onClick={() => { setCurrentDate(new Date(y, month)); setPickerMode('months'); }}
+                                            className={`py-2.5 px-2 rounded-xl text-sm font-semibold transition-all ${
+                                                y === year
+                                                    ? 'bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md shadow-primary/25'
+                                                    : 'hover:bg-gray-100 text-gray-700'
+                                            }`}
+                                        >
+                                            {y}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
 
                 {/* -- Yearly: 12-month grid -- */}
                 {isYearly && (
@@ -429,7 +538,7 @@ export default function ServiceCalendarPage() {
                             })}
                         </div>
                         <p className="text-center text-gray-500 text-sm mt-6">
-                            Click a month to toggle <span className="font-medium text-green-600">? Paid</span> / <span className="font-medium text-gray-400">— Unpaid</span>
+                            Click a month to toggle <span className="font-medium text-green-600">✓ Paid</span> / <span className="font-medium text-gray-400">— Unpaid</span>
                         </p>
                     </motion.div>
                 )}
@@ -442,21 +551,6 @@ export default function ServiceCalendarPage() {
                         transition={{ delay: 0.1 }}
                         className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl shadow-black/5 border border-gray-200/50 p-6 md:p-8"
                     >
-                        {/* Month Navigation */}
-                        <div className="flex items-center justify-between mb-8">
-                            <WithTooltip tip="Previous month" side="bottom">
-                                <Button variant="ghost" size="icon" onClick={() => setCurrentDate(new Date(year, month - 1))} className="hover:bg-gray-100 rounded-xl">
-                                    <ChevronLeft className="w-5 h-5" />
-                                </Button>
-                            </WithTooltip>
-                            <h2 className="text-2xl font-bold text-gray-900">{monthNames[month]} {year}</h2>
-                            <WithTooltip tip="Next month" side="bottom">
-                                <Button variant="ghost" size="icon" onClick={() => setCurrentDate(new Date(year, month + 1))} className="hover:bg-gray-100 rounded-xl">
-                                    <ChevronRight className="w-5 h-5" />
-                                </Button>
-                            </WithTooltip>
-                        </div>
-
                         <div className="flex flex-col items-center gap-6">
                             <div className={`w-32 h-32 rounded-3xl flex items-center justify-center transition-all ${isUtilityActive ? "bg-green-50 border-2 border-green-300" : "bg-gray-50 border-2 border-gray-200"}`}>
                                 <ServiceIcon className={`w-14 h-14 ${isUtilityActive ? "text-green-600" : "text-gray-400"}`} />
@@ -494,21 +588,6 @@ export default function ServiceCalendarPage() {
                         transition={{ delay: 0.1 }}
                         className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl shadow-black/5 border border-gray-200/50 p-6 md:p-8"
                     >
-                        {/* Month Navigation */}
-                        <div className="flex items-center justify-between mb-8">
-                            <WithTooltip tip="Previous month" side="bottom">
-                                <Button variant="ghost" size="icon" onClick={() => setCurrentDate(new Date(year, month - 1))} className="hover:bg-gray-100 rounded-xl">
-                                    <ChevronLeft className="w-5 h-5" />
-                                </Button>
-                            </WithTooltip>
-                            <h2 className="text-2xl font-bold text-gray-900">{monthNames[month]} {year}</h2>
-                            <WithTooltip tip="Next month" side="bottom">
-                                <Button variant="ghost" size="icon" onClick={() => setCurrentDate(new Date(year, month + 1))} className="hover:bg-gray-100 rounded-xl">
-                                    <ChevronRight className="w-5 h-5" />
-                                </Button>
-                            </WithTooltip>
-                        </div>
-
                         <div className="flex flex-col items-center gap-6">
                             {/* Billing info */}
                             <div className="w-full max-w-sm bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-5 text-center">
@@ -615,21 +694,6 @@ export default function ServiceCalendarPage() {
                         transition={{ delay: 0.1 }}
                         className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl shadow-black/5 border border-gray-200/50 p-6 md:p-8"
                     >
-                        {/* Month Navigation */}
-                        <div className="flex items-center justify-between mb-6">
-                            <WithTooltip tip="Previous month" side="bottom">
-                                <Button variant="ghost" size="icon" onClick={() => setCurrentDate(new Date(year, month - 1))} className="hover:bg-gray-100 rounded-xl">
-                                    <ChevronLeft className="w-5 h-5" />
-                                </Button>
-                            </WithTooltip>
-                            <h2 className="text-2xl font-bold text-gray-900">{monthNames[month]} {year}</h2>
-                            <WithTooltip tip="Next month" side="bottom">
-                                <Button variant="ghost" size="icon" onClick={() => setCurrentDate(new Date(year, month + 1))} className="hover:bg-gray-100 rounded-xl">
-                                    <ChevronRight className="w-5 h-5" />
-                                </Button>
-                            </WithTooltip>
-                        </div>
-
                         {/* Weekday Headers */}
                         <div className="grid grid-cols-7 gap-2 mb-4 justify-items-center">
                             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
@@ -744,10 +808,10 @@ export default function ServiceCalendarPage() {
                             className="text-center text-gray-500 text-sm mt-6"
                         >
                             {service.type === "monthly"
-                                ? <>Only the <span className="font-medium text-indigo-600">billing day ({service.billing_day || 1})</span> is tracked — click to cycle: <span className="font-medium text-green-600">? {isVisitBased ? "Visited" : "Delivered"}</span> ? <span className="font-medium text-red-600">? {isVisitBased ? "Missed" : "Skipped"}</span> ? <span className="font-medium text-gray-400">? Not Tracked</span></>
+                                ? <>Only the <span className="font-medium text-indigo-600">billing day ({service.billing_day || 1})</span> is tracked — click to cycle: <span className="font-medium text-green-600">✓ {isVisitBased ? "Visited" : "Delivered"}</span> → <span className="font-medium text-red-600">✗ {isVisitBased ? "Missed" : "Skipped"}</span> → <span className="font-medium text-gray-400">⚪ Not Tracked</span></>
                                 : service.type === "weekly"
-                                ? <>Weekly days <span className="font-medium text-indigo-600">(every 7 days from day {service.billing_day || 1})</span> are tracked — click to cycle: <span className="font-medium text-green-600">? {isVisitBased ? "Visited" : "Delivered"}</span> ? <span className="font-medium text-red-600">? {isVisitBased ? "Missed" : "Skipped"}</span> ? <span className="font-medium text-gray-400">? Not Tracked</span></>
-                                : <>Click on any day to cycle: <span className="font-medium text-green-600">? {isVisitBased ? "Visited" : "Delivered"}</span> ? <span className="font-medium text-red-600">? {isVisitBased ? "Missed" : "Skipped"}</span> ? <span className="font-medium text-gray-400">? Not Tracked</span></>
+                                ? <>Weekly days <span className="font-medium text-indigo-600">(every 7 days from day {service.billing_day || 1})</span> are tracked — click to cycle: <span className="font-medium text-green-600">✓ {isVisitBased ? "Visited" : "Delivered"}</span> → <span className="font-medium text-red-600">✗ {isVisitBased ? "Missed" : "Skipped"}</span> → <span className="font-medium text-gray-400">⚪ Not Tracked</span></>
+                                : <>Click on any day to cycle: <span className="font-medium text-green-600">✓ {isVisitBased ? "Visited" : "Delivered"}</span> → <span className="font-medium text-red-600">✗ {isVisitBased ? "Missed" : "Skipped"}</span> → <span className="font-medium text-gray-400">⚪ Not Tracked</span></>
                             }
                         </motion.p>
                     </>

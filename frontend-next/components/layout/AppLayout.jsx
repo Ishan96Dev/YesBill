@@ -143,6 +143,7 @@ export default function AppLayout({
   // ── AI config check: notify if unconfigured, or auto-clear stale notification once configured ──
   useEffect(() => {
     if (!profile || !user) return;
+    if (onboardingMode) return; // skip during onboarding — user may be in the process of setting up AI
     if (notifsLoading) return; // wait until existing notifications are fetched
     if (aiConfigNotifRef.current) return;
     aiConfigNotifRef.current = true; // guard immediately (synchronous) to prevent concurrent runs

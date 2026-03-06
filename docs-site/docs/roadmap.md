@@ -30,6 +30,13 @@ A **Regenerate** button on each AI response to re-run the same query and get a f
 
 ---
 
+### Semantic Search for AI Documentation
+> **Status:** Planned
+
+Upgrade the current keyword-based documentation search (which already injects relevant YesBill docs into your AI chat) to a fully semantic, vector-based search. This will improve relevance for natural-language questions and multi-topic queries.
+
+---
+
 ## Calendar
 
 ### Bulk Day Marking

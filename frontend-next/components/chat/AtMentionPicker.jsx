@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, FileText, Calendar, ChevronRight, X } from "lucide-react";
+import { Package, FileText, Calendar, BarChart3, BookOpen, ChevronRight, X } from "lucide-react";
 import { chatService } from "../../services/chatService";
 import { servicesService } from "../../services/dataService";
 
@@ -12,6 +12,8 @@ const TOP_CATEGORIES = [
   { key: "service:all", label: "All Services", icon: Package, description: "Inject all your services as context" },
   { key: "bills", label: "Bills", icon: FileText, description: "Your recent generated bills" },
   { key: "calendar", label: "Calendar", icon: Calendar, description: "This month's calendar data" },
+  { key: "analytics", label: "Analytics", icon: BarChart3, description: "Monthly spend and delivery history" },
+  { key: "docs", label: "Docs", icon: BookOpen, description: "Search YesBill documentation" },
 ];
 
 export default function AtMentionPicker({ open, onSelect, onClose, query = "" }) {

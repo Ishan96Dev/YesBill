@@ -3,7 +3,6 @@
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState, useCallback } from "react";
-import { useRouter } from 'next/navigation';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Copy, Check } from "lucide-react";
@@ -94,23 +93,13 @@ const markdownComponents = {
  * @param {boolean} [isStreaming] - Show streaming cursor at end
  */
 export default function MarkdownRenderer({ content, className = "", compact = false, isStreaming = false }) {
-  const router = useRouter();
-
+  // All links in chat open in a new tab so users don't lose their chat context.
+  // Internal paths like /services are prefixed with the app origin so they open correctly.
   const InternalLink = useCallback(({ href, children }) => {
-    if (href?.startsWith("/")) {
-      return (
-        <a
-          href={href}
-          onClick={(e) => { e.preventDefault(); router.push(href); }}
-          className="inline text-primary underline decoration-primary/50 underline-offset-2 transition-all duration-200 hover:text-primary/80 hover:decoration-primary/80 active:text-primary/60 cursor-pointer"
-        >
-          {children}
-        </a>
-      );
-    }
+    const url = href?.startsWith("/") ? (typeof window !== "undefined" ? window.location.origin + href : href) : href;
     return (
       <a
-        href={href}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
         className="inline text-primary underline decoration-primary/50 underline-offset-2 transition-all duration-200 hover:text-primary/80 hover:decoration-primary/80"
@@ -118,7 +107,7 @@ export default function MarkdownRenderer({ content, className = "", compact = fa
         {children}
       </a>
     );
-  }, [router]);
+  }, []);
 
   const proseClass = compact
     ? "prose prose-xs max-w-none prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0 prose-headings:my-1 prose-headings:text-gray-800 prose-h1:text-sm prose-h2:text-sm prose-h3:text-xs prose-strong:text-gray-800 prose-em:text-gray-700 prose-li:marker:text-gray-400 text-gray-800"

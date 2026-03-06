@@ -57,12 +57,13 @@ function ProviderIcon({ providerId, size = 32 }) {
   }
 }
 
-function Field({ label, required, error, hint, children }) {
+function Field({ label, required, optional, error, hint, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-        {required ? <span className="text-red-500 ml-0.5">*</span> : null}
+      <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-2">
+        <span>{label}</span>
+        {required ? <span className="text-red-500">*</span> : null}
+        {optional ? <span className="text-xs font-normal text-gray-400">(Optional)</span> : null}
       </label>
       {children}
       {error ? (
@@ -119,7 +120,7 @@ function SkipAIModal({ userName, onSkip, onConfigure }) {
             </div>
             <h3 className="text-base font-semibold text-gray-900">AI features will be limited</h3>
           </div>
-          <button type="button" onClick={onConfigure} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
+          <button type="button" onClick={onConfigure} aria-label="Close" className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -324,7 +325,7 @@ function ProfileStep({ onNext, initialName, initialAvatarUrl }) {
           </div>
         </Field>
 
-        <Field label="Phone Number" error={errors.phone} hint={!errors.phone ? "Optional" : undefined}>
+        <Field label="Phone Number" optional error={errors.phone}>
           <div className="flex gap-2">
             <div className="w-28 px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
               <span className="text-base">{selectedCountry?.flag || ""}</span><span>{selectedCountry?.code || "+--"}</span>
@@ -337,7 +338,7 @@ function ProfileStep({ onNext, initialName, initialAvatarUrl }) {
         <Field label="Timezone" required hint="Auto-set from country"><TextInput value={form.timezone} disabled placeholder="Select a country first" className="border-gray-200 bg-gray-50 text-gray-600" /></Field>
       </div>
 
-      <Field label="Bio" error={errors.bio} hint={!errors.bio ? "Optional - max 500 characters" : undefined}>
+      <Field label="Bio" optional error={errors.bio} hint={!errors.bio ? "Max 500 characters" : undefined}>
         <textarea value={form.bio} onChange={(e) => handleChange("bio", e.target.value)} onBlur={() => handleBlur("bio")} rows={4} className={`w-full px-4 py-3 text-sm border rounded-xl bg-white focus:outline-none focus:ring-2 resize-none ${errors.bio ? "border-red-300" : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"}`} placeholder="Tell us a bit about yourself..." />
       </Field>
 
@@ -487,7 +488,19 @@ function AIStep({ userName, onComplete }) {
             </div>
             <button type="button" onClick={onValidate} disabled={validating || !apiKey.trim()} className="px-5 py-3.5 text-sm font-bold rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 border-2 border-indigo-200">{validating ? <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Checking...</span> : "Validate Key"}</button>
           </div>
-          {keyValidation.message ? <p className="mt-3 text-sm text-gray-600">{keyValidation.message}</p> : null}
+          {keyValidation.message ? (
+            <p className={`mt-3 text-sm flex items-center gap-1.5 ${
+              keyValidation.status === "valid" ? "text-green-600" :
+              keyValidation.status === "invalid" || keyValidation.status === "error" ? "text-red-600" :
+              "text-gray-500"
+            }`}>
+              {keyValidation.status === "valid" ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> :
+               keyValidation.status === "invalid" || keyValidation.status === "error" ? <AlertCircle className="w-4 h-4 flex-shrink-0" /> :
+               keyValidation.status === "checking" ? <Loader2 className="w-4 h-4 flex-shrink-0 animate-spin" /> :
+               null}
+              {keyValidation.message}
+            </p>
+          ) : null}
         </div>
 
         <div className="border-t border-gray-100" />
