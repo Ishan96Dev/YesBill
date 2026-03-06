@@ -282,9 +282,11 @@ export default function Login() {
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-4">
                 <div className="relative w-full">
-                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${fieldIconClass('email')}`}>
-                    <Mail className="w-5 h-5" />
-                  </span>
+                  <WithTooltip tip="Email address" side="right">
+                    <span className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-default transition-colors duration-200 ${fieldIconClass('email')}`}>
+                      <Mail className="w-5 h-5" />
+                    </span>
+                  </WithTooltip>
                   <input
                     id="email"
                     type="email"
@@ -313,9 +315,11 @@ export default function Login() {
 
                 <div className="space-y-1">
                   <div className="relative w-full">
-                    <span className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${fieldIconClass('password')}`}>
-                      <Lock className="w-5 h-5" />
-                    </span>
+                    <WithTooltip tip="Password" side="right">
+                      <span className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-default transition-colors duration-200 ${fieldIconClass('password')}`}>
+                        <Lock className="w-5 h-5" />
+                      </span>
+                    </WithTooltip>
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}

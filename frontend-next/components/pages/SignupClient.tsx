@@ -281,7 +281,7 @@ export default function Signup() {
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="relative w-full">
                 <WithTooltip tip="Full name" side="right">
-                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${fieldIconClass('name')}`}>
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-default transition-colors duration-200 ${fieldIconClass('name')}`}>
                     <User className="w-5 h-5" />
                   </span>
                 </WithTooltip>
@@ -311,7 +311,7 @@ export default function Signup() {
 
               <div className="relative w-full">
                 <WithTooltip tip="Email address" side="right">
-                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${fieldIconClass('email')}`}>
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-default transition-colors duration-200 ${fieldIconClass('email')}`}>
                     <Mail className="w-5 h-5" />
                   </span>
                 </WithTooltip>
@@ -342,7 +342,7 @@ export default function Signup() {
 
               <div className="relative w-full">
                 <WithTooltip tip="Password (min. 6 characters)" side="right">
-                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${fieldIconClass('password')}`}>
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-default transition-colors duration-200 ${fieldIconClass('password')}`}>
                     <Lock className="w-5 h-5" />
                   </span>
                 </WithTooltip>
@@ -372,7 +372,7 @@ export default function Signup() {
 
               <div className="relative w-full">
                 <WithTooltip tip="Confirm password" side="right">
-                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 cursor-default transition-colors duration-200 ${
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-default transition-colors duration-200 ${
                     formData.confirmPassword
                       ? formData.confirmPassword === formData.password
                         ? 'text-emerald-500'
