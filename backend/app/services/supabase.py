@@ -971,7 +971,6 @@ class SupabaseService:
                     "start_date": fields.get("start_date") or None,
                     "end_date": fields.get("end_date") or None,
                 })
-                .select()
                 .execute()
             )
             return response.data[0] if response.data else None
