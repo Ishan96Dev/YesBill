@@ -91,7 +91,12 @@ export const chatService = {
 
   async getModels() {
     try {
-      return await request('GET', '/models')
+      // Race against an 8-second timeout so a cold-starting Render backend
+      // doesn't leave the model selector skeleton stuck indefinitely.
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('getModels timeout')), 8000)
+      );
+      return await Promise.race([request('GET', '/models'), timeoutPromise]);
     } catch (backendError) {
       // Backend sleeping or CORS-blocked — build response from Supabase user_ai_settings
       console.warn('chatService.getModels: backend unavailable, using Supabase fallback:', backendError.message)

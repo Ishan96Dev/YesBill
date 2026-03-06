@@ -49,6 +49,7 @@ import { WithTooltip } from "@/components/ui/tooltip";
 import TimeRangeDropdown from "@/components/ui/time-range-dropdown";
 import AppLoadingScreen from "@/components/loading/AppLoadingScreen";
 import AnalyticsSkeleton from "@/components/skeletons/AnalyticsSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePageReady } from "@/hooks/usePageReady";
 import { useUser } from "@/hooks/useUser";
 import { analyticsService } from "@/services/dataService";
@@ -169,10 +170,32 @@ function AIUsageTab() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className={`${CARD} animate-pulse`}>
-            <div className="h-6 bg-gray-200 rounded-lg w-48 mb-4" />
-            <div className="h-48 bg-gray-100 rounded-xl" />
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="w-40 h-7 rounded-lg" />
+            <Skeleton className="w-64 h-4 rounded" />
+          </div>
+          <Skeleton className="w-32 h-10 rounded-xl" />
+        </div>
+        {/* Stats cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className={`${CARD} space-y-3`}>
+              <Skeleton className="w-24 h-4 rounded" />
+              <Skeleton className="w-16 h-8 rounded-lg" />
+              <Skeleton className="w-20 h-3 rounded" />
+            </div>
+          ))}
+        </div>
+        {/* Chart cards */}
+        {[1, 2].map((i) => (
+          <div key={i} className={`${CARD} space-y-4`}>
+            <div className="flex items-center justify-between">
+              <Skeleton className="w-40 h-6 rounded-lg" />
+              <Skeleton className="w-24 h-8 rounded-xl" />
+            </div>
+            <Skeleton className="w-full h-52 rounded-xl" />
           </div>
         ))}
       </div>
@@ -422,7 +445,8 @@ export default function Analytics() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    router.replace(`/analytics/${tabId}`);
+    // Update URL without triggering Next.js navigation (avoids 2-3s server roundtrip)
+    window.history.replaceState(null, '', `/analytics/${tabId}`);
   };
 
   const tabs = [
@@ -616,7 +640,7 @@ export default function Analytics() {
   return (
     <AppLayout>
       <AnimatePresence>
-        {(!pageReady || loading) && <AppLoadingScreen key="loading" pageName="Analytics" pageType="analytics" />}
+        {!pageReady && <AppLoadingScreen key="loading" pageName="Analytics" pageType="analytics" />}
       </AnimatePresence>
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
 

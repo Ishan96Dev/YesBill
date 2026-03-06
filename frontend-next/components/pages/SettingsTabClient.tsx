@@ -165,7 +165,8 @@ export default function Settings() {
   // Navigate when tab changes
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    router.replace(`/settings/${tabId}`);
+    // Update URL without triggering Next.js navigation (avoids 2-3s server roundtrip)
+    window.history.replaceState(null, '', `/settings/${tabId}`);
   };
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -419,6 +420,7 @@ export default function Settings() {
   const [secEmailMsg, setSecEmailMsg] = useState({ type: '', text: '' });
   const [identities, setIdentities] = useState([]);
   const [lastSignIn, setLastSignIn] = useState(null);
+  const [securityLoading, setSecurityLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -429,12 +431,15 @@ export default function Settings() {
   // Load identities + session info when Security tab is activated
   useEffect(() => {
     if (activeTab !== 'security') return;
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
+    // Only show skeleton on first load (when identities haven't been fetched yet)
+    if (identities.length === 0) setSecurityLoading(true);
+    Promise.all([
+      supabase.auth.getUser(),
+      supabase.auth.getSession(),
+    ]).then(([{ data: { user: u } }, { data: { session: s } }]) => {
       if (u?.identities) setIdentities(u.identities);
-    });
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (s?.user?.last_sign_in_at) setLastSignIn(s.user.last_sign_in_at);
-    });
+    }).finally(() => setSecurityLoading(false));
   }, [activeTab]);
 
   // Pre-fetch account data (services + bills) for the delete modal — runs on mount
@@ -557,7 +562,7 @@ export default function Settings() {
   };
 
   // Page-level loading gate: wait for auth AND profile data
-  const pageReady = usePageReady(0, !loading && !profileLoading);
+  const pageReady = usePageReady(600, !loading && !profileLoading);
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
@@ -738,13 +743,12 @@ export default function Settings() {
         throw new Error('Profile save returned no data. Please try again.');
       }
 
-      // Refresh the shared profile store so all components update
-      await refreshProfile();
-
-      // Exit edit mode back to preview
+      // Exit edit mode immediately — refresh profile in background
       setIsEditingProfile(false);
-
       toast({ title: 'Profile updated', description: 'Your changes have been saved successfully', type: 'success' });
+
+      // Refresh shared profile store in background (non-blocking)
+      refreshProfile().catch((err) => console.warn('Background profile refresh failed:', err));
     } catch (error) {
       console.error('Profile update error:', error);
       const description = error.message?.includes('session')
@@ -807,8 +811,9 @@ export default function Settings() {
         .update({ notification_prefs: notifPrefs, updated_at: new Date().toISOString() })
         .eq('id', userId);
       if (error) throw error;
-      await refreshProfile();
+      // Show success immediately; refresh shared profile store in background
       toast({ title: 'Preferences saved', description: 'Your notification settings have been updated.', type: 'success' });
+      refreshProfile().catch((err) => console.warn('Background profile refresh failed:', err));
     } catch (err) {
       toast({ title: 'Save failed', description: err.message, type: 'error' });
     } finally {
@@ -1002,19 +1007,11 @@ export default function Settings() {
       setAiSettings(prev => ({ ...prev, [selectedProvider]: saved }));
       setAiHasExistingKey(true);
 
-      // Re-fetch all settings from DB to ensure full sync (covers model/provider changes)
-      if (userId) {
-        const freshSettings = await aiSettingsService.getAllSettings(userId);
-        if (freshSettings.length > 0) {
-          const settingsMap = {};
-          freshSettings.forEach(s => { settingsMap[s.provider] = s; });
-          setAiSettings(settingsMap);
-        }
-      }
+      // Show success toast immediately — probe runs in background
+      toast({ title: 'AI Settings Saved', description: `${currentProviderInfo?.name || 'Provider'} configuration saved successfully`, type: 'success' });
 
-      // Probe model availability immediately after save
-      try {
-        const probe = await aiSettingsService.probeModels(selectedProvider, true);
+      // Probe model availability in background (non-blocking)
+      aiSettingsService.probeModels(selectedProvider, true).then((probe) => {
         const providerProbe = (probe?.providers || []).find((p) => p.provider === selectedProvider);
         const selectedProbe = (providerProbe?.models || []).find((m) => m.id === aiSelectedModel);
         if (selectedProbe?.availability_status === 'available') {
@@ -1025,7 +1022,6 @@ export default function Settings() {
             message: selectedProbe.availability_message || 'Selected model is unavailable. Please choose another model.',
           });
         }
-        // Update probe map for the provider
         if (providerProbe?.models) {
           const provMap = {};
           for (const m of providerProbe.models) {
@@ -1033,11 +1029,7 @@ export default function Settings() {
           }
           setModelProbeMap(prev => ({ ...prev, [selectedProvider]: provMap }));
         }
-      } catch (probeErr) {
-        console.warn('Model probe after save failed:', probeErr);
-      }
-
-      toast({ title: 'AI Settings Saved', description: `${currentProviderInfo?.name || 'Provider'} configuration saved successfully`, type: 'success' });
+      }).catch((probeErr) => console.warn('Background model probe failed:', probeErr));
     } catch (err) {
       console.error('Save AI settings error:', err);
       toast({ title: 'Save Failed', description: err.message || 'Could not save AI settings', type: 'error' });
@@ -2224,6 +2216,36 @@ export default function Settings() {
                       <p className="text-gray-500">Manage your password, connected accounts, and account access.</p>
                     </div>
 
+                    {/* Loading skeleton shown while identities/session are being fetched */}
+                    {securityLoading && (
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <Skeleton className="w-40 h-5 rounded-lg" />
+                          <div className="bg-gray-50/70 rounded-2xl border border-gray-200 p-5 space-y-4">
+                            {[1, 2, 3].map(i => <Skeleton key={i} className="w-full h-11 rounded-xl" />)}
+                            <Skeleton className="w-36 h-10 rounded-xl" />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <Skeleton className="w-48 h-5 rounded-lg" />
+                          <div className="bg-gray-50/70 rounded-2xl border border-gray-200 p-5 space-y-4">
+                            <Skeleton className="w-full h-11 rounded-xl" />
+                            <Skeleton className="w-full h-11 rounded-xl" />
+                            <Skeleton className="w-36 h-10 rounded-xl" />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <Skeleton className="w-44 h-5 rounded-lg" />
+                          <div className="bg-gray-50/70 rounded-2xl border border-gray-200 px-5 py-4">
+                            <Skeleton className="w-full h-14 rounded-xl" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Full security content — hidden while loading */}
+                    {!securityLoading && (<>
+
                     {/* -- Change Password -------------------------------- */}
                     <div className="space-y-5">
                       <div className="flex items-center gap-2.5">
@@ -2543,6 +2565,7 @@ export default function Settings() {
                         </Button>
                       </div>
                     </div>
+                    </>)}
                   </div>
                 )}
               </div>

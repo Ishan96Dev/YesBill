@@ -12,17 +12,12 @@
 -- Run this SQL once in the Supabase SQL editor.
 
 -- ── Configuration ─────────────────────────────────────────────────────────────
--- Replace these with your actual values before running:
---   BACKEND_URL  → e.g. https://yesbill-api.onrender.com
---   SCHEDULER_SECRET → must match SCHEDULER_SECRET env var in your backend
-
-DO $$
-BEGIN
-  -- Store config so the cron job can read it without hardcoding
-  PERFORM set_config('app.backend_url',     'https://YOUR_BACKEND_URL', false);
-  PERFORM set_config('app.scheduler_secret', 'YOUR_SCHEDULER_SECRET',    false);
-END $$;
-
+-- Replace the two placeholder values below before running:
+--   YOUR_BACKEND_URL    → e.g. https://yesbill-api.onrender.com
+--   YOUR_SCHEDULER_SECRET → must match SCHEDULER_SECRET env var in your backend
+--
+-- Note: ALTER DATABASE / ALTER ROLE GUC approaches require superuser which
+-- Supabase does not grant. Values are embedded directly in the job body instead.
 
 -- ── Schedule ──────────────────────────────────────────────────────────────────
 -- Runs at the top of every hour (0 * * * * = "at minute 0 of every hour")
@@ -31,10 +26,10 @@ SELECT cron.schedule(
   '0 * * * *',                         -- cron expression: every hour on the hour
   $$
     SELECT net.http_post(
-      url     := current_setting('app.backend_url') || '/bills/auto-generate',
+      url     := 'https://YOUR_BACKEND_URL/bills/auto-generate',
       headers := jsonb_build_object(
         'Content-Type',       'application/json',
-        'X-Scheduler-Secret', current_setting('app.scheduler_secret')
+        'X-Scheduler-Secret', 'YOUR_SCHEDULER_SECRET'
       ),
       body    := '{}'::jsonb
     );

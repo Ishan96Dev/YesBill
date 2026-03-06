@@ -37,6 +37,7 @@ export default function ChatPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [creatingConv, setCreatingConv] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [modelSelectorLoading, setModelSelectorLoading] = useState(false);
   const [modelBlockedReason, setModelBlockedReason] = useState("");
   const [reasoningEffort, setReasoningEffort] = useState("none");
   const [modelSupportsReasoning, setModelSupportsReasoning] = useState(false);
@@ -488,7 +489,7 @@ export default function ChatPage() {
                 {modelBlockedReason}
               </div>
             )}
-            {initialLoading ? (
+            {(initialLoading || modelSelectorLoading) ? (
               <ToolbarSkeleton />
             ) : (
               <div className="flex items-center gap-2 px-4 pt-3 pb-1">
@@ -496,6 +497,7 @@ export default function ChatPage() {
                   selectedModel={selectedModel}
                   onModelChange={setSelectedModel}
                   onModelStatusChange={handleModelStatusChange}
+                  onLoadingChange={setModelSelectorLoading}
                   initialData={preloadedModelsData}
                 />
                 {modelSupportsReasoning && (

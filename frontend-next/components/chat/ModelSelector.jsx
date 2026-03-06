@@ -6,13 +6,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, Cpu } from "lucide-react";
 import { chatService } from "../../services/chatService";
 
-export default function ModelSelector({ selectedModel, onModelChange, onModelStatusChange, initialData }) {
+export default function ModelSelector({ selectedModel, onModelChange, onModelStatusChange, onLoadingChange, initialData }) {
   const [models, setModels] = useState(() =>
     initialData?.models ? initialData.models.filter((m) => !m.is_deprecated) : []
   );
   const [configured, setConfigured] = useState(() => initialData ? (initialData.configured ?? true) : true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(() => !initialData);
+
+  // Notify parent whenever our loading state changes (e.g. to sync ToolbarSkeleton)
+  useEffect(() => {
+    if (onLoadingChange) onLoadingChange(loading);
+  }, [loading, onLoadingChange]);
   const [serverSelectedModel, setServerSelectedModel] = useState(() => initialData?.selected_model || null);
   const [serverSelectedInfo, setServerSelectedInfo] = useState(() => initialData?.selected_model_info || null);
 
@@ -78,12 +83,11 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
     let didInitialFetch = !!initialData;
     const cleanup = didInitialFetch ? undefined : fetchModels();
 
-    // Re-fetch when the user navigates back to this page (e.g., after changing Settings)
+    // Re-fetch when the user navigates back to this page (e.g., after changing Settings).
+    // Silent refresh: don't reset selectedModel or show a skeleton — the user can keep
+    // chatting while models update quietly in the background.
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
-        // Reset selected model so auto-select runs with the new provider
-        onModelChange(null);
-        setLoading(true);
         fetchModels();
       }
     };
