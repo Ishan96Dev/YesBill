@@ -740,7 +740,17 @@ export default function AppLayout({
           : "min-h-screen overflow-y-auto pb-[65px]"
       )}>
         {!fullHeight && <ServiceExpiryBanner userId={user?.id} />}
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, ease: "easeInOut" }}
+            className={cn(fullHeight && "h-full")}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* ═══════════════════════════════════════════════

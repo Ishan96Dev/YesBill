@@ -27,7 +27,7 @@ export default function WelcomeScreen({
     const timer = setTimeout(() => {
       setShow(false);
       if (onComplete) {
-        setTimeout(onComplete, 400);
+        onComplete();
       }
     }, duration);
     return () => clearTimeout(timer);

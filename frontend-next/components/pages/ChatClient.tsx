@@ -88,6 +88,12 @@ export default function ChatPage() {
             modelInfo?.default_effort_level ||
             "none";
           setReasoningEffort(defaultEffort);
+          const supportsReasoning = !!modelInfo?.reasoning_supported;
+          setModelSupportsReasoning(supportsReasoning);
+          if (supportsReasoning) {
+            const levels = modelInfo?.supported_effort_levels;
+            setAvailableEffortLevels(Array.isArray(levels) && levels.length > 0 ? levels : null);
+          }
         } else {
           setAiConfigured(false);
         }
