@@ -552,7 +552,7 @@ function AIStep({ userName, onComplete }) {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { displayName, fullName, avatarUrl } = useUser();
+  const { displayName, fullName, avatarUrl, user, loading: authLoading } = useUser();
   const [step, setStep] = useState(1);
   const [userName, setUserName] = useState(() => localStorage.getItem("user_name") || "");
   const [initialAvatarUrl, setInitialAvatarUrl] = useState(() => localStorage.getItem("user_avatar") || "");
@@ -575,12 +575,12 @@ export default function OnboardingPage() {
   }, [avatarUrl, initialAvatarUrl]);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id");
-    if (!userId) { router.replace("/login"); return; }
-    profileService.getOnboardingStatus(userId).then((status) => {
+    if (authLoading) return;
+    if (!user) { router.replace("/login"); return; }
+    profileService.getOnboardingStatus(user.id).then((status) => {
       if (status?.onboarding_completed) router.replace("/dashboard");
     }).catch(() => { });
-  }, [router]);
+  }, [authLoading, user, router]);
 
   const handleProfileNext = (savedName) => {
     if (savedName) {

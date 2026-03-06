@@ -28,6 +28,7 @@ import { useToast } from "@/components/ui/toaster-custom";
 import { analyticsService, calendarService } from "@/services/dataService";
 import profileService from "@/services/profileService";
 import { aiSettingsService } from "@/services/aiSettingsService";
+import { useUser } from "@/hooks/useUser";
 
 // --- Icon system --------------------------------------------------------------
 const iconMap = {
@@ -210,6 +211,7 @@ function AIConfigReminderModal({ onSetupNow, onRemindLater }) {
 export default function Dashboard() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useUser();
 
   const [greeting, setGreeting] = useState("Good Morning");
   const [loading, setLoading] = useState(true);
@@ -249,28 +251,6 @@ export default function Dashboard() {
         setServices(stats.services || []);
         setTodayConfs(todayData);
         setMonthConfs(monthData);
-
-        const uid = localStorage.getItem("user_id");
-        if (uid) {
-          try {
-            const profile = await profileService.getProfile(uid);
-            setUserName(profile?.display_name || profile?.full_name || "");
-
-            // Show one-time AI config reminder if skipped during onboarding
-            if (
-              profile?.onboarding_skipped_steps?.ai_config === true &&
-              profile?.ai_config_reminder_shown !== true
-            ) {
-              try {
-                const allAI = await aiSettingsService.getAllSettings(uid);
-                const hasKey = allAI.some(s => s.api_key_encrypted);
-                if (!hasKey) setShowAIReminder(true);
-              } catch {
-                setShowAIReminder(true);
-              }
-            }
-          } catch { /* silent — name is optional */ }
-        }
       } catch (err) {
         console.error("Dashboard load:", err);
         toast({ title: "Failed to load dashboard data", variant: "destructive" });
@@ -280,6 +260,24 @@ export default function Dashboard() {
     };
     load();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -- Profile + AI reminder (runs when user auth state is available) --------
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid) return;
+    profileService.getProfile(uid).then((profile) => {
+      setUserName(profile?.display_name || profile?.full_name || "");
+      if (
+        profile?.onboarding_skipped_steps?.ai_config === true &&
+        profile?.ai_config_reminder_shown !== true
+      ) {
+        aiSettingsService.getAllSettings(uid).then((allAI) => {
+          const hasKey = allAI.some((s) => s.api_key_encrypted);
+          if (!hasKey) setShowAIReminder(true);
+        }).catch(() => { setShowAIReminder(true); });
+      }
+    }).catch(() => { /* silent — name is optional */ });
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Today's services (filter monthly to billing day only) -----------------
   const todayServices = useMemo(() => {
@@ -387,7 +385,7 @@ export default function Dashboard() {
 
   const dismissAIReminder = async (goToSettings = false) => {
     setShowAIReminder(false);
-    const uid = localStorage.getItem("user_id");
+    const uid = user?.id;
     if (uid) {
       profileService.updateProfile(uid, { ai_config_reminder_shown: true }).catch(() => {});
     }
