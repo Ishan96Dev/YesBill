@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🔒 Security Vulnerability
-    url: https://github.com/yourusername/yesbill/security/advisories/new
+    url: https://github.com/Ishan96Dev/YesBill/security/advisories/new
     about: Please report security vulnerabilities privately via GitHub Security Advisories.
   - name: 💬 General Discussion
-    url: https://github.com/yourusername/yesbill/discussions
+    url: https://github.com/Ishan96Dev/YesBill/discussions
     about: For questions and general discussions about YesBill.

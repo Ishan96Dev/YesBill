@@ -560,6 +560,14 @@ export default function OnboardingPage() {
   const [initialAvatarUrl, setInitialAvatarUrl] = useState(() => localStorage.getItem("user_avatar") || "");
   const [isCompleting, setIsCompleting] = useState(false);
 
+  // Guard: only run the onboarding-status check ONCE per mount.
+  // Without this, events like TOKEN_REFRESHED cause `user` to become a new
+  // object reference (same data, different identity) which re-triggers the
+  // effect mid-flow. If the user already saved Step 1 (which writes country_code),
+  // the re-triggered check would see country_code set → treat them as onboarded
+  // → redirect to /dashboard while they're on Step 2.
+  const hasCheckedOnboarding = useRef(false);
+
   useEffect(() => {
     const fromStorage = localStorage.getItem("user_name") || "";
     const resolved = fromStorage || displayName || fullName || "";
@@ -577,12 +585,20 @@ export default function OnboardingPage() {
   }, [avatarUrl, initialAvatarUrl]);
 
   useEffect(() => {
+    // Bail out if still loading — the effect will re-run when authLoading flips to false.
     if (authLoading) return;
+    // Bail out if we've already done the check for this session — prevents spurious
+    // re-runs caused by TOKEN_REFRESHED creating a new `user` object reference.
+    if (hasCheckedOnboarding.current) return;
     if (!user) { router.replace("/login"); return; }
+    hasCheckedOnboarding.current = true;
     profileService.getOnboardingStatus(user.id).then((status) => {
       if (status?.onboarding_completed) router.replace("/dashboard");
     }).catch(() => { });
-  }, [authLoading, user, router]);
+  // Use user?.id (primitive) instead of user (object ref) so TOKEN_REFRESHED,
+  // USER_UPDATED etc. — which create a new user object but keep the same id —
+  // do not re-trigger this effect.
+  }, [authLoading, user?.id, router]);
 
   const handleProfileNext = (savedName) => {
     if (savedName) {

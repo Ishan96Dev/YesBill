@@ -2622,7 +2622,7 @@ export default function Settings() {
                         {accountDataLoading ? (
                           <span className="text-xs text-gray-400 italic">Loading…</span>
                         ) : accountServices.length === 0 ? (
-                          <span className="text-xs text-gray-400">No services</span>
+                          <span className="text-xs text-gray-700">No services</span>
                         ) : (
                           <div className="flex flex-wrap gap-1.5 flex-1">
                             {accountServices.slice(0, 3).map((s) => (

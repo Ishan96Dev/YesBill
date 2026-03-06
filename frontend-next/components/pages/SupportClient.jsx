@@ -14,6 +14,8 @@ import {
   MessageSquare,
   Zap,
   ChevronRight,
+  Brain,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import AppLayout from "@/components/layout/AppLayout";
@@ -21,9 +23,11 @@ import AppLoadingScreen from "@/components/loading/AppLoadingScreen";
 import { usePageReady } from "@/hooks/usePageReady";
 
 const GITHUB_REPO = "https://github.com/Ishan96Dev/YesBill";
-const BUG_REPORT_URL = `${GITHUB_REPO}/issues/new?labels=bug&title=%5BBUG%5D+`;
-const FEATURE_REQUEST_URL = `${GITHUB_REPO}/issues/new?labels=enhancement&title=%5BFEATURE%5D+`;
+const BUG_REPORT_URL = `${GITHUB_REPO}/issues/new?template=bug_report.yml`;
+const FEATURE_REQUEST_URL = `${GITHUB_REPO}/issues/new?template=feature_request.yml`;
+const AI_ISSUE_URL = `${GITHUB_REPO}/issues/new?template=ai_issue.yml`;
 const ISSUES_URL = `${GITHUB_REPO}/issues`;
+const DISCUSSIONS_URL = `${GITHUB_REPO}/discussions`;
 const SUPPORT_EMAIL = "support@yesbill.com";
 
 const containerVariants = {
@@ -82,7 +86,7 @@ export default function SupportClient() {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
               Get Help via GitHub
             </p>
-            <div className="grid sm:grid-cols-2 gap-5">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {/* Bug Report Card */}
               <a
                 href={BUG_REPORT_URL}
@@ -90,9 +94,7 @@ export default function SupportClient() {
                 rel="noopener noreferrer"
                 className="group relative overflow-hidden rounded-2xl border-2 border-red-100 bg-white p-6 hover:border-red-300 hover:shadow-xl hover:shadow-red-100 transition-all duration-300"
               >
-                {/* Gradient glow bg */}
                 <div className="absolute inset-0 bg-gradient-to-br from-red-50/60 to-orange-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-red-100 group-hover:bg-red-200 flex items-center justify-center transition-colors">
@@ -119,9 +121,7 @@ export default function SupportClient() {
                 rel="noopener noreferrer"
                 className="group relative overflow-hidden rounded-2xl border-2 border-indigo-100 bg-white p-6 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-100 transition-all duration-300"
               >
-                {/* Gradient glow bg */}
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/60 to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center transition-colors">
@@ -136,6 +136,33 @@ export default function SupportClient() {
                   <span className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 group-hover:gap-3 transition-all">
                     <Github className="w-4 h-4" />
                     Request Feature
+                    <ChevronRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </a>
+
+              {/* AI Issue Card */}
+              <a
+                href={AI_ISSUE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-2xl border-2 border-violet-100 bg-white p-6 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-100 transition-all duration-300"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-50/60 to-fuchsia-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-violet-100 group-hover:bg-violet-200 flex items-center justify-center transition-colors">
+                      <Brain className="w-6 h-6 text-violet-600" />
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-violet-400 transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1.5">AI Issue</h3>
+                  <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+                    AI behaving unexpectedly? Report AI-specific issues like wrong outputs or broken prompts.
+                  </p>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-600 group-hover:gap-3 transition-all">
+                    <Github className="w-4 h-4" />
+                    Report AI Issue
                     <ChevronRight className="w-4 h-4" />
                   </span>
                 </div>
@@ -165,6 +192,23 @@ export default function SupportClient() {
                   <p className="text-xs text-gray-400 mt-0.5">Browse open bugs and feature requests on GitHub</p>
                 </div>
                 <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-indigo-400 flex-shrink-0 transition-colors" />
+              </a>
+
+              {/* GitHub Discussions */}
+              <a
+                href={DISCUSSIONS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors group"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gray-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors flex-shrink-0">
+                  <Users className="w-4 h-4 text-gray-600 group-hover:text-emerald-600 transition-colors" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800">GitHub Discussions</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Join the community, ask questions, share ideas</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-emerald-400 flex-shrink-0 transition-colors" />
               </a>
 
               {/* Email Support */}
