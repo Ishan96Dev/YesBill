@@ -804,7 +804,7 @@ export default function Bills() {
                                 ? "bg-gradient-to-r from-emerald-600 to-teal-500"
                                 : "bg-gradient-to-r from-primary to-indigo-600"
                             }`}>
-                              ?{Number(bill.total_amount || 0).toFixed(2)}
+                              ₹{Number(bill.total_amount || 0).toFixed(2)}
                             </p>
                           </div>
                           <div className="flex gap-1 flex-wrap justify-end">
@@ -939,7 +939,7 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
             <p className={`text-4xl font-bold ${
               isProvider ? "text-emerald-600" : "text-primary"
             }`}>
-              ?{billData.total.toFixed(2)}
+              ₹{billData.total.toFixed(2)}
             </p>
           </div>
         </div>
@@ -1020,7 +1020,7 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
             <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
               <TrendingDown className="w-5 h-5 text-orange-600 mb-2" />
               <p className="text-2xl font-bold text-orange-700">
-                ?{billData.insights.savings}
+                ₹{billData.insights.savings}
               </p>
               <p className="text-xs text-orange-600 font-medium">Saved</p>
             </div>
@@ -1094,12 +1094,12 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
         <div className="bill-total-section flex justify-between items-center pt-6 mt-4 border-t-2 border-gray-300" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
           <span className="text-xl font-bold text-gray-900">Total Amount</span>
           <span className="text-3xl font-bold text-primary">
-            ?{billData.total.toFixed(2)}
+            ₹{billData.total.toFixed(2)}
           </span>
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons */
       <div className="flex flex-col sm:flex-row gap-3 mt-8">
         <Button
           onClick={onDownloadPDF}

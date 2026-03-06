@@ -15,3 +15,6 @@ python-multipart==0.0.20
 
 # Rate Limiting
 slowapi==0.1.9
+
+# Timezone database (required for ZoneInfo on Linux containers without system tzdata)
+tzdata==2025.2

@@ -169,6 +169,23 @@ def _accepted_calendar_date_help() -> str:
     )
 
 
+# Deprecated IANA timezone aliases still returned by some browsers/OS
+_TZ_ALIASES: dict[str, str] = {
+    "Asia/Calcutta": "Asia/Kolkata",
+    "Asia/Ulaanbaatar": "Asia/Ulan_Bator",
+    "America/Indiana/Indianapolis": "America/Indiana/Indianapolis",  # keep as-is (present in tzdata)
+}
+
+
+def _safe_zoneinfo(tz_key: str) -> "ZoneInfo":
+    """Return ZoneInfo for tz_key, normalising deprecated aliases and falling back to UTC."""
+    normalized = _TZ_ALIASES.get(tz_key, tz_key)
+    try:
+        return ZoneInfo(normalized)
+    except Exception:
+        return ZoneInfo("UTC")
+
+
 def _normalize_calendar_date_input(date_input: str, user_tz: str) -> str | None:
     raw = (date_input or "").strip()
     if not raw:
@@ -176,7 +193,7 @@ def _normalize_calendar_date_input(date_input: str, user_tz: str) -> str | None:
     lowered = raw.lower()
 
     try:
-        tz = ZoneInfo(user_tz)
+        tz = _safe_zoneinfo(user_tz)
     except Exception:
         tz = ZoneInfo("Asia/Kolkata")
 
@@ -798,7 +815,7 @@ async def _build_confirm_action(
 
             # Validate date is within the last 30 days (not future, not older than 30 days)
             try:
-                tz = ZoneInfo(user_tz)
+                tz = _safe_zoneinfo(user_tz)
             except Exception:
                 tz = ZoneInfo("Asia/Kolkata")
             today = datetime.now(tz).date()
@@ -987,7 +1004,7 @@ async def stream_agent_response(
         )
 
     # Always inject today's date so the LLM can resolve "today"/"yesterday" correctly
-    today_str = datetime.now(ZoneInfo(user_tz)).strftime("%Y-%m-%d")
+    today_str = datetime.now(_safe_zoneinfo(user_tz)).strftime("%Y-%m-%d")
     agent_system_prompt += (
         f"\n\nToday's date is {today_str} (timezone: {user_tz}). "
         "Use this exact date when calling calendar tools for 'today'."
