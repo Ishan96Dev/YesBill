@@ -51,6 +51,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import AppLoadingScreen from "@/components/loading/AppLoadingScreen";
 import { useToast } from "@/components/ui/toaster-custom";
 import { usePageReady } from "@/hooks/usePageReady";
+import { useUser } from "@/hooks/useUser";
 import { servicesService } from "@/services/dataService";
 import { generatedBillsAPI } from "@/services/api";
 import { DatePicker, strToDate, dateToStr } from "@/components/ui/DatePicker";
@@ -58,7 +59,8 @@ import { DatePicker, strToDate, dateToStr } from "@/components/ui/DatePicker";
 export default function AddService() {
   const router = useRouter();
   const { toast } = useToast();
-  const pageReady = usePageReady(2000);
+  const { loading: authLoading } = useUser();
+  const pageReady = usePageReady(0, !authLoading);
 
   const [formData, setFormData] = useState({
     name: "",

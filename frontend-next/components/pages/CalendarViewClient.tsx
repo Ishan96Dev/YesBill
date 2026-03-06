@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Calendar as CalendarIcon,
   Check,
   X,
@@ -48,7 +49,7 @@ export default function CalendarView() {
   const { toast } = useToast();
   const { user, profile, loading: authLoading } = useUser();
   const { isToday: isTodayInTz } = useTimezone();
-  const pageReady = usePageReady(500, !authLoading);
+  const pageReady = usePageReady(0, !authLoading);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Services with month stats
@@ -66,6 +67,10 @@ export default function CalendarView() {
 
   // Role tab: 'consumer' | 'provider'
   const [roleTab, setRoleTab] = useState('consumer');
+
+  // Month/year picker mode: 'days' | 'months' | 'years'
+  const [pickerMode, setPickerMode] = useState('days');
+  const [yearRangeStart, setYearRangeStart] = useState(() => currentDate.getFullYear() - 5);
 
   // Get currency symbol from user profile
   const currencySymbol = useMemo(() => {
@@ -156,10 +161,12 @@ export default function CalendarView() {
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(year, month - 1));
+    setPickerMode('days');
   };
 
   const handleNextMonth = () => {
     setCurrentDate(new Date(year, month + 1));
+    setPickerMode('days');
   };
 
   const getStatusBadge = (status) => {
@@ -340,34 +347,121 @@ export default function CalendarView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-black/5 border border-gray-200/50 p-4 mb-6 flex items-center justify-between"
+          className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-black/5 border border-gray-200/50 p-4 mb-6"
         >
-          <WithTooltip tip="Previous month" side="bottom">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePrevMonth}
-              className="hover:bg-gray-100 rounded-xl"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-          </WithTooltip>
+          {pickerMode === 'days' ? (
+            <div className="flex items-center justify-between">
+              <WithTooltip tip="Previous month" side="bottom">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handlePrevMonth}
+                  className="hover:bg-gray-100 rounded-xl"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+              </WithTooltip>
 
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-primary" />
-            {monthNames[month]} {year}
-          </h2>
+              <button
+                onClick={() => { setYearRangeStart(year - 5); setPickerMode('months'); }}
+                className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-primary transition-colors px-3 py-1 rounded-xl hover:bg-gray-50 group"
+              >
+                <CalendarIcon className="w-5 h-5 text-primary" />
+                {monthNames[month]} {year}
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+              </button>
 
-          <WithTooltip tip="Next month" side="bottom">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleNextMonth}
-              className="hover:bg-gray-100 rounded-xl"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Button>
-          </WithTooltip>
+              <WithTooltip tip="Next month" side="bottom">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleNextMonth}
+                  className="hover:bg-gray-100 rounded-xl"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+              </WithTooltip>
+            </div>
+          ) : pickerMode === 'months' ? (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => setPickerMode('years')}
+                  className="flex items-center gap-1 text-lg font-bold text-gray-900 hover:text-primary px-2 py-1 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  {year}
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+                <button
+                  onClick={() => setPickerMode('days')}
+                  className="text-sm text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {monthNames.map((name, idx) => (
+                  <button
+                    key={name}
+                    onClick={() => { setCurrentDate(new Date(year, idx)); setPickerMode('days'); }}
+                    className={`py-2.5 px-2 rounded-xl text-sm font-semibold transition-all ${
+                      idx === month
+                        ? 'bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md shadow-primary/25'
+                        : 'hover:bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {name.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-bold text-gray-900 px-2">Select Year</span>
+                <button
+                  onClick={() => setPickerMode('months')}
+                  className="text-sm text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <Button
+                  variant="ghost" size="icon"
+                  onClick={() => setYearRangeStart(s => s - 12)}
+                  className="hover:bg-gray-100 rounded-xl h-8 w-8"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-gray-500 flex-1 text-center">
+                  {yearRangeStart} – {yearRangeStart + 11}
+                </span>
+                <Button
+                  variant="ghost" size="icon"
+                  onClick={() => setYearRangeStart(s => s + 12)}
+                  className="hover:bg-gray-100 rounded-xl h-8 w-8"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map(y => (
+                  <button
+                    key={y}
+                    onClick={() => { setCurrentDate(new Date(y, month)); setPickerMode('months'); }}
+                    className={`py-2.5 px-2 rounded-xl text-sm font-semibold transition-all ${
+                      y === year
+                        ? 'bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md shadow-primary/25'
+                        : 'hover:bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Role Tabs */}

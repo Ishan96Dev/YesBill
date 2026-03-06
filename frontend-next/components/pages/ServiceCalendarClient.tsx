@@ -58,7 +58,7 @@ export default function ServiceCalendarPage() {
     const { toast } = useToast();
     const { user, profile, loading: authLoading } = useUser();
     const { isToday: isTodayInTz } = useTimezone();
-    const pageReady = usePageReady(500, !authLoading);
+    const pageReady = usePageReady(0, !authLoading);
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const [service, setService] = useState(null);

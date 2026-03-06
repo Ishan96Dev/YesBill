@@ -88,7 +88,7 @@ const getMonthRange = (yearMonth) => {
 export default function Bills() {
   const { toast } = useToast();
   const { user, loading: authLoading } = useUser();
-  const pageReady = usePageReady(500, !authLoading);
+  const pageReady = usePageReady(0, !authLoading);
   const [generating, setGenerating] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(
     `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`

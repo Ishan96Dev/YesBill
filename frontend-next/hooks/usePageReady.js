@@ -13,9 +13,12 @@ import { useState, useEffect } from 'react'
  * @returns {boolean} - Whether the page is ready to display
  */
 export function usePageReady(minDelay = 500, dataReady = true) {
-  const [timerDone, setTimerDone] = useState(false)
+  // If minDelay is 0, there is nothing to wait for — start ready immediately
+  // to prevent a single-frame flash of the loading screen.
+  const [timerDone, setTimerDone] = useState(minDelay === 0)
 
   useEffect(() => {
+    if (minDelay === 0) return
     const timer = setTimeout(() => setTimerDone(true), minDelay)
     return () => clearTimeout(timer)
   }, [minDelay])

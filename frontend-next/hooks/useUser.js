@@ -54,7 +54,21 @@ function hasValidStoredSession() {
   } catch { return false }
 }
 
-let _user = null
+// ─── Restore minimal user from localStorage (prevents premature redirect) ─
+// When the fast-path skips loading=true, `_user` must also be set immediately;
+// otherwise AppLayout's `if (!loading && !user)` fires before INITIAL_SESSION
+// and redirects the user to /login (causing the refresh flash + forced /dashboard).
+// INITIAL_SESSION will replace this placeholder with the real Supabase user.
+function loadStoredUser() {
+  try {
+    const userId = localStorage.getItem('user_id')
+    const email = localStorage.getItem('user_email')
+    if (!userId || !hasValidStoredSession()) return null
+    return { id: userId, email: email || '' }
+  } catch { return null }
+}
+
+let _user = typeof window !== 'undefined' ? loadStoredUser() : null
 let _profile = loadCachedProfile()   // instant restore from cache
 let _session = null
 let _loading = !(typeof window !== 'undefined' && hasValidStoredSession())   // skip loading for returning users

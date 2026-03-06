@@ -71,7 +71,7 @@ export default function Services() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, profile, loading: authLoading, refreshProfile } = useUser();
-  const pageReady = usePageReady(1500, !authLoading);
+  const pageReady = usePageReady(0, !authLoading);
   const [services, setServices] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
 
