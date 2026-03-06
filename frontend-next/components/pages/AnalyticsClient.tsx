@@ -192,7 +192,7 @@ function AIUsageTab() {
         <motion.div whileHover={{ y: -4 }} className={MINI_CARD}>
           <DollarSign className="w-10 h-10 text-green-600 p-2 bg-green-100 rounded-xl mb-3" />
           <p className="text-sm text-gray-500 mb-1">Total Cost</p>
-          <p className="text-2xl font-bold text-gray-900">?{totalCostInr.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900">₹{totalCostInr.toFixed(2)}</p>
           <p className="text-xs text-gray-400 mt-1">${totalCostUsd.toFixed(4)}</p>
         </motion.div>
         <motion.div whileHover={{ y: -4 }} className={MINI_CARD}>
@@ -309,7 +309,7 @@ function AIUsageTab() {
                   <span className="font-semibold text-gray-700 truncate max-w-[180px]">{m.model}</span>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-gray-400">{m.messages} msgs</span>
-                    <span className="font-bold text-gray-900">?{m.cost_inr.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900">₹{m.cost_inr.toFixed(2)}</span>
                   </div>
                 </div>
                 <AnimatedBar
@@ -738,7 +738,7 @@ export default function Analytics() {
                           {roleFilter === "provider" ? "Avg Monthly Income" : "Avg Monthly Spend"}
                         </p>
                         <p className="text-2xl font-bold text-gray-900">
-                          ?{stats.avgMonthlySpend.toLocaleString()}
+                          ₹{stats.avgMonthlySpend.toLocaleString()}
                         </p>
                       </motion.div>
                       <motion.div whileHover={{ y: -4 }} className={MINI_CARD}>
@@ -757,7 +757,7 @@ export default function Analytics() {
                           {roleFilter === "provider" ? "Total Earned" : "Total This Period"}
                         </p>
                         <p className="text-2xl font-bold text-gray-900">
-                          ?{stats.totalSpentThisYear.toLocaleString()}
+                          ₹{stats.totalSpentThisYear.toLocaleString()}
                         </p>
                       </motion.div>
                     </div>
@@ -810,7 +810,7 @@ export default function Analytics() {
                               )}
                             </div>
                             <span className="font-bold text-gray-900">
-                              ?{data.amount.toLocaleString()}
+                              ₹{data.amount.toLocaleString()}
                             </span>
                           </div>
                           <AnimatedBar
@@ -888,7 +888,7 @@ export default function Analytics() {
                               {row.month}
                             </span>
                             <span className="font-bold text-gray-900">
-                              ?{row.total.toLocaleString()}
+                              ₹{row.total.toLocaleString()}
                             </span>
                           </div>
                           {chartMode === "stacked" ? (
@@ -915,7 +915,7 @@ export default function Analytics() {
                                       key={svc.id}
                                       style={{ width: `${pct}%` }}
                                       className={`h-full ${svc.color}`}
-                                      title={`${svc.name}: ?${row.services[svc.id]?.amount || 0}`}
+                                      title={`${svc.name}: ₹${row.services[svc.id]?.amount || 0}`}
                                     />
                                   );
                                 })}
@@ -944,7 +944,7 @@ export default function Analytics() {
                                       />
                                     </div>
                                     <span className="text-xs font-medium text-gray-700 w-16 text-right">
-                                      ?{amt.toLocaleString()}
+                                      ₹{amt.toLocaleString()}
                                     </span>
                                   </div>
                                 ) : null;
@@ -988,7 +988,7 @@ export default function Analytics() {
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-400">{cat.percentage}%</span>
                                   <span className="font-bold text-gray-900">
-                                    ?{cat.amount.toLocaleString()}
+                                    ₹{cat.amount.toLocaleString()}
                                   </span>
                                 </div>
                               </div>
@@ -1040,7 +1040,7 @@ export default function Analytics() {
                                   <span className="ml-2 text-xs text-gray-400">{bill.month}</span>
                                 </div>
                                 <span className="font-bold text-gray-900">
-                                  ?{bill.amount.toLocaleString()}
+                                  ₹{bill.amount.toLocaleString()}
                                 </span>
                               </div>
                               <AnimatedBar
@@ -1119,7 +1119,7 @@ export default function Analytics() {
                                         />
                                       </div>
                                       <span className="text-xs font-bold text-gray-700 w-16 text-right">
-                                        ?{amt.toLocaleString()}
+                                        ₹{amt.toLocaleString()}
                                       </span>
                                     </div>
                                   );
@@ -1133,7 +1133,7 @@ export default function Analytics() {
                             <div key={yr}>
                               <p className="text-xs text-gray-400">{yr} Total</p>
                               <p className="text-lg font-bold text-gray-900">
-                                ?{(yearlyComparison.years[yr] || [])
+                                ₹{(yearlyComparison.years[yr] || [])
                                   .reduce((s, v) => s + v, 0)
                                   .toLocaleString()}
                               </p>
@@ -1181,7 +1181,7 @@ export default function Analytics() {
                                   {svc.name}
                                 </span>
                                 <span className="font-bold text-gray-900">
-                                  ?{svc.amount.toLocaleString()}
+                                  ₹{svc.amount.toLocaleString()}
                                 </span>
                               </div>
                               <div className="ml-10">
@@ -1213,19 +1213,19 @@ export default function Analytics() {
                         <div className="bg-gray-50 rounded-2xl p-3 text-center">
                           <p className="text-xs text-gray-400 mb-1">Potential</p>
                           <p className="text-lg font-bold text-gray-700">
-                            ?{totalPotential.toLocaleString()}
+                            ₹{totalPotential.toLocaleString()}
                           </p>
                         </div>
                         <div className="bg-blue-50 rounded-2xl p-3 text-center">
                           <p className="text-xs text-blue-400 mb-1">Actual Paid</p>
                           <p className="text-lg font-bold text-blue-700">
-                            ?{totalActual.toLocaleString()}
+                            ₹{totalActual.toLocaleString()}
                           </p>
                         </div>
                         <div className="bg-green-50 rounded-2xl p-3 text-center">
                           <p className="text-xs text-green-500 mb-1">Saved</p>
                           <p className="text-lg font-bold text-green-700">
-                            ?{totalSavings.toLocaleString()}
+                            ₹{totalSavings.toLocaleString()}
                           </p>
                         </div>
                       </div>
@@ -1241,7 +1241,7 @@ export default function Analytics() {
                               <span className="font-semibold text-gray-600">{d.month}</span>
                               {d.savings > 0 && (
                                 <span className="text-green-600 font-medium">
-                                  Saved ?{d.savings}
+                                  Saved ₹{d.savings}
                                 </span>
                               )}
                             </div>
@@ -1329,7 +1329,7 @@ export default function Analytics() {
                                   </div>
                                   <div className="flex items-center gap-3 text-xs mt-0.5">
                                     <span className="text-green-600 font-medium">
-                                      ?? {svc.currentStreak} day streak
+                                      🔥 {svc.currentStreak} day streak
                                     </span>
                                     <span className="text-gray-400">
                                       Best: {svc.longestStreak} days
@@ -1390,10 +1390,10 @@ export default function Analytics() {
                           <div className="flex items-end justify-between mb-3">
                             <div>
                               <p className="text-3xl font-bold text-gray-900">
-                                ?{currentMonthSpend.toLocaleString()}
+                                ₹{currentMonthSpend.toLocaleString()}
                               </p>
                               <p className="text-sm text-gray-400">
-                                of ?{monthlyBudget.toLocaleString()} budget
+                                of ₹{monthlyBudget.toLocaleString()} budget
                               </p>
                             </div>
                             <p
@@ -1417,12 +1417,12 @@ export default function Analytics() {
                           </div>
                           {monthlyBudget - currentMonthSpend >= 0 ? (
                             <p className="text-sm font-semibold text-green-600">
-                              ?{(monthlyBudget - currentMonthSpend).toLocaleString()} remaining
+                              ₹{(monthlyBudget - currentMonthSpend).toLocaleString()} remaining
                               this month
                             </p>
                           ) : (
                             <p className="text-sm font-semibold text-red-600">
-                              ?{Math.abs(monthlyBudget - currentMonthSpend).toLocaleString()} over
+                              ₹{Math.abs(monthlyBudget - currentMonthSpend).toLocaleString()} over
                               budget
                             </p>
                           )}
@@ -1471,7 +1471,7 @@ export default function Analytics() {
                                   <span className="font-semibold text-gray-700">{svc.name}</span>
                                 </div>
                                 <span className="font-bold text-gray-900">
-                                  ?{svc.amount.toLocaleString()}
+                                  ₹{svc.amount.toLocaleString()}
                                 </span>
                               </div>
                               <AnimatedBar
@@ -1518,7 +1518,7 @@ export default function Analytics() {
                                   <span className="font-semibold text-gray-700">{svc.name}</span>
                                 </div>
                                 <span className="font-bold text-gray-900">
-                                  ?{svc.amount.toLocaleString()}
+                                  ₹{svc.amount.toLocaleString()}
                                 </span>
                               </div>
                               <AnimatedBar
@@ -1614,7 +1614,7 @@ export default function Analytics() {
                           <p className="text-gray-600 text-sm mb-4">
                             Based on your current usage, estimated spend is approximately{" "}
                             <span className="font-bold text-primary">
-                              ?{forecast.expected.toLocaleString()}
+                              ₹{forecast.expected.toLocaleString()}
                             </span>
                             .
                           </p>
@@ -1622,19 +1622,19 @@ export default function Analytics() {
                             <div className="bg-white/60 rounded-xl p-3 text-center">
                               <p className="text-xs text-gray-500 mb-1">Best</p>
                               <p className="text-lg font-bold text-green-600">
-                                ?{forecast.best.toLocaleString()}
+                                ₹{forecast.best.toLocaleString()}
                               </p>
                             </div>
                             <div className="bg-white/60 rounded-xl p-3 text-center">
                               <p className="text-xs text-gray-500 mb-1">Expected</p>
                               <p className="text-lg font-bold text-primary">
-                                ?{forecast.expected.toLocaleString()}
+                                ₹{forecast.expected.toLocaleString()}
                               </p>
                             </div>
                             <div className="bg-white/60 rounded-xl p-3 text-center">
                               <p className="text-xs text-gray-500 mb-1">Worst</p>
                               <p className="text-lg font-bold text-orange-600">
-                                ?{forecast.worst.toLocaleString()}
+                                ₹{forecast.worst.toLocaleString()}
                               </p>
                             </div>
                           </div>

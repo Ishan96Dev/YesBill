@@ -64,13 +64,13 @@ const getServiceIcon = (serviceName) => {
 // Emoji for PDF export only
 const getServiceEmoji = (serviceName) => {
   const n = (serviceName || "").toLowerCase();
-  if (n.includes("tiffin") || n.includes("food") || n.includes("meal")) return "??";
-  if (n.includes("wifi") || n.includes("internet") || n.includes("broadband")) return "??";
-  if (n.includes("newspaper") || n.includes("paper")) return "??";
-  if (n.includes("milk") || n.includes("dairy")) return "??";
-  if (n.includes("gym") || n.includes("fitness")) return "??";
-  if (n.includes("laundry") || n.includes("dhobi")) return "??";
-  return "??";
+  if (n.includes("tiffin") || n.includes("food") || n.includes("meal")) return "🍱";
+  if (n.includes("wifi") || n.includes("internet") || n.includes("broadband")) return "📶";
+  if (n.includes("newspaper") || n.includes("paper")) return "📰";
+  if (n.includes("milk") || n.includes("dairy")) return "🥛";
+  if (n.includes("gym") || n.includes("fitness")) return "💪";
+  if (n.includes("laundry") || n.includes("dhobi")) return "👔";
+  return "📦";
 };
 
 // Format year_month as "Feb 1 – 28, 2026"
@@ -744,7 +744,7 @@ export default function Bills() {
                               <h3 className="font-bold text-gray-900 text-base truncate">{billName}</h3>
                               {bill.payload?.service_role === "provider" && (
                                 <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex-shrink-0">
-                                  Invoice ??
+                                  Invoice 💰
                                 </span>
                               )}
                               {bill.is_paid && (
@@ -852,7 +852,7 @@ export default function Bills() {
                           )}
                           {(bill.custom_note || bill.payload?.customNote) && (
                             <p className="text-xs text-gray-500 italic truncate">
-                              ?? {bill.custom_note || bill.payload?.customNote}
+                              📝 {bill.custom_note || bill.payload?.customNote}
                             </p>
                           )}
                         </div>
@@ -922,7 +922,7 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
               <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
               {isProvider && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Invoice ??
+                  Invoice 💰
                 </span>
               )}
             </div>
@@ -949,9 +949,9 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-6">
             <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">Invoice To</p>
             <p className="font-bold text-gray-900 text-lg">{client.name}</p>
-            {client.phone && <p className="text-sm text-gray-600">?? {client.phone}</p>}
-            {client.email && <p className="text-sm text-gray-600">?? {client.email}</p>}
-            {client.address && <p className="text-sm text-gray-600">?? {client.address}</p>}
+            {client.phone && <p className="text-sm text-gray-600">📞 {client.phone}</p>}
+            {client.email && <p className="text-sm text-gray-600">✉️ {client.email}</p>}
+            {client.address && <p className="text-sm text-gray-600">📍 {client.address}</p>}
           </div>
         )}
 
@@ -1083,7 +1083,7 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
             <div className="flex items-start gap-3">
               <TrendingUp className="w-5 h-5 text-yellow-600 mt-1" />
               <div>
-                <p className="font-semibold text-yellow-900 mb-1">?? Recommendation</p>
+                <p className="font-semibold text-yellow-900 mb-1">💡 Recommendation</p>
                 <p className="text-sm text-yellow-800">{billData.insights.recommendation}</p>
               </div>
             </div>

@@ -69,7 +69,7 @@ export default function Login() {
   useEffect(() => {
     if (!isAuthenticating) return;
     const timer = setTimeout(() => {
-      console.warn('?? Login verification timed out after 35s');
+      console.warn('⚠️ Login verification timed out after 35s');
       setIsAuthenticating(false);
       setLoading(false);
       toast({

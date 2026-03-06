@@ -1603,7 +1603,7 @@ export default function Settings() {
                             <div className="flex gap-2">
                               <div className="relative flex-shrink-0 w-28">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg">
-                                  {countries.find(c => c.code === profileData.country_code)?.flag || '??'}
+                                  {countries.find(c => c.code === profileData.country_code)?.flag || ''}
                                 </span>
                                 <input
                                   type="text"

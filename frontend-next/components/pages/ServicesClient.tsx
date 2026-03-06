@@ -97,7 +97,7 @@ export default function Services() {
     // Fallback: map currency to symbol
     if (profile?.currency) {
       const currencyMap = {
-        'INR': '?',
+        'INR': '₹',
         'USD': '$',
         'EUR': '€',
         'GBP': '£',
@@ -107,24 +107,24 @@ export default function Services() {
         'CNY': '¥',
         'BRL': 'R$',
         'MXN': 'MX$',
-        'KRW': '?',
+        'KRW': '₩',
         'SGD': 'S$',
-        'AED': '?.?',
-        'SAR': '?',
+        'AED': 'د.إ',
+        'SAR': '﷼',
         'ZAR': 'R',
-        'RUB': '?',
+        'RUB': '₽',
         'IDR': 'Rp',
-        'THB': '?',
+        'THB': '฿',
         'MYR': 'RM',
-        'PHP': '?',
-        'BDT': '?',
-        'PKR': '?',
+        'PHP': '₱',
+        'BDT': '৳',
+        'PKR': '₨',
         'LKR': 'Rs',
-        'NPR': '??',
-        'NGN': '?',
+        'NPR': 'रू',
+        'NGN': '₦',
         'KES': 'KSh'
       };
-      return currencyMap[profile.currency] || '?';
+      return currencyMap[profile.currency] || '₹';
     }
     
     // Default to INR
@@ -530,11 +530,11 @@ export default function Services() {
                   {/* Role badge */}
                   {isProvider ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <Briefcase className="w-3 h-3" /> Provider ??
+                      <Briefcase className="w-3 h-3" /> Provider 💰
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
-                      <Wallet className="w-3 h-3" /> Consumer ??
+                      <Wallet className="w-3 h-3" /> Consumer 💳
                     </span>
                   )}
                   {/* Expired badge */}
@@ -672,8 +672,8 @@ export default function Services() {
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { value: "consumer", icon: Wallet, label: "Consumer ??", desc: "I pay / I use" },
-                        { value: "provider", icon: Briefcase, label: "Provider ??", desc: "I earn / I deliver" },
+                        { value: "consumer", icon: Wallet, label: "Consumer 💳", desc: "I pay / I use" },
+                        { value: "provider", icon: Briefcase, label: "Provider 💰", desc: "I earn / I deliver" },
                       ].map(({ value, icon: Icon, label, desc }) => {
                         const sel = formData.service_role === value;
                         const isProv = value === "provider";

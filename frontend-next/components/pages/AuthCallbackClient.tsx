@@ -76,7 +76,7 @@ export default function AuthCallback() {
       setStatus("error");
       setError(message);
       setTimeout(() => {
-        if (mounted) router.push("/login");
+        if (mounted) router.push(`/login?error=${encodeURIComponent(message)}`);
       }, delay);
     };
 

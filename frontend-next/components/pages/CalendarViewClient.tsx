@@ -69,7 +69,7 @@ export default function CalendarView() {
 
   // Get currency symbol from user profile
   const currencySymbol = useMemo(() => {
-    return profile?.currency_code || '?';
+    return profile?.currency_code || '₹';
   }, [profile]);
 
   // Filtered by current role tab
@@ -262,13 +262,13 @@ export default function CalendarView() {
       // Determine toast message and type based on status
       let title, toastType;
       if (newStatus === 'delivered') {
-        title = '? Delivered';
+        title = '✓ Delivered';
         toastType = 'success';
       } else if (newStatus === 'skipped') {
-        title = '? Skipped';
+        title = '✗ Skipped';
         toastType = 'error';
       } else {
-        title = '? Not Tracked';
+        title = '⚪ Not Tracked';
         toastType = 'default';
       }
 
@@ -378,8 +378,8 @@ export default function CalendarView() {
           className="flex gap-2 mb-6"
         >
           {[
-            { value: 'consumer', icon: Wallet, label: 'My Bills ??' },
-            { value: 'provider', icon: Briefcase, label: 'My Income ??' },
+            { value: 'consumer', icon: Wallet, label: 'My Bills 💳' },
+            { value: 'provider', icon: Briefcase, label: 'My Income 💰' },
           ].map(({ value, icon: Icon, label }) => {
             const active = roleTab === value;
             const isProv = value === 'provider';

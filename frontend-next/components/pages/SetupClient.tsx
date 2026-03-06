@@ -602,7 +602,7 @@ export default function OnboardingPage() {
         // Welcome notification ? always fires on first-time completion
         await notificationService.create(
           userId, "general",
-          "Welcome to YesBill! ??",
+          "Welcome to YesBill! 🎉",
           "Your account is set up. Start by adding a service or exploring the dashboard.",
           { path: "/dashboard" }
         ).catch(() => { });

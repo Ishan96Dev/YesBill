@@ -269,17 +269,17 @@ export default function CreateProject() {
             className="grid md:grid-cols-3 gap-4 mt-8 text-left"
           >
             <div className="p-4 rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50">
-              <div className="text-2xl mb-2">??</div>
+              <div className="text-2xl mb-2">📅</div>
               <h3 className="font-semibold text-gray-900 mb-1">Track Daily</h3>
               <p className="text-sm text-gray-600">Mark services as delivered or skipped in your calendar</p>
             </div>
             <div className="p-4 rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50">
-              <div className="text-2xl mb-2">??</div>
+              <div className="text-2xl mb-2">🤖</div>
               <h3 className="font-semibold text-gray-900 mb-1">AI Bills</h3>
               <p className="text-sm text-gray-600">GPT-5 generates detailed monthly invoices automatically</p>
             </div>
             <div className="p-4 rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50">
-              <div className="text-2xl mb-2">??</div>
+              <div className="text-2xl mb-2">📊</div>
               <h3 className="font-semibold text-gray-900 mb-1">Analytics</h3>
               <p className="text-sm text-gray-600">Get insights on spending patterns and trends</p>
             </div>

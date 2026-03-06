@@ -106,13 +106,13 @@ function ChartTooltip({ active, payload, label }) {
       {payload.filter((p) => p.value > 0).map((p, i) => (
         <div key={i} className="flex items-center justify-between gap-4">
           <span style={{ color: p.fill }}>{p.name}</span>
-          <span className="font-bold">?{p.value.toLocaleString("en-IN")}</span>
+          <span className="font-bold">₹{p.value.toLocaleString("en-IN")}</span>
         </div>
       ))}
       {payload.filter((p) => p.value > 0).length > 1 && (
         <div className="border-t border-gray-700 mt-1.5 pt-1.5 flex justify-between">
           <span className="text-gray-400">Total</span>
-          <span className="font-bold">?{total.toLocaleString("en-IN")}</span>
+          <span className="font-bold">₹{total.toLocaleString("en-IN")}</span>
         </div>
       )}
     </div>
@@ -132,7 +132,7 @@ function PieTooltip({ active, payload }) {
         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
         <span className="font-semibold text-gray-200 truncate">{name}</span>
       </div>
-      <span className="font-bold text-sm">?{value.toLocaleString("en-IN")}</span>
+      <span className="font-bold text-sm">₹{value.toLocaleString("en-IN")}</span>
     </div>
   );
 }
@@ -464,7 +464,7 @@ export default function Dashboard() {
                   <p className="text-xs font-medium text-gray-500">Net Balance — {monthLabel}</p>
                   <p className={`text-2xl font-bold ${dashStats.netBalance >= 0 ? "text-emerald-700" : "text-red-600"}`}>
                     {dashStats.netBalance >= 0 ? "+" : ""}
-                    ?{Math.abs(dashStats.netBalance).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    ₹{Math.abs(dashStats.netBalance).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                     <span className="text-sm font-medium ml-2 opacity-70">
                       {dashStats.netBalance >= 0 ? "net income" : "net expense"}
                     </span>
@@ -479,7 +479,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-xs text-gray-500">Income</p>
                     <p className="font-bold text-gray-900">
-                      ?{dashStats.providerIncome.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      ₹{dashStats.providerIncome.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                 </div>
@@ -490,7 +490,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-xs text-gray-500">Expenses</p>
                     <p className="font-bold text-gray-900">
-                      ?{dashStats.consumerSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      ₹{dashStats.consumerSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                 </div>
@@ -503,7 +503,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
-              label: monthLabel + " Spend", value: `?${totalSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,
+              label: monthLabel + " Spend", value: `₹${totalSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,
               sub: `${dashStats.delivered || 0} delivered`, icon: IndianRupee,
               grad: "from-orange-400 to-red-500", delay: 0.1,
             },
@@ -589,7 +589,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900 text-sm truncate">{svc.name}</p>
                         <p className="text-xs text-gray-400">
-                          {svc.schedule || svc.type} · ?{(svc.price || 0).toLocaleString("en-IN")}
+                          {svc.schedule || svc.type} · ₹{(svc.price || 0).toLocaleString("en-IN")}
                           {svc.type === "monthly" && (
                             <span className="ml-1.5 text-indigo-500 font-semibold">billing day</span>
                           )}
@@ -603,7 +603,7 @@ export default function Dashboard() {
                           ? "bg-red-100 text-red-600"
                           : "bg-gray-100 text-gray-500"
                       }`}>
-                        {status === "delivered" ? "? Delivered" : status === "skipped" ? "? Skipped" : "? Pending"}
+                        {status === "delivered" ? "✓ Delivered" : status === "skipped" ? "✗ Skipped" : "○ Pending"}
                       </span>
                       {/* Arrow ? individual service calendar */}
                       <WithTooltip tip={`Open ${svc.name} service calendar`} side="left">
@@ -654,7 +654,7 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900 text-sm truncate">{svc.name}</p>
                         <p className="text-xs text-gray-400">
-                          ?{(svc.price || 0).toLocaleString("en-IN")} · day {svc.billingDay}
+                          ₹{(svc.price || 0).toLocaleString("en-IN")} · day {svc.billingDay}
                         </p>
                       </div>
                     </div>
@@ -724,7 +724,7 @@ export default function Dashboard() {
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(v) =>
-                      v >= 1000 ? `?${(v / 1000).toFixed(0)}k` : v > 0 ? `?${v}` : ""
+                      v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : v > 0 ? `₹${v}` : ""
                     }
                   />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(124,58,237,0.06)", radius: 4 }} />
@@ -750,7 +750,7 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-400 mt-0.5">{monthLabel}</p>
               </div>
               <p className="text-sm font-bold text-gray-700">
-                ?{totalSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                ₹{totalSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
               </p>
             </div>
 
@@ -798,7 +798,7 @@ export default function Dashboard() {
                           <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                             <span className="text-[10px] text-gray-400">{pct}%</span>
                             <p className="text-xs font-bold text-gray-900">
-                              ?{svc.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                              ₹{svc.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                             </p>
                           </div>
                         </div>
@@ -851,7 +851,7 @@ export default function Dashboard() {
                     <p className="text-xs font-semibold text-gray-600">{day.label}</p>
                     {day.total > 0 && (
                       <p className="text-sm font-bold text-gray-900">
-                        ?{day.total.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                        ₹{day.total.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                       </p>
                     )}
                   </div>

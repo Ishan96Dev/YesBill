@@ -67,7 +67,7 @@ export default function Signup() {
   useEffect(() => {
     if (!isCreatingAccount) return;
     const timer = setTimeout(() => {
-      console.warn('?? Signup verification timed out after 15s');
+      console.warn('⚠️ Signup verification timed out after 15s');
       setIsCreatingAccount(false);
       setLoading(false);
       toast({
@@ -145,7 +145,7 @@ export default function Signup() {
     setIsCreatingAccount(true); // Show signup loading screen
 
     try {
-      console.log("?? Starting signup for:", formData.email);
+      console.log("🚀 Starting signup for:", formData.email);
       
       const result = await authService.signUp(
         formData.email, 
@@ -168,7 +168,7 @@ export default function Signup() {
       }
 
       if (result.requiresEmailConfirmation) {
-        console.log("?? Email confirmation required");
+        console.log("📧 Email confirmation required");
         setIsCreatingAccount(false); // Hide loading screen
         toast({
           title: "Check your email!",

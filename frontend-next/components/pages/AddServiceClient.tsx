@@ -277,8 +277,8 @@ export default function AddService() {
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "consumer", icon: Wallet, label: "Consumer ??", desc: "I pay / I use this service" },
-                  { value: "provider", icon: Briefcase, label: "Provider ??", desc: "I earn / I deliver this service" },
+                  { value: "consumer", icon: Wallet, label: "Consumer 💳", desc: "I pay / I use this service" },
+                  { value: "provider", icon: Briefcase, label: "Provider 💰", desc: "I earn / I deliver this service" },
                 ].map(({ value, icon: Icon, label, desc }) => {
                   const sel = formData.service_role === value;
                   const isProvider = value === "provider";
