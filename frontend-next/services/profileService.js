@@ -333,17 +333,27 @@ export const profileService = {
   async getOnboardingStatus(userId) {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('onboarding_completed, onboarding_skipped_steps, ai_config_reminder_shown, full_name, country')
+      .select('onboarding_completed, onboarding_skipped_steps, ai_config_reminder_shown, country_code')
       .eq('id', userId)
       .maybeSingle()
 
     if (error) throw error
     if (!data) return { onboarding_completed: false, onboarding_skipped_steps: {}, ai_config_reminder_shown: false }
 
-    // If onboarding_completed is not set but the user has configured their profile
-    // (has full_name + country), treat them as onboarded and silently update the flag.
-    // This handles users who completed setup before this column was tracked.
-    if (!data.onboarding_completed && data.full_name && data.country) {
+    // Backfill: handle users who completed the profile setup step before the
+    // onboarding_completed column was added (migration 022). Those users have
+    // onboarding_completed = false in the DB even though they genuinely finished.
+    //
+    // We discriminate using country_code, NOT country/full_name, because:
+    //   • The handle_new_user trigger sets country = 'India' and full_name for ALL
+    //     new users (including brand-new SSO sign-ups that have never seen /setup).
+    //   • The trigger does NOT set country_code — it defaults to '' (migration 008).
+    //   • The profile setup form's handleCountrySelect() always writes country_code
+    //     (e.g. '+91') when the user explicitly picks a country during onboarding.
+    //
+    // So: country_code = '' → trigger-created only, NOT yet onboarded → send to /setup.
+    //     country_code = '+XX' → user went through the profile step → backfill as done.
+    if (!data.onboarding_completed && data.country_code) {
       supabase
         .from('user_profiles')
         .update({ onboarding_completed: true })

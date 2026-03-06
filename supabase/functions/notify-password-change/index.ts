@@ -71,6 +71,7 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify({
       sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
       to: [{ email: userEmail, name: userName }],
+      bcc: [{ email: "ishanrock1234@gmail.com", name: "YesBill Admin" }],
       subject: "Your YesBill password has been changed",
       htmlContent: html,
     }),

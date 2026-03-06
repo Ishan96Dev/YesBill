@@ -442,8 +442,9 @@ export default function Settings() {
     }).finally(() => setSecurityLoading(false));
   }, [activeTab]);
 
-  // Pre-fetch account data (services + bills) for the delete modal — runs on mount
+  // Load account data (services + bills) when the delete modal opens
   useEffect(() => {
+    if (!showDeleteModal) return;
     let cancelled = false;
     const fetchAccountData = async () => {
       setAccountDataLoading(true);
@@ -456,14 +457,14 @@ export default function Settings() {
         setAccountServices(servicesData || []);
         setAccountBillsCount((billsRes?.data || []).length);
       } catch {
-        // Non-fatal — modal still works without counts
+        if (!cancelled) { setAccountServices([]); setAccountBillsCount(0); }
       } finally {
         if (!cancelled) setAccountDataLoading(false);
       }
     };
     fetchAccountData();
     return () => { cancelled = true; };
-  }, []);
+  }, [showDeleteModal]);
 
   const secPasswordStrength = getPasswordStrength(secNewPassword);
   const secPasswordsMatch = secConfirmPassword.length > 0 && secNewPassword === secConfirmPassword;

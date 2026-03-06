@@ -14,6 +14,7 @@ const PROTECTED = [
   '/settings',
   '/chat',
   '/setup',
+  '/support',
 ]
 
 // ── Auth-only routes (redirect authed users away) ──────────────────────────

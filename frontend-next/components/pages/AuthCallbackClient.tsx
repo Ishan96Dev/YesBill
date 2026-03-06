@@ -187,7 +187,30 @@ export default function AuthCallback() {
               redirectLoginWithError("Authentication was interrupted. Please click the link in your email again.");
               return;
             }
-            // Non-abort error (expired link, invalid code, etc.)
+            // PKCE verifier missing — happens when the PKCE cookie is lost between the
+            // OAuth redirect and the callback (e.g., cookie-blocking extensions, private
+            // browsing with strict settings, or cross-site cookie restrictions).
+            // Check if the exchange actually succeeded server-side (strict-mode second render).
+            if (
+              exchangeError.message?.toLowerCase().includes('code verifier') ||
+              exchangeError.message?.toLowerCase().includes('pkce')
+            ) {
+              const { data: { session: pkceSession } } = await supabase.auth.getSession();
+              if (pkceSession?.user) {
+                if (!mounted) return;
+                persistSession(pkceSession);
+                if (codeType === 'recovery') {
+                  router.replace('/auth/reset-password');
+                  return;
+                }
+                await showWelcomeAndRoute(pkceSession.user, pkceSession.user.id);
+                return;
+              }
+              redirectLoginWithError('Sign-in failed: browser session was lost during the Google redirect. Please try again — if the issue persists, disable cookie-blocking extensions or try a different browser.');
+              return;
+            }
+
+            // Non-abort, non-PKCE error (expired link, invalid code, etc.)
             redirectLoginWithError(exchangeError.message || "Authentication failed. Please try again.");
             return;
           }

@@ -45,20 +45,23 @@ jobs:
         working-directory: frontend-next
         run: npm run type-check
 
-      # ── Configure Vercel: ignore gh-pages branch deployments ────────────────
-      # Vercel's GitHub integration auto-deploys every branch, including the
-      # gh-pages branch (static Docusaurus output). That branch has no
-      # frontend-next/ directory so Vercel fails immediately. Setting the
-      # commandForIgnoringBuildStep via API tells Vercel to skip gh-pages builds.
-      # This is idempotent — safe to run on every deploy.
-      - name: Configure Vercel ignored build step for gh-pages
+      # ── Disable Vercel's GitHub-integration auto-deploy ──────────────────────
+      # Vercel's GitHub App fires its own deployment for every push to ANY branch,
+      # which races against this Actions workflow's `vercel deploy --prod` below.
+      # The two jobs collide on the same commit and one gets cancelled, causing
+      # "Cancelled" status on the Vercel dashboard CI check.
+      #
+      # Fix: set commandForIgnoringBuildStep to "exit 0" (always skip) so the
+      # GitHub integration NEVER auto-deploys. The CLI call below is the sole
+      # deployment path. This is idempotent — safe to run on every deploy.
+      - name: Disable Vercel GitHub-integration auto-deploy
         run: |
           curl -s -X PATCH \
             "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}?teamId=${VERCEL_ORG_ID}" \
             -H "Authorization: Bearer ${VERCEL_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{"commandForIgnoringBuildStep":"if [ \"$VERCEL_GIT_COMMIT_REF\" = \"gh-pages\" ]; then exit 0; else exit 1; fi"}'
-          echo "Ignored build step configured"
+            -d '{"commandForIgnoringBuildStep":"exit 0"}'
+          echo "Vercel auto-deploy disabled (CLI deploy only)"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

@@ -30,6 +30,7 @@ import {
   MessageSquare,
   Lock,
   Brain,
+  LifeBuoy,
 } from "lucide-react";
 import AgentButton from "../agent/AgentButton";
 import { Button } from "../ui/button";
@@ -54,6 +55,7 @@ const PAGES = [
   { name: "Ask AI", path: "/chat", icon: MessageSquare },
   { name: "Analytics", path: "/analytics", icon: BarChart3 },
   { name: "Settings", path: "/settings", icon: Settings },
+  { name: "Support", path: "/support", icon: LifeBuoy },
 ];
 
 // ─── Notification type → icon mapping ─────────────────────────────
@@ -268,6 +270,7 @@ export default function AppLayout({
     { name: "Ask AI", path: "/chat", icon: MessageSquare, tooltip: "Chat with YesBill AI" },
     { name: "Analytics", path: "/analytics", icon: BarChart3 },
     { name: "Settings", path: "/settings", icon: Settings },
+    { name: "Support", path: "/support", icon: LifeBuoy },
   ];
 
   if (isLoggingOut) {
@@ -579,6 +582,16 @@ export default function AppLayout({
                       >
                         <Settings className="w-4 h-4 text-gray-400" />
                         Settings
+                      </button>
+                      <button
+                        onClick={() => {
+                          setProfileOpen(false);
+                          router.push("/support");
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors text-left"
+                      >
+                        <LifeBuoy className="w-4 h-4 text-gray-400" />
+                        Support
                       </button>
                     </div>
 
