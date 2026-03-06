@@ -783,9 +783,8 @@ export default function Services() {
                       {iconOptions.map((iconOption) => {
                         const IconComponent = iconOption.icon;
                         return (
-                          <WithTooltip tip={iconOption.label} side="top">
+                          <WithTooltip key={iconOption.value} tip={iconOption.label} side="top">
                           <button
-                            key={iconOption.value}
                             type="button"
                             onClick={() => setFormData({ ...formData, icon: iconOption.value })}
                             className={`!h-auto !min-h-[80px] !px-2 !py-2.5 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1.5 ${
