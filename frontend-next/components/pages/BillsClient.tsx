@@ -493,7 +493,7 @@ export default function Bills() {
                         {activeServices.map((svc) => (
                           <EnhancedCheckbox
                             key={svc.id}
-                            label={`${svc.name} (?${Number(svc.price).toFixed(0)}/day)`}
+                            label={`${svc.name} (₹${Number(svc.price).toFixed(0)}/day)`}
                             checked={selectedServiceIds.includes(svc.id)}
                             onChange={() => toggleService(svc.id)}
                           />
@@ -1045,22 +1045,22 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
                     <p className="text-sm text-gray-500">{item.notes}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-bold text-gray-900">?{item.total}</p>
-                    <p className="text-xs text-gray-500">?{item.ratePerDay}/day</p>
+                    <p className="text-xl font-bold text-gray-900">₹{item.total}</p>
+                    <p className="text-xs text-gray-500">₹{item.ratePerDay}/day</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-6 text-sm mb-3">
                   {['utility', 'subscription', 'payment'].includes(item.deliveryType) ? (
-                    <span className="text-blue-600 font-medium">Fixed monthly charge · ?{item.total}</span>
+                    <span className="text-blue-600 font-medium">Fixed monthly charge · ₹{item.total}</span>
                   ) : item.deliveryType === 'visit_based' ? (
                     <>
-                      <span className="text-green-600 font-medium">? {item.daysDelivered} visited</span>
-                      <span className="text-red-600 font-medium">? {item.daysSkipped} missed</span>
+                      <span className="text-green-600 font-medium">✓ {item.daysDelivered} visited</span>
+                      <span className="text-red-600 font-medium">✗ {item.daysSkipped} missed</span>
                     </>
                   ) : (
                     <>
-                      <span className="text-green-600 font-medium">? {item.daysDelivered} delivered</span>
-                      <span className="text-red-600 font-medium">? {item.daysSkipped} skipped</span>
+                      <span className="text-green-600 font-medium">✓ {item.daysDelivered} delivered</span>
+                      <span className="text-red-600 font-medium">✗ {item.daysSkipped} skipped</span>
                     </>
                   )}
                 </div>

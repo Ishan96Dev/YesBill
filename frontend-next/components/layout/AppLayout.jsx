@@ -123,7 +123,7 @@ export default function AppLayout({
   // ── Cross-tab logout: redirect when Supabase fires SIGNED_OUT on other tabs ──
   useEffect(() => {
     if (!loading && !user && !isLoggingOut) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [user, loading, isLoggingOut, router]);
 
@@ -703,7 +703,7 @@ export default function AppLayout({
               return lockedNav ? (
                 <span key={item.path} className="block" title="Complete setup to unlock navigation">{mobileItemContent}</span>
               ) : (
-                <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)} className="block">
+                <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)} className="block">
                   {mobileItemContent}
                 </Link>
               );

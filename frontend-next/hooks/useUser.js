@@ -36,10 +36,28 @@ function saveCachedProfile(profile) {
   } catch { /* ignore quota errors */ }
 }
 
+// ─── Fast-path loading optimization ───────────────────────────────
+// If we have both user_id AND a non-expired access_token in localStorage,
+// the user was previously authenticated. Skip the loading state immediately
+// so pages don't wait for INITIAL_SESSION before showing content.
+// INITIAL_SESSION will still fire and update/correct state if needed.
+function hasValidStoredSession() {
+  try {
+    const userId = localStorage.getItem('user_id')
+    const token = localStorage.getItem('access_token')
+    if (!userId || !token) return false
+    // Check token expiry (same logic as isJwtExpired in lib/supabase.js)
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    const payload = JSON.parse(atob(parts[1]))
+    return (payload.exp * 1000) > Date.now()
+  } catch { return false }
+}
+
 let _user = null
 let _profile = loadCachedProfile()   // instant restore from cache
 let _session = null
-let _loading = true
+let _loading = !(typeof window !== 'undefined' && hasValidStoredSession())   // skip loading for returning users
 let _profileLoading = false
 let _initialized = false
 let _listeners = new Set()
@@ -345,11 +363,13 @@ export function resetUserStore() {
   _profileLoading = false
   _profilePromise = null
   saveCachedProfile(null)
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('user_id')
-  localStorage.removeItem('user_email')
-  localStorage.removeItem('user_name')
-  localStorage.removeItem(PROFILE_CACHE_KEY)
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_id')
+    localStorage.removeItem('user_email')
+    localStorage.removeItem('user_name')
+    localStorage.removeItem(PROFILE_CACHE_KEY)
+  }
   notify()
 }
 

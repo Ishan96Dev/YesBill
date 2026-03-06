@@ -128,7 +128,7 @@ export default function Services() {
     }
     
     // Default to INR
-    return '?';
+    return '₹';
   }, [profile]);
 
   // Fetch services from Supabase
@@ -590,7 +590,7 @@ export default function Services() {
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                       }`}
                   >
-                    {service.active ? '? Active' : '? Inactive'}
+                    {service.active ? '✓ Active' : '○ Inactive'}
                   </button>
                 </div>
               </motion.div>
