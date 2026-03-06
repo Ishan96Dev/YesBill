@@ -361,7 +361,7 @@ export default function Signup() {
                 </WithTooltip>
               </div>
 
-              {/* Password Strength Indicator */
+              {/* Password Strength Indicator */}
               <PasswordStrengthBar password={formData.password} />
 
               <div className="relative w-full">
