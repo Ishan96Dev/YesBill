@@ -18,6 +18,7 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import authService from "@/services/authService";
 import { useUser } from "@/hooks/useUser";
 import PasswordStrengthBar from "@/components/ui/PasswordStrengthBar";
+import { WithTooltip } from "@/components/ui/tooltip";
 import WelcomeScreen from "@/components/loading/WelcomeScreen";
 import AuthLoadingScreen from "@/components/loading/AuthLoadingScreen";
 
@@ -264,13 +265,15 @@ export default function Signup() {
         <AuthCard className="shadow-none border-none bg-transparent w-full max-w-md">
           <div className="space-y-6">
             <div className="text-center space-y-4">
-              <Link href="/">
-                <img
-                  src={assetUrl("/assets/branding/yesbill_logo_black.png")}
-                  alt="YesBill"
-                  className="mx-auto mb-6 w-[144px] h-[144px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                />
-              </Link>
+              <WithTooltip tip="Go to homepage" side="top">
+                <Link href="/">
+                  <img
+                    src={assetUrl("/assets/branding/yesbill_logo_black.png")}
+                    alt="YesBill"
+                    className="mx-auto mb-6 w-[144px] h-[144px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  />
+                </Link>
+              </WithTooltip>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Create an account</h1>
               <p className="text-slate-500">Start tracking your daily services.</p>
             </div>
@@ -345,18 +348,20 @@ export default function Signup() {
                   required
                   className={`w-full h-[48px] rounded-xl border pl-11 pr-11 text-sm outline-none focus:outline-none focus:ring-2 transition-all duration-200 ${fieldBorderClass('password')}`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
-                  tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+                <WithTooltip tip={showPassword ? "Hide password" : "Show password"} side="left">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </WithTooltip>
               </div>
 
-              {/* Password Strength Indicator */}
+              {/* Password Strength Indicator */
               <PasswordStrengthBar password={formData.password} />
 
               <div className="relative w-full">
@@ -383,15 +388,17 @@ export default function Signup() {
                       : 'border-gray-200 focus:ring-indigo-500 focus:border-indigo-500'
                   }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
-                  tabIndex={-1}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+                <WithTooltip tip={showConfirmPassword ? "Hide password" : "Show password"} side="left">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                    tabIndex={-1}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </WithTooltip>
               </div>
 
               {/* Confirm Password Match Indicator */}

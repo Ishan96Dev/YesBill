@@ -21,6 +21,7 @@ import { useUser } from "@/hooks/useUser";
 import WelcomeScreen from "@/components/loading/WelcomeScreen";
 import AuthLoadingScreen from "@/components/loading/AuthLoadingScreen";
 import { supabase } from "@/lib/supabase";
+import { WithTooltip } from "@/components/ui/tooltip";
 
 export default function Login() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function Login() {
   const [touched, setTouched] = useState({ email: false, password: false });
   const hasLoginAttempt = useRef(false);
   const loginUserId = useRef(null);
+  const resolvedNavTarget = useRef<string | null>(null);
 
   // Field validation helpers
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -117,6 +119,29 @@ export default function Login() {
     }
   }, [user, authLoading, router, searchParams, showWelcome, isAuthenticating]);
 
+  // Pre-resolve onboarding status + prefetch the destination the moment WelcomeScreen
+  // begins showing, so router.replace() is near-instant when onComplete fires.
+  useEffect(() => {
+    if (!showWelcome) return;
+    const params = searchParams;
+    const redirectTo = params.get('redirect');
+    const defaultTarget = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
+
+    const resolveTarget = async () => {
+      let target = defaultTarget;
+      try {
+        if (loginUserId.current) {
+          const status = await profileService.getOnboardingStatus(loginUserId.current);
+          if (!status?.onboarding_completed) target = '/setup';
+        }
+      } catch {}
+      resolvedNavTarget.current = target;
+      router.prefetch(target);
+    };
+    resolveTarget();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showWelcome]);
+
   // Show verifying screen ONLY during active login attempt
   if (isAuthenticating) {
     return <AuthLoadingScreen type="verifying" message="Verifying your credentials" />;
@@ -131,19 +156,10 @@ export default function Login() {
       <WelcomeScreen 
         userName={userName}
         isNewUser={false}
-        onComplete={async () => {
-          try {
-            if (loginUserId.current) {
-              const status = await profileService.getOnboardingStatus(loginUserId.current);
-              if (!status?.onboarding_completed) {
-                router.replace('/setup');
-                return;
-              }
-            }
-          } catch (e) {
-            // fall through to default target
-          }
-          router.replace(target);
+        onComplete={() => {
+          // Target is pre-resolved via the showWelcome useEffect above.
+          // Fall back to computed target in case the async check didn't finish.
+          router.replace(resolvedNavTarget.current ?? target);
         }}
       />
     );
@@ -250,13 +266,15 @@ export default function Login() {
         <AuthCard className="shadow-none border-none bg-transparent w-full max-w-md">
           <div className="space-y-6">
             <div className="text-center space-y-4">
-              <Link href="/">
-                <img
-                  src={assetUrl("/assets/branding/yesbill_logo_black.png")}
-                  alt="YesBill"
-                  className="mx-auto mb-6 w-[144px] h-[144px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                />
-              </Link>
+              <WithTooltip tip="Go to homepage" side="top">
+                <Link href="/">
+                  <img
+                    src={assetUrl("/assets/branding/yesbill_logo_black.png")}
+                    alt="YesBill"
+                    className="mx-auto mb-6 w-[144px] h-[144px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  />
+                </Link>
+              </WithTooltip>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
               <p className="text-slate-500">Enter your details to manage your daily expenses.</p>
             </div>
@@ -307,15 +325,17 @@ export default function Login() {
                       required
                       className={`w-full h-[48px] rounded-xl border pl-11 pr-11 text-sm outline-none focus:outline-none focus:ring-2 transition-all duration-200 ${fieldBorderClass('password')}`}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
-                      tabIndex={-1}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
+                    <WithTooltip tip={showPassword ? "Hide password" : "Show password"} side="left">
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                        tabIndex={-1}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </WithTooltip>
                   </div>
                   <div className="flex justify-end">
                     <Link href="/forgot-password" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">

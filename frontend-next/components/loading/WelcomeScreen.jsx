@@ -24,13 +24,20 @@ export default function WelcomeScreen({
   const [show, setShow] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Fire onComplete (navigation) 300ms before the visual exit so the destination
+    // page can mount behind the still-visible WelcomeScreen, eliminating the white flash.
+    const navTimer = setTimeout(() => {
+      if (onComplete) onComplete();
+    }, Math.max(0, duration - 300));
+
+    const exitTimer = setTimeout(() => {
       setShow(false);
-      if (onComplete) {
-        onComplete();
-      }
     }, duration);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(navTimer);
+      clearTimeout(exitTimer);
+    };
   }, [onComplete, duration]);
 
   // Orbiting dots configuration — same as AuthLoadingScreen

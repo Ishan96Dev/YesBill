@@ -14,6 +14,7 @@ import AuthSidePanel from "@/components/AuthSidePanel";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { useToast } from "@/components/ui/toaster-custom";
 import { supabase } from "@/lib/supabase";
+import { WithTooltip } from "@/components/ui/tooltip";
 
 export default function ForgotPassword() {
   const { toast } = useToast();
@@ -53,13 +54,15 @@ export default function ForgotPassword() {
         <AuthCard className="shadow-none border-none bg-transparent w-full max-w-md">
           <div className="space-y-6">
             <div className="text-center space-y-4">
-              <Link href="/">
-                <img
-                  src={assetUrl("/assets/branding/yesbill_logo_black.png")}
-                  alt="YesBill"
-                  className="mx-auto mb-6 w-[144px] h-[144px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                />
-              </Link>
+              <WithTooltip tip="Go to homepage" side="top">
+                <Link href="/">
+                  <img
+                    src={assetUrl("/assets/branding/yesbill_logo_black.png")}
+                    alt="YesBill"
+                    className="mx-auto mb-6 w-[144px] h-[144px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  />
+                </Link>
+              </WithTooltip>
             </div>
             <div className="space-y-2 text-center">
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">

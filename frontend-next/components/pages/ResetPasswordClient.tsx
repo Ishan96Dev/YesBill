@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/toaster-custom";
 import PasswordStrengthBar, { getPasswordStrength } from "@/components/ui/PasswordStrengthBar";
 import { supabase } from "@/lib/supabase";
 import { authAPI } from "@/services/api";
+import { WithTooltip } from "@/components/ui/tooltip";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -253,13 +254,15 @@ export default function ResetPasswordPage() {
                           required
                           className="w-full h-[48px] rounded-xl border border-gray-200 pl-10 pr-11 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowNew((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                        <WithTooltip tip={showNew ? "Hide password" : "Show password"} side="left">
+                          <button
+                            type="button"
+                            onClick={() => setShowNew((v) => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </WithTooltip>
                       </div>
                       {newPassword && (
                         <PasswordStrengthBar
@@ -291,13 +294,15 @@ export default function ResetPasswordPage() {
                               : "border-gray-200 focus:ring-indigo-500 focus:border-indigo-500"
                           }`}
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirm((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                        <WithTooltip tip={showConfirm ? "Hide password" : "Show password"} side="left">
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirm((v) => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </WithTooltip>
                       </div>
                       {confirmPassword && (
                         <motion.div
