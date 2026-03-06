@@ -1,0 +1,140 @@
+<!-- 
+  YesBill - Invite User Email Template
+  
+  To use:
+  1. Go to: https://app.supabase.com/project/dmabraziqscumpbwhjbf/auth/templates
+  2. Select "Invite user"
+  3. Copy this entire file and paste into the "Body" field
+  4. Subject: "You're invited to join YesBill"
+  5. Click "Save"
+-->
+
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitation to YesBill</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; line-height: 1.6;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px;">
+          
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background-color: #7C3AED; padding: 40px 40px 36px; text-align: center;">
+              <!-- Logo in white rounded container -->
+              <div style="display: inline-block; background-color: #ffffff; border-radius: 20px; padding: 12px 16px; margin-bottom: 16px;">
+                <img src="https://dmabraziqscumpbwhjbf.supabase.co/storage/v1/object/public/branding/yesbill_logo_black.png?width=280&quality=85" 
+                     alt="YesBill" 
+                     style="width: 140px; height: auto; display: block; max-width: 140px;"
+                     width="140"
+                     height="auto"
+                     loading="eager"
+                     fetchpriority="high"
+                     decoding="async">
+              </div>
+              <p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 15px; font-weight: 500;">
+                Daily Service Billing Tracker
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 50px 40px;">
+              <!-- Invitation Icon -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                <div style="display: inline-block; width: 80px; height: 80px; background-color: #FFEEF8; background-image: linear-gradient(135deg, #FFEEF8 0%, #F3E8FF 100%); border-radius: 50%; line-height: 80px; font-size: 40px;">
+                  💌
+                </div>
+              </div>
+
+              <h2 style="margin: 0 0 20px; color: #0F172A; font-size: 28px; font-weight: 700; text-align: center; letter-spacing: -0.5px;">
+                You're Invited!
+              </h2>
+              
+              <p style="margin: 0 0 25px; color: #64748B; font-size: 17px; line-height: 1.7; text-align: center;">
+                You've been invited to join <strong style="color: #7C3AED;">YesBill</strong> - the smart way to track daily services and manage billing.
+              </p>
+              
+              <p style="margin: 0 0 35px; color: #64748B; font-size: 16px; line-height: 1.7;">
+                Click the button below to accept this invitation and create your account. You'll be able to start tracking your services immediately!
+              </p>
+
+              <!-- CTA Button (Bulletproof) -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 0 0 35px;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="25%" strokecolor="#7C3AED" fillcolor="#7C3AED">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:17px;font-weight:600;">🎯 Accept Invitation</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 18px 50px; background-color: #7C3AED; color: #ffffff; text-decoration: none; border-radius: 14px; font-weight: 600; font-size: 17px; mso-padding-alt: 0; text-align: center;">
+                      🎯 Accept Invitation
+                    </a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Alternative Link -->
+              <div style="background-color: #F8FAFC; border-radius: 12px; padding: 20px; margin-bottom: 35px;">
+                <p style="margin: 0 0 12px; color: #64748B; font-size: 14px; font-weight: 600;">
+                  Or copy and paste this link:
+                </p>
+                <p style="margin: 0; padding: 14px; background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; word-break: break-all; font-size: 13px; color: #475569; font-family: 'Courier New', monospace;">
+                  {{ .ConfirmationURL }}
+                </p>
+              </div>
+
+              <!-- Features Section -->
+              <div style="background-color: #FEF3C7; background-image: linear-gradient(135deg, #FEF3C7 0%, #FEF3FF 100%); border-left: 4px solid #7C3AED; padding: 24px; border-radius: 12px;">
+                <p style="margin: 0 0 16px; color: #1E293B; font-size: 16px; font-weight: 700;">
+                  ✨ What you'll get with YesBill:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.8;">
+                  <li style="margin-bottom: 10px;">📊 <strong>Smart Tracking</strong> - Mark YES/NO for daily services</li>
+                  <li style="margin-bottom: 10px;">💰 <strong>Auto Billing</strong> - Automatic amount calculations</li>
+                  <li style="margin-bottom: 10px;">📈 <strong>Analytics</strong> - Monthly summaries and insights</li>
+                  <li style="margin-bottom: 0;">🔒 <strong>Secure</strong> - Bank-level security for your data</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #F8FAFC; padding: 40px 40px 35px; text-align: center; border-top: 2px solid #E2E8F0;">
+              <p style="margin: 0 0 8px; color: #F59E0B; font-size: 14px; font-weight: 600;">
+                ⏱️ This invitation will expire in 7 days
+              </p>
+              <p style="margin: 0 0 20px; color: #94A3B8; font-size: 13px; line-height: 1.6;">
+                If you weren't expecting this invitation or don't want to join,<br>
+                you can safely ignore this email.
+              </p>
+              
+              <div style="border-top: 1px solid #E2E8F0; padding-top: 20px; margin-top: 20px;">
+                <p style="margin: 0 0 8px; color: #64748B; font-size: 13px; font-weight: 600;">
+                  Questions?
+                </p>
+                <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                  Contact us at <a href="mailto:ishanrock1234@gmail.com" style="color: #7C3AED; text-decoration: none;">support@yesbill.in</a>
+                </p>
+              </div>
+              
+              <p style="margin: 25px 0 0; color: #CBD5E1; font-size: 12px;">
+                © 2026 YesBill. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

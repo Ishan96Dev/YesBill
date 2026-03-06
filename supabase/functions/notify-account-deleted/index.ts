@@ -48,7 +48,7 @@ Deno.serve(async (req: Request) => {
     timeStyle: "short",
     timeZone: "UTC",
   }) + " UTC";
-  const supportUrl = "mailto:support@yesbill.com";
+  const supportUrl = "mailto:ishanrock1234@gmail.com";
 
   if (!BREVO_API_KEY || !BREVO_FROM_EMAIL) {
     console.error("[notify-account-deleted] Missing secrets: BREVO_API_KEY or BREVO_FROM_EMAIL");
@@ -216,7 +216,7 @@ function buildHtml(userName: string, deletedAt: string, supportUrl: string): str
                   Questions or Concerns?
                 </p>
                 <p style="margin: 0; color: #94A3B8; font-size: 12px;">
-                  Contact our support team at <a href="mailto:support@yesbill.com" style="color: #64748B; text-decoration: none;">support@yesbill.com</a>
+                  Contact our support team at <a href="mailto:ishanrock1234@gmail.com" style="color: #64748B; text-decoration: none;">support@yesbill.in</a>
                 </p>
               </div>
 

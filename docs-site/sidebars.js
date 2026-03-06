@@ -62,6 +62,7 @@ const sidebars = {
         'settings/notifications',
         'settings/security',
         'settings/ai-configuration',
+        'settings/support',
       ],
     },
     {

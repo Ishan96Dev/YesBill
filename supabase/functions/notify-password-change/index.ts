@@ -7,7 +7,7 @@ const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") ?? "YesBill";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const FRONTEND_URL = Deno.env.get("FRONTEND_URL") ?? "https://app.yesbill.com";
+const FRONTEND_URL = Deno.env.get("FRONTEND_URL") ?? "https://yesbill.vercel.app";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -214,7 +214,7 @@ function buildHtml(userName: string, changedAt: string, resetUrl: string): strin
                   Need Help?
                 </p>
                 <p style="margin: 0; color: #94A3B8; font-size: 12px;">
-                  Contact our support team at <a href="mailto:support@yesbill.com" style="color: #059669; text-decoration: none;">support@yesbill.com</a>
+                  Contact our support team at <a href="mailto:support@yesbill.in" style="color: #059669; text-decoration: none;">support@yesbill.in</a>
                 </p>
               </div>
 

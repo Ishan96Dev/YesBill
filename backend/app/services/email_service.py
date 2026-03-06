@@ -33,7 +33,7 @@ BREVO_FROM_NAME = os.getenv("BREVO_FROM_NAME", "YesBill")
 BREVO_BILL_TEMPLATE_ID = os.getenv("BREVO_BILL_TEMPLATE_ID", "")
 BREVO_PASSWORD_CHANGED_TEMPLATE_ID = os.getenv("BREVO_PASSWORD_CHANGED_TEMPLATE_ID", "")
 BREVO_ACCOUNT_DELETED_TEMPLATE_ID = os.getenv("BREVO_ACCOUNT_DELETED_TEMPLATE_ID", "")
-SITE_URL = os.getenv("SITE_URL", "https://yesbill.com")
+SITE_URL = os.getenv("SITE_URL", "https://yesbill.vercel.app")
 
 BREVO_SEND_URL = "https://api.brevo.com/v3/smtp/email"
 
