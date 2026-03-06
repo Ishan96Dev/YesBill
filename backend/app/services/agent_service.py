@@ -1356,6 +1356,7 @@ async def stream_agent_response(
                         "latency_ms": _action_latency_ms,
                         "ttft_ms": _ttft_ms,
                         "chunks_count": _chunks_count,
+                        "model_used": f"{provider}/{model}",
                     }
                 yield {
                     "type": "action_required",
