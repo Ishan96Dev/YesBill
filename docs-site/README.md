@@ -88,6 +88,7 @@ docs-site/
 │   │   ├── overview.md
 │   │   ├── ask-ai.md
 │   │   ├── agent-chatbot.md
+│   │   ├── agent-actions.md
 │   │   ├── ai-bill-generation.md
 │   │   └── ai-configuration.md
 │   ├── settings/
@@ -173,7 +174,8 @@ npm run build
 
 ## Related
 
-- [Frontend README](../frontend/README.md)
+- [Frontend (Next.js) README](../frontend-next/README.md)
+- [Frontend (Legacy) README](../frontend/README.md)
 - [Backend README](../backend/README.md)
 - [Root README](../README.md)
-<!-- last-deploy: 2026-03-03 06:12 -->
+<!-- last-deploy: 2026-03-07 -->

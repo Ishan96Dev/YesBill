@@ -3,9 +3,9 @@
 > Track daily services, generate AI-powered bills, and never dispute a monthly charge again.
 
 ![Status](https://img.shields.io/badge/Status-Active-success)
-![React](https://img.shields.io/badge/React-18.3-blue)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-38bdf8)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E)
 
 ---
@@ -74,34 +74,43 @@ YesBill is a full-stack web application for tracking recurring household service
 
 ## Tech Stack
 
-### Frontend
+### Frontend (Active — `frontend-next/`)
 | Tool | Version | Purpose |
 |---|---|---|
-| React | 18.3 | UI framework |
-| Vite | 5 | Build tool |
+| Next.js | 14 | Full-stack React framework |
+| React | 18.2 | UI library |
+| TypeScript | 5.3 | Type safety |
 | Tailwind CSS | 3.4 | Utility-first styling |
-| Framer Motion | 11 | Animations |
-| Recharts | 2 | Charts (dashboard + analytics) |
-| Lucide React | latest | Icons |
-| date-fns | 3 | Date utilities |
-| Axios | 1 | HTTP client |
-| Supabase JS SDK | 2 | Auth + realtime |
+| Framer Motion | 10 | Animations |
+| Recharts | 3.7 | Charts (dashboard + analytics) |
+| Lucide React | 0.307 | Icons |
+| date-fns | 3.6 | Date utilities |
+| Axios | 1.6 | HTTP client |
+| Supabase JS SDK | 2.39 | Auth + realtime |
+| @supabase/ssr | 0.9 | SSR-safe auth helpers |
+| react-markdown | 10 | AI response rendering |
+| html2pdf.js | 0.14 | PDF bill export |
+
+> **Legacy:** The original `frontend/` (Vite + React) is kept for reference. Active development is in `frontend-next/`.
 
 ### Backend
 | Tool | Version | Purpose |
 |---|---|---|
 | Python | 3.11 | Runtime |
-| FastAPI | 0.109 | API framework |
-| Supabase | PostgreSQL | Database + Auth + RLS |
-| Pydantic | 2 | Data validation |
-| httpx | latest | Async HTTP (LLM calls) |
-| slowapi | latest | Rate limiting |
+| FastAPI | 0.115.6 | API framework |
+| Uvicorn | 0.32.1 | ASGI server |
+| Supabase Python | 2.10.0 | Database + Auth + RLS |
+| Pydantic | 2.10.3 | Data validation |
+| python-jose | 3.3 | JWT handling |
+| slowapi | 0.1.9 | Rate limiting |
 
 ### Infrastructure
 - **Database:** Supabase (PostgreSQL with Row Level Security), project ID `dmabraziqscumpbwhjbf` (ap-northeast-2)
 - **Auth:** Supabase Auth (email/password + Google OAuth)
-- **Email:** Brevo SMTP via Supabase Edge Function
-- **LLM:** OpenAI API / Anthropic API / Google Generative AI API (user-provided keys)
+- **Frontend:** Vercel (Next.js, `frontend-next/`)
+- **Backend:** Render (FastAPI, Dockerized)
+- **Email:** Brevo SMTP via Supabase Edge Functions (`send-bill-email`, `notify-password-change`, `notify-account-deleted`)
+- **LLM:** OpenAI API / Anthropic API / Google Generative AI API (user-provided keys stored per-user in Supabase)
 
 ---
 
@@ -109,46 +118,53 @@ YesBill is a full-stack web application for tracking recurring household service
 
 ```
 yesbill/
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── Auth/               # Login, Signup, ForgotPassword
-│   │   │   ├── Dashboard.jsx       # Main dashboard with stats + charts
-│   │   │   ├── Services.jsx        # Manage all services
-│   │   │   ├── AddService.jsx      # Add/edit service form
-│   │   │   ├── Calendar.jsx        # Main multi-service calendar
-│   │   │   ├── ServiceCalendarPage.jsx  # Per-service calendar views
-│   │   │   ├── Bills.jsx           # Bill generation + list
-│   │   │   ├── Analytics.jsx       # Spend analytics + forecasting
-│   │   │   ├── ChatPage.jsx        # AI chat + agent interface
-│   │   │   ├── Settings.jsx        # Profile + AI + notification settings
-│   │   │   └── ...                 # Landing, Features, Pricing, etc.
-│   │   ├── components/
-│   │   │   ├── ui/                 # Base components (Button, Card, Toast, etc.)
-│   │   │   ├── PayBillModal.jsx    # Mark bill as paid modal
-│   │   │   ├── AgentButton.jsx     # Floating agent button (fixed bottom-right)
-│   │   │   ├── ModelSelector.jsx   # AI provider + model picker
-│   │   │   └── ...
-│   │   ├── services/
-│   │   │   ├── api.js              # Axios client + all API methods
-│   │   │   └── dataService.js      # Higher-level data service layer
-│   │   └── context/
-│   │       └── AuthContext.jsx     # Supabase auth state
-│   └── package.json
+├── frontend-next/              # PRIMARY frontend — Next.js 14 App Router
+│   ├── app/
+│   │   ├── layout.tsx          # Root layout + providers
+│   │   ├── page.tsx            # Landing page
+│   │   ├── dashboard/          # Main dashboard
+│   │   ├── services/           # Service CRUD
+│   │   ├── add-service/        # Add/edit service form
+│   │   ├── calendar/           # Multi-service calendar
+│   │   ├── bills/              # Bill generation + list
+│   │   ├── analytics/          # Spend analytics + forecasting
+│   │   ├── chat/               # AI chat + agent interface
+│   │   ├── settings/           # Profile + AI + notification settings
+│   │   ├── auth/               # Login, Signup, ForgotPassword
+│   │   └── ...                 # Landing pages (features, pricing, blog, etc.)
+│   ├── components/
+│   │   ├── PayBillModal.jsx    # Mark bill as paid
+│   │   ├── Calendar.jsx        # Calendar grid component
+│   │   ├── StatsCards.jsx      # Dashboard KPI cards
+│   │   ├── SummaryCard.jsx     # Bill summary component
+│   │   └── ...                 # Feature-specific components
+│   ├── hooks/                  # Custom React hooks
+│   ├── services/               # Axios API wrappers
+│   └── lib/                    # Utilities (cn, supabase client)
+├── frontend/                   # Legacy Vite + React frontend (reference)
 ├── backend/
 │   ├── app/
 │   │   ├── routers/
 │   │   │   ├── auth.py             # Auth endpoints
-│   │   │   ├── bills.py            # Bills: config, records, generate, paid
-│   │   │   ├── chat.py             # Chat, agent, conversations
+│   │   │   ├── bills.py            # Bills: generate, CRUD, payment, email
+│   │   │   ├── chat.py             # Chat, agent (SSE streaming)
 │   │   │   └── ai_settings.py      # AI provider + model settings
 │   │   ├── services/
 │   │   │   ├── supabase.py         # All database operations
 │   │   │   ├── llm_bill_service.py # LLM abstraction (OpenAI/Anthropic/Google)
-│   │   │   └── chat_service.py     # Chat + agent logic (SSE streaming)
+│   │   │   └── chat_service.py     # Chat + agent logic
 │   │   ├── schemas/                # Pydantic models
 │   │   └── main.py                 # FastAPI app entry point
 │   └── requirements.txt
+├── supabase/
+│   └── functions/
+│       ├── send-bill-email/        # Bill email via Brevo
+│       ├── notify-password-change/ # Password-changed email
+│       ├── notify-account-deleted/ # Account-deleted email
+│       ├── contact-form/           # Contact form handler
+│       └── bill-scheduler/         # Cron bill trigger
+├── docs-site/                  # Docusaurus documentation site
+├── email-templates/            # Supabase Auth HTML email templates
 └── README.md
 ```
 
@@ -252,15 +268,15 @@ uvicorn app.main:app --reload
 ### 3. Frontend Setup
 
 ```bash
-cd frontend
+cd frontend-next
 npm install
 ```
 
-Create `frontend/.env`:
+Create `frontend-next/.env.local`:
 ```env
-VITE_API_URL=http://localhost:8000
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ```bash
@@ -271,7 +287,7 @@ npm run dev
 
 | Service | URL |
 |---|---|
-| Frontend | http://localhost:5173 |
+| Frontend | http://localhost:3000 |
 | Backend API | http://localhost:8000 |
 | API Docs (Swagger) | http://localhost:8000/docs |
 

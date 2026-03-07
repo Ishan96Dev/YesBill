@@ -84,12 +84,20 @@ Templates reference: `https://raw.githubusercontent.com/yourusername/yesbill/mai
 
 ### To Update Logo URL:
 
-**Option 1: Host on GitHub** (Recommended)
+**Option 1: Supabase Storage** (Already configured)
+
+Logo is currently hosted at:
+```
+https://dmabraziqscumpbwhjbf.supabase.co/storage/v1/object/public/branding/yesbill_logo_black.png
+```
+This is used in all Edge Function transactional emails. For auth templates paste the black-logo URL above.
+
+**Option 2: Host on GitHub**
 1. Upload logo to your GitHub repo
 2. Get raw URL: `https://raw.githubusercontent.com/[username]/[repo]/main/frontend/public/assets/branding/yesbill_logo_white.png`
 3. Find & replace in all template files
 
-**Option 2: Use Public CDN**
+**Option 3: Use Public CDN**
 1. Upload to Imgur, Cloudinary, or similar
 2. Get public URL
 3. Replace in all templates
@@ -260,6 +268,49 @@ Before going live, verify:
 - [ ] Mobile view looks good
 - [ ] Redirect URLs configured
 - [ ] SMTP settings complete (for production)
+
+---
+
+## 📨 Transactional Emails (Supabase Edge Functions)
+
+In addition to auth templates, YesBill sends transactional emails via **Supabase Edge Functions** using **Brevo SMTP**. These are NOT configured in the Supabase Auth template panel — they are deployed functions.
+
+| Function | Trigger | Description |
+|---|---|---|
+| `send-bill-email` | Auto bill generation / manual | Monthly bill notification with service breakdown, AI insights, and PDF link |
+| `notify-password-change` | User changes password | Security notification — password was changed |
+| `notify-account-deleted` | User deletes account | Confirmation + data deletion notice |
+| `contact-form` | Contact page form submission | Routes contact form messages |
+
+### Edge Function Email Design
+
+All transactional emails use the same Outlook-compatible design system:
+
+- `bgcolor` attributes on every `<td>` (Outlook ignores CSS-only background colors)
+- VML bulletproof CTA buttons (`<!--[if mso]><v:roundrect>`)
+- No CSS `linear-gradient` — solid `background-color` only
+- XHTML Transitional DOCTYPE
+- MSO conditional font override block
+- Teal `#0F766E` header with white YesBill logo pill
+
+### Deploying Edge Function Emails
+
+Edge functions are deployed via the Supabase MCP or CLI:
+
+```bash
+supabase functions deploy send-bill-email
+supabase functions deploy notify-password-change
+supabase functions deploy notify-account-deleted
+```
+
+Required secrets (set in Supabase dashboard → Edge Functions → Secrets):
+
+| Secret | Description |
+|---|---|
+| `BREVO_API_KEY` | Brevo SMTP API key |
+| `BREVO_FROM_EMAIL` | Sender address (e.g. `bills@yesbill.app`) |
+| `BREVO_FROM_NAME` | Sender name (e.g. `YesBill`) |
+| `SITE_URL` | Frontend URL (e.g. `https://yesbill.vercel.app`) |
 
 ---
 

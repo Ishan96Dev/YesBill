@@ -1,4 +1,6 @@
-# YesBill Frontend
+# YesBill Frontend (Legacy — Vite + React)
+
+> **Note:** The primary active frontend is [`frontend-next/`](../frontend-next/) — a Next.js 14 App Router rewrite with full TypeScript and Vercel deployment. This Vite + React frontend is kept as a reference implementation.
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -174,6 +176,7 @@ npm run build
 
 ## Related
 
+- [Frontend Next.js README](../frontend-next/README.md)
 - [Backend README](../backend/README.md)
 - [Docs Site README](../docs-site/README.md)
 - [Root README](../README.md)

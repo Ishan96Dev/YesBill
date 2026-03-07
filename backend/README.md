@@ -1,7 +1,7 @@
 # YesBill Backend
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%2B%20Auth-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
 [![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white)](https://docs.pydantic.dev)
 [![Deployed on Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://render.com)
@@ -15,13 +15,13 @@ FastAPI backend for YesBill — a household expense tracker with multi-provider 
 
 | Package | Version | Purpose |
 |---|---|---|
-| [FastAPI](https://fastapi.tiangolo.com) | 0.109 | Web framework |
-| [Uvicorn](https://www.uvicorn.org) | 0.27 | ASGI server |
-| [Supabase Python](https://supabase.com/docs/reference/python) | 2.3 | Auth + PostgreSQL client |
-| [Pydantic](https://docs.pydantic.dev) | v2 | Data validation & settings |
-| [HTTPX](https://www.python-httpx.org) | 0.26 | Async HTTP client |
+| [FastAPI](https://fastapi.tiangolo.com) | 0.115.6 | Web framework |
+| [Uvicorn](https://www.uvicorn.org) | 0.32.1 | ASGI server |
+| [Supabase Python](https://supabase.com/docs/reference/python) | 2.10.0 | Auth + PostgreSQL client |
+| [Pydantic](https://docs.pydantic.dev) | 2.10.3 | Data validation & settings |
 | [SlowAPI](https://slowapi.readthedocs.io) | 0.1.9 | Rate limiting |
 | [python-jose](https://python-jose.readthedocs.io) | 3.3 | JWT handling |
+| [tzdata](https://pypi.org/project/tzdata) | 2025.2 | Timezone DB for Linux containers |
 
 ---
 
@@ -119,11 +119,13 @@ The backend supports three AI providers. Users configure their preferred provide
 
 | Provider | Models Supported | Reasoning |
 |---|---|---|
-| OpenAI | GPT-4o, o1, o1-mini, o3-mini | ✅ (o-series) |
+| OpenAI | GPT-4o, GPT-4o-mini, GPT-5.2, o1, o3-mini | ✅ (configurable effort: low/medium/high/xhigh) |
 | Anthropic | Claude 3.5 Sonnet, Claude 3 Haiku | ✅ (extended thinking) |
-| Google | Gemini 1.5 Pro, Gemini 2.0 Flash | ✅ (thinking mode) |
+| Google | Gemini 1.5 Pro, Gemini 2.0 Flash, Gemini 2.5 Pro | ✅ (thinking mode) |
 
 AI keys are stored per-user in Supabase (encrypted at rest). The backend never stores keys in plaintext server-side.
+
+> **Reasoning effort** (`none`/`low`/`medium`/`high`/`xhigh`) is configurable for supported models. Only `gpt-5.2` supports OpenAI reasoning effort. Anthropic and Google detect thinking support via model prefix.
 
 ---
 
@@ -177,120 +179,7 @@ Alternative deployment configs are provided for:
 
 ## Related
 
-- [Frontend README](../frontend/README.md)
+- [Frontend (Next.js) README](../frontend-next/README.md)
+- [Frontend (Legacy Vite) README](../frontend/README.md)
 - [Docs Site README](../docs-site/README.md)
 - [Root README](../README.md)
-
-## Legacy Schema Documentation
-
-### bill_config
-```javascript
-{
-  "name": "bill_config",
-  "type": "base",
-  "schema": [
-    {
-      "name": "user",
-      "type": "relation",
-      "required": true,
-      "options": {
-        "collectionId": "_pb_users_auth_",
-        "cascadeDelete": true
-      }
-    },
-    {
-      "name": "daily_amount",
-      "type": "number",
-      "required": true
-    },
-    {
-      "name": "currency",
-      "type": "text",
-      "required": true,
-      "options": {
-        "max": 3
-      }
-    },
-    {
-      "name": "start_date",
-      "type": "date",
-      "required": true
-    },
-    {
-      "name": "active",
-      "type": "bool",
-      "required": true
-    }
-  ],
-  "listRule": "user.id = @request.auth.id",
-  "viewRule": "user.id = @request.auth.id",
-  "createRule": "user.id = @request.auth.id",
-  "updateRule": "user.id = @request.auth.id",
-  "deleteRule": "user.id = @request.auth.id"
-}
-```
-
-### daily_records
-```javascript
-{
-  "name": "daily_records",
-  "type": "base",
-  "schema": [
-    {
-      "name": "user",
-      "type": "relation",
-      "required": true,
-      "options": {
-        "collectionId": "_pb_users_auth_",
-        "cascadeDelete": true
-      }
-    },
-    {
-      "name": "date",
-      "type": "date",
-      "required": true
-    },
-    {
-      "name": "status",
-      "type": "select",
-      "required": true,
-      "options": {
-        "values": ["YES", "NO"]
-      }
-    },
-    {
-      "name": "amount",
-      "type": "number",
-      "required": true
-    }
-  ],
-  "listRule": "user.id = @request.auth.id",
-  "viewRule": "user.id = @request.auth.id",
-  "createRule": "user.id = @request.auth.id",
-  "updateRule": "user.id = @request.auth.id",
-  "deleteRule": "user.id = @request.auth.id"
-}
-```
-
-## Code Quality
-
-Run linting:
-```bash
-ruff check .
-```
-
-Format code:
-```bash
-black .
-```
-
-Type check:
-```bash
-mypy app/
-```
-
-## API Documentation
-
-Once running, visit:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
