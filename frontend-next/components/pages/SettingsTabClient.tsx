@@ -142,9 +142,10 @@ export default function Settings() {
   const { tab: urlTab } = useParams();
   const router = useRouter();
 
-  // Reliable user ID / email — reads from hook or localStorage (synchronous, no locks)
-  const resolveUserId = () => user?.id || localStorage.getItem('user_id') || null;
-  const resolvedEmail = userEmail || localStorage.getItem('user_email') || '';
+  // Reliable user ID / email — reads from hook or localStorage (client-only, synchronous, no locks)
+  // NOTE: localStorage is only available in the browser. These helpers guard against SSR crashes.
+  const resolveUserId = () => user?.id || (typeof window !== 'undefined' ? localStorage.getItem('user_id') : null) || null;
+  const resolvedEmail = userEmail || (typeof window !== 'undefined' ? localStorage.getItem('user_email') : '') || '';
 
   const validTabs = ['profile', 'ai', 'notifications', 'security'];
   const [activeTab, setActiveTab] = useState(() => {

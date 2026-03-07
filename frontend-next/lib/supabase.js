@@ -115,6 +115,7 @@ export async function ensureAuth() {
  * @returns {string|null} userId or null
  */
 export function getStoredUserId() {
+  if (typeof window === 'undefined') return null
   return localStorage.getItem('user_id') || null
 }
 
@@ -123,6 +124,7 @@ export function getStoredUserId() {
  * @returns {string} email or empty string
  */
 export function getStoredUserEmail() {
+  if (typeof window === 'undefined') return ''
   return localStorage.getItem('user_email') || ''
 }
 
