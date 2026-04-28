@@ -1,10 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -172,36 +172,108 @@ class _DocsDrawerState extends State<_DocsDrawer> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final divider = isDark
-        ? Colors.white.withAlpha(18)
-        : Colors.black.withAlpha(12);
 
     return Drawer(
-      backgroundColor: bg,
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            // ── Branded header ──────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.cardDark
+                    : AppColors.primary.withAlpha(12),
+                border: Border(
+                  bottom: BorderSide(
+                    color: isDark
+                        ? AppColors.primary.withAlpha(45)
+                        : AppColors.primary.withAlpha(28),
+                    width: 1,
+                  ),
+                ),
+              ),
               child: Row(
                 children: [
-                  Icon(LucideIcons.bookOpen,
-                      size: 18, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Text('Docs',
-                      style: AppTextStyles.h4.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : Colors.black87,
-                      )),
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primaryDark,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(9),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withAlpha(60),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(LucideIcons.bookOpen,
+                        size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'YesBill Docs',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      Text(
+                        'Documentation',
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white38
+                              : Colors.black38,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  // Close drawer button
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withAlpha(14)
+                            : Colors.black.withAlpha(8),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: Icon(
+                        LucideIcons.x,
+                        size: 14,
+                        color: isDark ? Colors.white54 : Colors.black38,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            Divider(color: divider, height: 1),
+            // ── Navigation list ─────────────────────────────────────────────
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
                 itemCount: _sections.length,
                 itemBuilder: (_, i) => _SectionTile(
                   section: _sections[i],
@@ -244,48 +316,90 @@ class _SectionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headingColor = isDark ? Colors.white70 : Colors.black54;
+    final headingColor =
+        isDark ? Colors.white54 : const Color(0xFF6B7280);
+
+    // Check if any child of this section is selected
+    final hasSelected =
+        section.items.any((item) => item.asset == selectedAsset);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         InkWell(
           onTap: onToggle,
+          splashColor: AppColors.primary.withAlpha(18),
+          highlightColor: AppColors.primary.withAlpha(10),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.fromLTRB(16, 9, 14, 9),
             child: Row(
               children: [
-                Icon(section.icon, size: 16, color: AppColors.primary),
-                const SizedBox(width: 8),
+                // Section icon badge
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: hasSelected
+                        ? AppColors.primary.withAlpha(isDark ? 50 : 25)
+                        : (isDark
+                            ? Colors.white.withAlpha(12)
+                            : Colors.black.withAlpha(6)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    section.icon,
+                    size: 13,
+                    color: hasSelected
+                        ? AppColors.primary
+                        : headingColor,
+                  ),
+                ),
+                const SizedBox(width: 9),
                 Expanded(
                   child: Text(
                     section.title,
-                    style: AppTextStyles.label.copyWith(
+                    style: TextStyle(
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w600,
-                      color: headingColor,
+                      color: hasSelected
+                          ? (isDark ? Colors.white : Colors.black87)
+                          : headingColor,
+                      letterSpacing: 0.1,
                     ),
                   ),
                 ),
-                Icon(
-                  expanded
-                      ? LucideIcons.chevronDown
-                      : LucideIcons.chevronRight,
-                  size: 14,
-                  color: headingColor,
+                AnimatedRotation(
+                  turns: expanded ? 0.25 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    LucideIcons.chevronRight,
+                    size: 13,
+                    color: headingColor,
+                  ),
                 ),
               ],
             ),
           ),
         ),
-        if (expanded)
-          ...section.items.map((item) {
-            final selected = item.asset == selectedAsset;
-            return _DocItemTile(
-              item: item,
-              selected: selected,
-              onTap: () => onSelect(item),
-            );
-          }),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: section.items.map((item) {
+              final selected = item.asset == selectedAsset;
+              return _DocItemTile(
+                item: item,
+                selected: selected,
+                onTap: () => onSelect(item),
+              );
+            }).toList(),
+          ),
+          crossFadeState: expanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
+        const SizedBox(height: 2),
       ],
     );
   }
@@ -307,38 +421,72 @@ class _DocItemTile extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: selected
-          ? AppColors.primary.withAlpha(isDark ? 35 : 20)
-          : Colors.transparent,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 8, 16, 8),
+        splashColor: AppColors.primary.withAlpha(20),
+        highlightColor: AppColors.primary.withAlpha(10),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(10, 1, 10, 1),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppColors.primary.withAlpha(isDark ? 40 : 18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: selected
+                ? Border.all(
+                    color: AppColors.primary.withAlpha(isDark ? 60 : 35),
+                    width: 1,
+                  )
+                : null,
+          ),
           child: Row(
             children: [
-              if (selected)
+              // Left accent indicator
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: selected ? 3 : 0,
+                height: 14,
+                margin: EdgeInsets.only(right: selected ? 8 : 0),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Dot for unselected
+              if (!selected)
                 Container(
-                  width: 3,
-                  height: 14,
+                  width: 4,
+                  height: 4,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(2),
+                    color: isDark
+                        ? Colors.white.withAlpha(35)
+                        : Colors.black.withAlpha(25),
+                    shape: BoxShape.circle,
                   ),
-                )
-              else
-                const SizedBox(width: 11),
+                ),
               Expanded(
                 child: Text(
                   item.label,
-                  style: AppTextStyles.bodySm.copyWith(
+                  style: TextStyle(
+                    fontSize: 13,
                     color: selected
                         ? AppColors.primary
-                        : (isDark ? Colors.white70 : Colors.black87),
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        : (isDark ? Colors.white70 : const Color(0xFF374151)),
+                    fontWeight:
+                        selected ? FontWeight.w600 : FontWeight.w400,
+                    letterSpacing: selected ? 0 : 0.1,
                   ),
                 ),
               ),
+              if (selected)
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 12,
+                  color: AppColors.primary.withAlpha(160),
+                ),
             ],
           ),
         ),
@@ -386,6 +534,20 @@ class _DocsBodyState extends State<_DocsBody> {
     _loadDoc();
   }
 
+  /// Strips Docusaurus/Jekyll YAML frontmatter from markdown content.
+  /// Removes the `---\n...\n---` block at the very start of the file.
+  static String _stripFrontmatter(String raw) {
+    final trimmed = raw.trimLeft();
+    if (!trimmed.startsWith('---')) return raw;
+    // Find the closing --- line after the opening one
+    final closing = trimmed.indexOf('\n---', 3);
+    if (closing == -1) return raw;
+    // Skip past the closing --- and its trailing newline
+    final afterNewline = trimmed.indexOf('\n', closing + 1);
+    if (afterNewline == -1) return '';
+    return trimmed.substring(afterNewline + 1).trimLeft();
+  }
+
   Future<void> _loadDoc() async {
     setState(() {
       _loading = true;
@@ -397,7 +559,7 @@ class _DocsBodyState extends State<_DocsBody> {
       if (!mounted) return;
       if (_loadedAsset != widget.asset) return; // stale response
       setState(() {
-        _content = raw;
+        _content = _stripFrontmatter(raw);
         _loading = false;
       });
     } catch (e) {
@@ -464,21 +626,46 @@ class _DocsBodyState extends State<_DocsBody> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    resolved.toString(),
+                  child: CachedNetworkImage(
+                    imageUrl: resolved.toString(),
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Container(
-                      padding: const EdgeInsets.all(12),
+                    placeholder: (_, __) => Container(
+                      height: 160,
                       decoration: BoxDecoration(
                         color: codeBackground,
                         borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary.withAlpha(150),
+                          ),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: codeBackground,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withAlpha(18)
+                              : Colors.black.withAlpha(12),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(LucideIcons.imageOff, size: 16, color: subColor),
                           const SizedBox(width: 6),
-                          Text(alt ?? 'Image', style: TextStyle(color: subColor, fontSize: 12)),
+                          Text(
+                            alt?.isNotEmpty == true ? alt! : 'Image unavailable',
+                            style: TextStyle(color: subColor, fontSize: 12),
+                          ),
                         ],
                       ),
                     ),

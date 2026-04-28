@@ -28,12 +28,13 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
   AiSettingsMutationState build() => const AiSettingsMutationIdle();
 
   Future<void> save({required String provider, required String apiKey,
-      String? selectedModel, String reasoningEffort = 'none'}) async {
+      String? selectedModel, String reasoningEffort = 'none', String? ollamaBaseUrl}) async {
     state = const AiSettingsMutationLoading();
     try {
       final result = await ref.read(aiSettingsRepositoryProvider).saveSettings(
         provider: provider, apiKey: apiKey,
         selectedModel: selectedModel, reasoningEffort: reasoningEffort,
+        ollamaBaseUrl: ollamaBaseUrl,
       );
       ref.invalidate(aiSettingsListProvider);
       state = AiSettingsMutationSuccess(result);
@@ -84,3 +85,9 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
 
 final aiSettingsMutationProvider = NotifierProvider<AiSettingsMutationNotifier, AiSettingsMutationState>(
     AiSettingsMutationNotifier.new);
+
+final ollamaModelsProvider =
+    FutureProvider.autoDispose.family<List<String>, String>((ref, baseUrl) async {
+  final repo = ref.read(aiSettingsRepositoryProvider);
+  return repo.getOllamaModels(baseUrl);
+});

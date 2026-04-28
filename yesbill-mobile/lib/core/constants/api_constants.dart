@@ -40,6 +40,7 @@ class ApiConstants {
   static const aiSettings = '/ai/settings';
   static const aiProviders = '/ai/providers';
   static const aiValidateKey = '/ai/validate-key';
+  static const aiOllamaModels = '/ai/ollama/models';
 
   static String aiSettingsByProvider(String provider) =>
       '/ai/settings/$provider';

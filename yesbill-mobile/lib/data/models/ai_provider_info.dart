@@ -7,6 +7,7 @@ class AiProviderInfo {
     required this.docsUrl,
     required this.keyPrefix,
     required this.models,
+    this.requiresKey = true,
   });
 
   final String id;
@@ -16,6 +17,7 @@ class AiProviderInfo {
   final String docsUrl;
   final String keyPrefix;
   final List<AiProviderModelInfo> models;
+  final bool requiresKey;
 
   factory AiProviderInfo.fromJson(Map<String, dynamic> json) {
     final rawModels = json['models'];
@@ -26,6 +28,7 @@ class AiProviderInfo {
       logoUrl: (json['logo_url'] ?? '').toString(),
       docsUrl: (json['docs_url'] ?? '').toString(),
       keyPrefix: (json['key_prefix'] ?? '').toString(),
+      requiresKey: json['requires_key'] != false,
       models: rawModels is List
           ? rawModels
               .whereType<Map>()

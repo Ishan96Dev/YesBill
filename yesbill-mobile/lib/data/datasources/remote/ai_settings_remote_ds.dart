@@ -37,17 +37,36 @@ class AiSettingsRemoteDataSource {
     required String apiKey,
     String? selectedModel,
     String reasoningEffort = 'none',
+    String? ollamaBaseUrl,
   }) async {
     try {
       final resp = await _dio.post(ApiConstants.aiSettings, data: {
         'provider': provider,
-        'api_key': apiKey,
+        if (ollamaBaseUrl != null) 'ollama_base_url': ollamaBaseUrl
+        else 'api_key': apiKey,
         if (selectedModel != null) 'selected_model': selectedModel,
         'default_reasoning_effort': reasoningEffort,
       });
       return AiSettings.fromJson(
         _normalizeSettingsJson(Map<String, dynamic>.from(resp.data as Map)),
       );
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
+  }
+
+  Future<List<String>> getOllamaModels(String baseUrl) async {
+    try {
+      final resp = await _dio.get(
+        ApiConstants.aiOllamaModels,
+        queryParameters: {'base_url': baseUrl},
+      );
+      final data = resp.data;
+      if (data is List) return data.map((e) => e.toString()).toList();
+      if (data is Map && data['models'] is List) {
+        return (data['models'] as List).map((e) => e.toString()).toList();
+      }
+      return [];
     } catch (e) {
       throw ErrorHandler.handle(e);
     }

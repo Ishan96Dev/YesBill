@@ -24,20 +24,50 @@ class AiProviderSetupScreen extends ConsumerStatefulWidget {
 class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _apiKeyCtrl = TextEditingController();
+  final _ollamaBaseUrlCtrl = TextEditingController(text: 'http://localhost:11434');
   bool _obscureKey = true;
   String _reasoningEffort = 'none';
   String? _selectedModel;
   bool _hydrated = false;
+  List<String> _ollamaModels = [];
+  bool _loadingOllamaModels = false;
 
   @override
   void dispose() {
     _apiKeyCtrl.dispose();
+    _ollamaBaseUrlCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadOllamaModels() async {
+    final baseUrl = _ollamaBaseUrlCtrl.text.trim();
+    if (baseUrl.isEmpty) return;
+    setState(() => _loadingOllamaModels = true);
+    try {
+      final models = await ref.read(
+        ollamaModelsProvider(baseUrl).future,
+      );
+      if (!mounted) return;
+      setState(() {
+        _ollamaModels = models;
+        if (models.isNotEmpty && (_selectedModel == null || !models.contains(_selectedModel))) {
+          _selectedModel = models.first;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load Ollama models: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _loadingOllamaModels = false);
+    }
   }
 
   Future<void> _save({
     required String providerName,
     required bool hasExistingKey,
+    bool isOllama = false,
   }) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -92,6 +122,65 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
     context.pop();
   }
 
+  List<Widget> _buildOllamaSection() {
+    return [
+      const SizedBox(height: AppSpacing.lg),
+      const Text('Ollama Base URL', style: AppTextStyles.label),
+      const SizedBox(height: AppSpacing.sm),
+      TextFormField(
+        controller: _ollamaBaseUrlCtrl,
+        style: AppTextStyles.body,
+        decoration: InputDecoration(
+          hintText: 'http://localhost:11434',
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+          prefixIcon: Icon(
+            LucideIcons.server,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            size: 18,
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.sm),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: _loadingOllamaModels ? null : _loadOllamaModels,
+          icon: _loadingOllamaModels
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(LucideIcons.refreshCw, size: 14),
+          label: Text(_loadingOllamaModels ? 'Loading...' : 'Load Models'),
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        ),
+      ),
+      if (_ollamaModels.isEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.xs),
+          child: Text(
+            'Press "Load Models" to fetch models from your Ollama instance.',
+            style: AppTextStyles.bodySm.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final providersAsync = ref.watch(aiProviderCatalogProvider);
@@ -128,6 +217,8 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
           _hydrated = true;
         }
 
+        final isOllama = !provider.requiresKey;
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -161,22 +252,28 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                         AppDropdown<String>(
                           label: 'Model',
                           value: _selectedModel,
-                          items: provider.models
-                              .map(
-                                (m) => AppDropdownItem(
-                                  value: m.id,
-                                  label: m.name,
-                                  subtitle: (m.description != null &&
-                                          m.description!.isNotEmpty)
-                                      ? m.description
-                                      : null,
-                                ),
-                              )
-                              .toList(),
+                          items: (isOllama && _ollamaModels.isNotEmpty
+                                  ? _ollamaModels
+                                      .map((m) => AppDropdownItem(value: m, label: m))
+                                      .toList()
+                                  : provider.models
+                                      .map(
+                                        (m) => AppDropdownItem(
+                                          value: m.id,
+                                          label: m.name,
+                                          subtitle: (m.description != null &&
+                                                  m.description!.isNotEmpty)
+                                              ? m.description
+                                              : null,
+                                        ),
+                                      )
+                                      .toList()),
                           onChanged: (value) {
                             if (value != null) setState(() => _selectedModel = value);
                           },
                         ),
+                        if (isOllama) ..._buildOllamaSection()
+                        else ...[
                         const SizedBox(height: AppSpacing.lg),
                         const Text('API Key', style: AppTextStyles.label),
                         const SizedBox(height: AppSpacing.sm),
@@ -300,6 +397,7 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                           provider: widget.provider,
                           hasStoredValidKey: hasExistingKey,
                         ),
+                        ], // end of non-Ollama section
                         const SizedBox(height: AppSpacing.xl),
                         AppDropdown<String>(
                           label: 'Reasoning effort',
@@ -321,6 +419,7 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                               : () => _save(
                                     providerName: provider.name,
                                     hasExistingKey: hasExistingKey,
+                                    isOllama: isOllama,
                                   ),
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primary,
@@ -343,6 +442,7 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                                 ),
                         ),
                         const SizedBox(height: AppSpacing.md),
+                        if (!isOllama)
                         Center(
                           child: TextButton.icon(
                             onPressed: () async {

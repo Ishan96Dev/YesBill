@@ -378,6 +378,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   _ChatComposer(
                     controller: _textCtrl,
                     enabled: configured,
+                    isStreaming: messages.any((m) => m.isStreaming),
                     onNewConversation: _startNewConversation,
                     onSend: () => _sendMessage(
                       conversationId: selectedConversation.id,
@@ -1844,15 +1845,18 @@ class _ChatComposer extends StatelessWidget {
     required this.enabled,
     required this.onSend,
     this.onNewConversation,
+    this.isStreaming = false,
   });
 
   final TextEditingController controller;
   final bool enabled;
+  final bool isStreaming;
   final VoidCallback onSend;
   final VoidCallback? onNewConversation;
 
   @override
   Widget build(BuildContext context) {
+    final canSend = enabled && !isStreaming;
     return SafeArea(
       top: false,
       child: Padding(
@@ -1895,15 +1899,17 @@ class _ChatComposer extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: controller,
-                  enabled: enabled,
+                  enabled: canSend,
                   minLines: 1,
                   maxLines: 4,
                   textInputAction: TextInputAction.send,
-                  onSubmitted: enabled ? (_) => onSend() : null,
+                  onSubmitted: canSend ? (_) => onSend() : null,
                   decoration: InputDecoration(
-                    hintText: enabled
+                    hintText: canSend
                         ? 'Ask anything about your bills…'
-                        : 'Configure AI in Settings to start chatting…',
+                        : enabled
+                            ? 'AI is thinking…'
+                            : 'Configure AI in Settings to start chatting…',
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -1915,17 +1921,17 @@ class _ChatComposer extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: enabled ? onSend : null,
+                onTap: canSend ? onSend : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: enabled
+                    color: canSend
                         ? _chatMd3Primary
                         : _chatMd3OutlineVariant.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(18),
-                    boxShadow: enabled
+                    boxShadow: canSend
                         ? const [
                             BoxShadow(
                               color: Color(0x404A4BD7),

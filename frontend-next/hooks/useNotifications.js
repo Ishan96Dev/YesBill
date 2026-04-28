@@ -27,6 +27,9 @@ export function useNotifications(userId, _notifPrefs = null) {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const channelRef = useRef(null)
+  // Tracks IDs marked as read this session — prevents any subsequent
+  // fetch or realtime UPDATE from reverting the optimistic read state.
+  const localReadIdsRef = useRef(new Set())
 
   const fetch = useCallback(async () => {
     if (!userId) {
@@ -36,7 +39,13 @@ export function useNotifications(userId, _notifPrefs = null) {
     }
     setLoading(true)
     const data = await notificationService.getAll(userId)
-    setNotifications(data)
+    // Re-apply any locally-known read state so that a re-fetch never
+    // reverts optimistic updates made earlier in this session.
+    const localIds = localReadIdsRef.current
+    const merged = localIds.size > 0
+      ? data.map((n) => (localIds.has(n.id) ? { ...n, read: true } : n))
+      : data
+    setNotifications(merged)
     setLoading(false)
   }, [userId])
 
@@ -77,8 +86,13 @@ export function useNotifications(userId, _notifPrefs = null) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          // Apply local read state so a late-arriving UPDATE from the DB
+          // cannot flip a locally-marked-as-read notification back to unread.
+          const updated = localReadIdsRef.current.has(payload.new.id)
+            ? { ...payload.new, read: true }
+            : payload.new
           setNotifications((prev) =>
-            prev.map((n) => (n.id === payload.new.id ? payload.new : n))
+            prev.map((n) => (n.id === payload.new.id ? updated : n))
           )
         }
       )
@@ -105,7 +119,7 @@ export function useNotifications(userId, _notifPrefs = null) {
   }, [userId])
 
   const markAsRead = useCallback(async (id) => {
-    // Optimistic update
+    localReadIdsRef.current.add(id)
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     )
@@ -113,14 +127,16 @@ export function useNotifications(userId, _notifPrefs = null) {
   }, [])
 
   const markAllAsRead = useCallback(async () => {
-    // Optimistic update — mark all read in UI immediately
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-    const error = await notificationService.markAllAsRead(userId)
-    if (error) {
-      // DB update failed — re-fetch to restore accurate state from server
-      fetch()
-    }
-  }, [userId, fetch])
+    // Add all currently-unread IDs to the local set BEFORE the optimistic
+    // update so that any subsequent fetch or realtime event cannot revert them.
+    setNotifications((prev) => {
+      prev.forEach((n) => { if (!n.read) localReadIdsRef.current.add(n.id) })
+      return prev.map((n) => ({ ...n, read: true }))
+    })
+    await notificationService.markAllAsRead(userId)
+    // No fetch() on failure — localReadIdsRef keeps the UI correct.
+    // Data will reconcile on the next full page load.
+  }, [userId])
 
   const deleteOne = useCallback(async (id) => {
     // Optimistic update

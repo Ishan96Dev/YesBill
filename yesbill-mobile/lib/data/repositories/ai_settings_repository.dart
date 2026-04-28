@@ -8,9 +8,9 @@ class AiSettingsRepository {
 
   Future<List<AiSettings>> getAllSettings() => _remoteDs.getAllSettings();
   Future<AiSettings> saveSettings({required String provider, required String apiKey,
-      String? selectedModel, String reasoningEffort = 'none'}) =>
+      String? selectedModel, String reasoningEffort = 'none', String? ollamaBaseUrl}) =>
       _remoteDs.saveSettings(provider: provider, apiKey: apiKey,
-          selectedModel: selectedModel, reasoningEffort: reasoningEffort);
+          selectedModel: selectedModel, reasoningEffort: reasoningEffort, ollamaBaseUrl: ollamaBaseUrl);
   Future<AiSettings> updateSettings({required String provider, String? apiKey,
       String? selectedModel, String? reasoningEffort}) =>
       _remoteDs.updateSettings(provider: provider, apiKey: apiKey,
@@ -19,4 +19,5 @@ class AiSettingsRepository {
   Future<KeyValidationResult> validateKey({required String provider, required String apiKey}) =>
       _remoteDs.validateKey(provider: provider, apiKey: apiKey);
     Future<List<AiProviderInfo>> getProviders() => _remoteDs.getProviders();
+  Future<List<String>> getOllamaModels(String baseUrl) => _remoteDs.getOllamaModels(baseUrl);
 }

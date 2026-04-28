@@ -21,6 +21,20 @@ class AuthState {
 
   bool get isAuthenticated => user != null;
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AuthState) return false;
+    // Compare by user ID so that token-refresh events (same user, new session
+    // object) don't trigger unnecessary rebuilds of dependent providers.
+    return user?.id == other.user?.id &&
+        isLoading == other.isLoading &&
+        error == other.error;
+  }
+
+  @override
+  int get hashCode => Object.hash(user?.id, isLoading, error);
+
   AuthState copyWith({
     User? user,
     bool? isLoading,
