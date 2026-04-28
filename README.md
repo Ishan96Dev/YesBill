@@ -59,6 +59,16 @@ YesBill is a full-stack web application for tracking recurring household service
 - Conversation history, rename, delete, export (Markdown)
 - Alt+L: rephrase selected text in chat input
 
+### Flutter Mobile App (`yesbill-mobile/`)
+- Native Android app built with Flutter 3.41.6
+- Full feature parity with the web app — dashboard, calendar, services, bills, analytics, AI chat, AI agent
+- **Docs screen:** Browse the full YesBill documentation in-app with collapsible sidebar navigation and rendered markdown
+- Offline-capable assets: all 32 documentation pages bundled locally
+- Push notifications support (Firebase Cloud Messaging)
+- Bottom nav bar with primary tabs + "More" drawer for secondary screens
+- Dark / light theme following system preference
+- Built with: flutter_riverpod, go_router, supabase_flutter, flutter_markdown, url_launcher, lucide_icons
+
 ### User Settings
 - Profile: display name, timezone, currency
 - AI settings: provider, API key, model, reasoning effort
@@ -165,6 +175,18 @@ yesbill/
 │       └── bill-scheduler/         # Cron bill trigger
 ├── docs-site/                  # Docusaurus documentation site
 ├── email-templates/            # Supabase Auth HTML email templates
+├── yesbill-mobile/             # Flutter Android app
+│   ├── lib/
+│   │   ├── presentation/
+│   │   │   ├── screens/        # Dashboard, Calendar, Bills, AI Chat, AI Agent, Docs, ...
+│   │   │   ├── widgets/        # Shared widgets (AppScaffold, ShellHeaderActions, ...)
+│   │   │   └── router/         # go_router routes
+│   │   ├── providers/          # Riverpod providers
+│   │   └── core/               # Theme, constants, utilities
+│   ├── assets/
+│   │   ├── docs/               # 32 bundled documentation markdown files
+│   │   └── images/             # App images
+│   └── android/                # Android project
 └── README.md
 ```
 
@@ -290,6 +312,27 @@ npm run dev
 | Frontend | http://localhost:3000 |
 | Backend API | http://localhost:8000 |
 | API Docs (Swagger) | http://localhost:8000/docs |
+
+### 5. Mobile App (Android)
+
+**Prerequisites:** Flutter 3.41.6, Android SDK, `google-services.json` from your Firebase project
+
+```bash
+cd yesbill-mobile
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+
+# Debug build
+flutter run
+
+# Release APK
+flutter build apk --release \
+  --dart-define=SUPABASE_URL=https://your-project.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-anon-key \
+  --dart-define=API_BASE_URL=https://your-api.com
+```
+
+APK output: `yesbill-mobile/build/app/outputs/flutter-apk/app-release.apk`
 
 ---
 

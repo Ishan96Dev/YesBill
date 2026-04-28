@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YesBill - AI Deep Dive</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#f76a80",
+                    "on-primary-container": "#221eb5",
+                    "surface-dim": "#d3dbdf",
+                    "secondary-dim": "#004fad",
+                    "on-error-container": "#68001f",
+                    "surface-container-highest": "#dde3e7",
+                    "inverse-primary": "#8083ff",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface": "#2d3337",
+                    "on-tertiary-container": "#005a3c",
+                    "surface-container-low": "#f1f4f6",
+                    "primary": "#4a4bd7",
+                    "on-secondary-fixed-variant": "#0057bd",
+                    "background": "#f7f9fb",
+                    "secondary": "#005bc4",
+                    "tertiary": "#006d4a",
+                    "on-tertiary": "#e6ffee",
+                    "tertiary-container": "#69f6b8",
+                    "outline-variant": "#acb3b7",
+                    "error-dim": "#770326",
+                    "tertiary-fixed": "#69f6b8",
+                    "surface-tint": "#4a4bd7",
+                    "on-secondary-fixed": "#003c86",
+                    "on-secondary-container": "#004eaa",
+                    "error": "#ac3149",
+                    "primary-fixed-dim": "#aaacff",
+                    "on-error": "#fff7f7",
+                    "on-surface-variant": "#596063",
+                    "inverse-surface": "#0b0f10",
+                    "on-primary-fixed-variant": "#2d2cbd",
+                    "on-tertiary-fixed-variant": "#006544",
+                    "tertiary-fixed-dim": "#58e7ab",
+                    "primary-fixed": "#babbff",
+                    "secondary-fixed": "#d8e2ff",
+                    "primary-container": "#babbff",
+                    "primary-dim": "#3d3dcb",
+                    "surface-container-high": "#e3e9ec",
+                    "secondary-fixed-dim": "#c3d4ff",
+                    "surface-container": "#eaeef1",
+                    "on-secondary": "#f9f8ff",
+                    "surface-variant": "#dde3e7",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "on-primary": "#fbf7ff",
+                    "inverse-on-surface": "#9a9d9f",
+                    "outline": "#757c7f",
+                    "on-tertiary-fixed": "#00452d",
+                    "on-background": "#2d3337",
+                    "secondary-container": "#d8e2ff",
+                    "on-primary-fixed": "#0c0090",
+                    "tertiary-dim": "#005f40"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body": [
+                            "Manrope"
+                    ],
+                    "label": [
+                            "Manrope"
+                    ]
+            },
+            "fontSize": {}
+    },
+        },
+      }
+    </script>
+<style>
+        /* Base styles to ensure soft minimalist feel */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Hide scrollbar for a cleaner look while maintaining functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body h-screen flex flex-col overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full docked full-width top-0 no-line-boundary tonal-stacking shadow-[0px_12px_32px_rgba(45,51,55,0.06)] z-40 shrink-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden shadow-sm bg-surface-container-high flex items-center justify-center shrink-0">
+<img alt="AI Assistant Persona" class="w-full h-full object-cover" data-alt="close up portrait of a calm young professional woman with soft natural lighting and a neutral blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChsKOY6AQay4WYxDHOkjQj6NR4pj0iPrjIXwhBhAOOBrvdJ82EaAE6JWCA7DTBkx_BQsnrYUvZWKDZCTcb3Dq6_J2eF2ONh5FwF_zgI-_HCWDNTMSq63Lpk6WOnKyqwYZjgMYDX0FNZKkgH8DbghaqkQ2CvugFM0ocTKPP5iZPxBMwEpOpOJQYkhPArBSMJguLuA2Vyjq0n3g6iXAEHC1yI9_Xh_CaC3CwXkCjle5zJwSnO2hXEWRaTUFVuJSrzwDWDe419mfFRaWw"/>
+</div>
+<h1 class="text-[#4a4bd7] dark:text-[#6366F1] font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-xl">YesBill</h1>
+</div>
+<button class="text-[#4a4bd7] dark:text-[#6366F1] hover:opacity-80 transition-opacity scale-95 active:scale-90 transition-transform w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<!-- Chat Canvas -->
+<main class="flex-1 overflow-y-auto no-scrollbar p-6 pb-40 space-y-8 flex flex-col">
+<!-- Intro / Date stamp -->
+<div class="text-center w-full">
+<span class="text-xs font-label uppercase tracking-widest text-on-surface-variant/60 font-bold">Today, 10:42 AM</span>
+</div>
+<!-- User Message -->
+<div class="flex justify-end w-full">
+<div class="max-w-[85%] bg-primary text-on-primary rounded-xl rounded-tr-sm p-5 shadow-[0px_8px_24px_rgba(74,75,215,0.2)]">
+<p class="text-[0.875rem] leading-relaxed font-medium">Analyze my spending patterns for Q1 2024 and forecast Q2 based on current service rates. Highlight any unexpected spikes.</p>
+</div>
+</div>
+<!-- AI Agent Response Area -->
+<div class="flex flex-col items-start w-full gap-3 max-w-[95%]">
+<!-- Agent Header -->
+<div class="flex items-center gap-2 ml-1">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<span class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">YesBill Agent</span>
+</div>
+<!-- Deep Dive "Thought Process" Module (Expandable style) -->
+<div class="w-full bg-surface-container-low rounded-xl p-4 shadow-sm border border-outline-variant/10">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-secondary animate-pulse" data-icon="psychology">psychology</span>
+<span class="text-[0.875rem] font-medium text-on-surface">Analyzing 42 transactions &amp; active contracts...</span>
+</div>
+<!-- Simulated expanded content -->
+<div class="pl-9 space-y-2 relative before:absolute before:left-[1.3rem] before:top-1 before:bottom-2 before:w-[2px] before:bg-surface-container-highest">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary z-10 shrink-0"></div>
+<span class="text-xs text-on-surface-variant">Fetched Q1 historical ledger data</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary z-10 shrink-0"></div>
+<span class="text-xs text-on-surface-variant">Identified rate increase in <strong>Apex Utilities</strong> (+12%)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary z-10 shrink-0"></div>
+<span class="text-xs text-on-surface-variant">Modeling Q2 weather-adjusted consumption</span>
+</div>
+</div>
+</div>
+<!-- Rich Message Content -->
+<div class="w-full bg-surface-container-lowest rounded-xl rounded-tl-sm p-5 shadow-[0px_12px_32px_rgba(45,51,55,0.06)] space-y-5">
+<p class="text-[0.875rem] leading-relaxed text-on-surface">
+                    Your Q1 spending was <strong class="text-error font-bold">14% higher</strong> than Q4 2023. This is primarily driven by seasonal winter heating costs and an unannounced rate increase from your utility provider.
+                </p>
+<!-- Bento Style Insights -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Insight Card 1 -->
+<div class="bg-surface-container-low p-4 rounded-lg flex flex-col justify-between min-h-[100px]">
+<div class="flex items-center gap-2 mb-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-error text-[18px]" data-icon="local_fire_department">local_fire_department</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">Heating</span>
+</div>
+<div>
+<span class="text-xl font-headline font-bold text-on-background">+$142<span class="text-xs font-body font-normal text-on-surface-variant">/mo</span></span>
+</div>
+</div>
+<!-- Insight Card 2 -->
+<div class="bg-surface-container-low p-4 rounded-lg flex flex-col justify-between min-h-[100px]">
+<div class="flex items-center gap-2 mb-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]" data-icon="bolt">bolt</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">Rate Hike</span>
+</div>
+<div>
+<span class="text-xl font-headline font-bold text-on-background">12%<span class="text-xs font-body font-normal text-on-surface-variant"> up</span></span>
+</div>
+</div>
+</div>
+<!-- Forecast Summary -->
+<div class="bg-tertiary-container/30 p-4 rounded-lg flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary-dim mt-0.5" data-icon="trending_down" style="font-variation-settings: 'FILL' 1;">trending_down</span>
+<div>
+<h4 class="text-sm font-bold text-on-tertiary-container mb-1">Q2 Forecast looks better</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Projected Q2 average is <strong>$1,450/mo</strong>, an expected decrease as warmer weather reduces consumption.</p>
+</div>
+</div>
+<!-- Direct Action Links -->
+<div class="flex flex-wrap gap-2 pt-2">
+<button class="bg-surface-container-low hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-full text-xs font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="receipt_long">receipt_long</span>
+                        View Q1 Bills
+                    </button>
+<button class="bg-surface-container-low hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-full text-xs font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="contract">contract</span>
+                        Review Utilities
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Chat Input Area (Sticky above Nav) -->
+<div class="fixed bottom-[88px] left-0 w-full px-6 py-4 bg-gradient-to-t from-background via-background to-transparent z-30">
+<div class="bg-surface-container-lowest shadow-[0px_12px_32px_rgba(45,51,55,0.06)] rounded-full p-2 flex items-center gap-2 border border-outline-variant/15">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors shrink-0">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-body text-on-surface placeholder:text-on-surface-variant/60 px-2 h-10" placeholder="Ask follow-up or generate report..." type="text"/>
+<button class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm hover:opacity-90 transition-opacity shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="send" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl fixed bottom-0 w-full rounded-t-[3rem] tonal-shift-no-border shadow-[0px_-12px_32px_rgba(45,51,55,0.06)]">
+<!-- Inactive: Dashboard -->
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="grid_view">grid_view</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Dashboard</span>
+</button>
+<!-- Inactive: Bills -->
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="receipt_long">receipt_long</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Bills</span>
+</button>
+<!-- Active: AI Chat -->
+<button class="flex flex-col items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">AI Chat</span>
+</button>
+<!-- Inactive: Insights -->
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="analytics">analytics</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Insights</span>
+</button>
+</nav>
+</body></html>

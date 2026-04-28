@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chat History Drawer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d3dbdf",
+                        "on-secondary-fixed": "#003c86",
+                        "surface-tint": "#4a4bd7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#006544",
+                        "on-background": "#2d3337",
+                        "on-secondary-fixed-variant": "#0057bd",
+                        "secondary-dim": "#004fad",
+                        "inverse-surface": "#0b0f10",
+                        "outline": "#757c7f",
+                        "surface-container": "#eaeef1",
+                        "primary": "#4a4bd7",
+                        "secondary-fixed-dim": "#c3d4ff",
+                        "on-primary-fixed": "#0c0090",
+                        "on-surface-variant": "#596063",
+                        "on-surface": "#2d3337",
+                        "error-dim": "#770326",
+                        "surface-variant": "#dde3e7",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container-high": "#e3e9ec",
+                        "on-tertiary-container": "#005a3c",
+                        "on-secondary": "#f9f8ff",
+                        "on-primary-fixed-variant": "#2d2cbd",
+                        "primary-fixed": "#babbff",
+                        "surface-container-highest": "#dde3e7",
+                        "inverse-primary": "#8083ff",
+                        "tertiary-fixed-dim": "#58e7ab",
+                        "surface-container-low": "#f1f4f6",
+                        "tertiary-container": "#69f6b8",
+                        "surface": "#f7f9fb",
+                        "on-error": "#fff7f7",
+                        "background": "#f7f9fb",
+                        "secondary-container": "#d8e2ff",
+                        "primary-dim": "#3d3dcb",
+                        "primary-container": "#babbff",
+                        "on-secondary-container": "#004eaa",
+                        "tertiary-dim": "#005f40",
+                        "inverse-on-surface": "#9a9d9f",
+                        "error-container": "#f76a80",
+                        "on-tertiary": "#e6ffee",
+                        "on-tertiary-fixed": "#00452d",
+                        "on-error-container": "#68001f",
+                        "tertiary-fixed": "#69f6b8",
+                        "tertiary": "#006d4a",
+                        "surface-bright": "#f7f9fb",
+                        "outline-variant": "#acb3b7",
+                        "primary-fixed-dim": "#aaacff",
+                        "on-primary-container": "#221eb5",
+                        "secondary": "#005bc4",
+                        "on-primary": "#fbf7ff",
+                        "error": "#ac3149"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                        "label": ["Manrope", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen antialiased flex">
+<!-- Navigation Drawer Shell -->
+<nav class="bg-[#ffffff] dark:bg-[#2d3337] rounded-r-[3rem] h-full shadow-[0px_12px_32px_rgba(45,51,55,0.06)] fixed inset-y-0 left-0 w-80 z-[60] flex flex-col py-8 scale-95 active:scale-100 transition-transform">
+<!-- Brand / Header Area -->
+<div class="px-8 mb-8 flex items-center justify-between">
+<h1 class="text-lg font-black text-[#4a4bd7] font-headline tracking-tight">IntelliChat</h1>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto no-scrollbar px-4 space-y-2">
+<!-- New Chat (Intent Match / Primary Action) -->
+<a class="bg-[#4a4bd7] text-white rounded-full mx-4 my-1 flex items-center px-4 py-3 font-['Manrope'] text-sm font-medium hover:bg-[#3d3dcb] transition-colors shadow-[0px_4px_12px_rgba(74,75,215,0.2)]" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="add" style="font-variation-settings: 'FILL' 1;">add</span>
+                New Chat
+            </a>
+<!-- History (Active Context based on prompt) -->
+<a class="text-[#2d3337] dark:text-white/80 mx-4 my-1 flex items-center px-4 py-3 font-['Manrope'] text-sm hover:bg-[#f1f4f6] dark:hover:bg-white/5 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined mr-3 text-primary" data-icon="history">history</span>
+<span class="font-bold text-primary">History</span>
+</a>
+<!-- Agents -->
+<a class="text-[#2d3337] dark:text-white/80 mx-4 my-1 flex items-center px-4 py-3 font-['Manrope'] text-sm hover:bg-[#f1f4f6] dark:hover:bg-white/5 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined mr-3 text-on-surface-variant" data-icon="psychology">psychology</span>
+                Agents
+            </a>
+<!-- Settings / Preferences -->
+<a class="text-[#2d3337] dark:text-white/80 mx-4 my-1 flex items-center px-4 py-3 font-['Manrope'] text-sm hover:bg-[#f1f4f6] dark:hover:bg-white/5 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined mr-3 text-on-surface-variant" data-icon="settings">settings</span>
+                Preferences
+            </a>
+<!-- Content Area: Recent Chats List (Soft Minimalism approach) -->
+<div class="mt-8 px-4">
+<h3 class="font-headline text-xs font-bold text-outline uppercase tracking-wider mb-4 pl-4">Recent</h3>
+<ul class="space-y-4">
+<!-- Chat Item 1 -->
+<li>
+<a class="block p-4 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors group" href="#">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body text-sm font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Q4 Marketing Strategy Ideation</h4>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap ml-2 mt-1">2h ago</span>
+</div>
+<p class="font-body text-xs text-on-surface-variant line-clamp-1">Exploring cross-channel campaigns...</p>
+</a>
+</li>
+<!-- Chat Item 2 -->
+<li>
+<a class="block p-4 bg-surface-container-lowest border border-outline-variant/15 rounded-lg hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body text-sm font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Python Script Debugging</h4>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap ml-2 mt-1">Yesterday</span>
+</div>
+<p class="font-body text-xs text-on-surface-variant line-clamp-1">Fixing the infinite loop in main.py</p>
+</a>
+</li>
+<!-- Chat Item 3 -->
+<li>
+<a class="block p-4 bg-surface-container-lowest border border-outline-variant/15 rounded-lg hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body text-sm font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Recipe Ideas for Dinner Party</h4>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap ml-2 mt-1">Oct 12</span>
+</div>
+<p class="font-body text-xs text-on-surface-variant line-clamp-1">Vegan and gluten-free options preferred</p>
+</a>
+</li>
+<!-- Chat Item 4 -->
+<li>
+<a class="block p-4 bg-surface-container-lowest border border-outline-variant/15 rounded-lg hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body text-sm font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Drafting Client Email</h4>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap ml-2 mt-1">Oct 10</span>
+</div>
+<p class="font-body text-xs text-on-surface-variant line-clamp-1">Apologizing for the slight delay...</p>
+</a>
+</li>
+</ul>
+</div>
+</div>
+<!-- Footer / Profile Area -->
+<div class="mt-auto px-6 pt-6 pb-2">
+<div class="flex items-center bg-surface-container-low p-4 rounded-xl">
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover mr-4 shadow-sm" data-alt="Close-up portrait of a young professional woman with soft natural lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCbN2LqjD9u33_ooFe5NSsEz6FWLWYm9Pg-tdSPpDy82fO7-4GiO9CYxow6Q9KtkBf-_j31N6XZWksHwdAwZK90rO-BGzQvLF3ufTiUzkSbDXLdhEIl1Fazgd_PGvj3Ergmi7o-3oGkmFvhkZNV9WroM1oxwiaGIqP3YuRFVYDq0zoALu-jUx3XB4ORh71fqbzYnLpLVITYEdU1TtKujKzD8-owObeorBJhsVcfKeGT9qF7IrkG2KzhUDB1W8eJeJzMuCCeK16rS0F"/>
+<div class="flex-1 min-w-0">
+<p class="font-headline text-sm font-bold text-on-surface truncate">Alex Rivera</p>
+<p class="font-body text-xs text-primary truncate">Pro Plan</p>
+</div>
+<div class="ml-2 text-[10px] text-on-surface-variant font-bold">
+                    v2.4.0
+                </div>
+</div>
+</div>
+</nav>
+<!-- Overlay for mobile (simulated) -->
+<div class="fixed inset-0 bg-inverse-surface/20 backdrop-blur-sm z-50 md:hidden"></div>
+<!-- Main Canvas Area (Empty to focus on Drawer) -->
+<main class="flex-1 ml-80 bg-background hidden md:flex items-center justify-center p-12">
+<div class="text-center opacity-50">
+<span class="material-symbols-outlined text-6xl mb-4 text-outline" data-icon="forum">forum</span>
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-2">Main Canvas</h2>
+<p class="font-body text-on-surface-variant">Select a chat from the drawer to begin.</p>
+</div>
+</main>
+</body></html>

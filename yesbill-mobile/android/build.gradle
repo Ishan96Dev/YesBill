@@ -1,0 +1,29 @@
+
+rootProject.buildDir = '../build'
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
+
+subprojects { subproject ->
+    afterEvaluate {
+        def androidExt = subproject.extensions.findByName("android")
+        if (androidExt == null) {
+            return
+        }
+
+        try {
+            androidExt.compileSdk = 36
+        } catch (Exception ignored) {
+            try {
+                androidExt.compileSdkVersion 36
+            } catch (Exception ignoredAgain) {
+                // Ignore projects that do not expose compileSdk APIs.
+            }
+        }
+    }
+}

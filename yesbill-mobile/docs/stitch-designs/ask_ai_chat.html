@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YesBill - Ask AI</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#f76a80",
+                    "on-primary-container": "#221eb5",
+                    "surface-dim": "#d3dbdf",
+                    "secondary-dim": "#004fad",
+                    "on-error-container": "#68001f",
+                    "surface-container-highest": "#dde3e7",
+                    "inverse-primary": "#8083ff",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface": "#2d3337",
+                    "on-tertiary-container": "#005a3c",
+                    "surface-container-low": "#f1f4f6",
+                    "primary": "#4a4bd7",
+                    "on-secondary-fixed-variant": "#0057bd",
+                    "background": "#f7f9fb",
+                    "secondary": "#005bc4",
+                    "tertiary": "#006d4a",
+                    "on-tertiary": "#e6ffee",
+                    "tertiary-container": "#69f6b8",
+                    "outline-variant": "#acb3b7",
+                    "error-dim": "#770326",
+                    "tertiary-fixed": "#69f6b8",
+                    "surface-tint": "#4a4bd7",
+                    "on-secondary-fixed": "#003c86",
+                    "on-secondary-container": "#004eaa",
+                    "error": "#ac3149",
+                    "primary-fixed-dim": "#aaacff",
+                    "on-error": "#fff7f7",
+                    "on-surface-variant": "#596063",
+                    "inverse-surface": "#0b0f10",
+                    "on-primary-fixed-variant": "#2d2cbd",
+                    "on-tertiary-fixed-variant": "#006544",
+                    "tertiary-fixed-dim": "#58e7ab",
+                    "primary-fixed": "#babbff",
+                    "secondary-fixed": "#d8e2ff",
+                    "primary-container": "#babbff",
+                    "primary-dim": "#3d3dcb",
+                    "surface-container-high": "#e3e9ec",
+                    "secondary-fixed-dim": "#c3d4ff",
+                    "surface-container": "#eaeef1",
+                    "on-secondary": "#f9f8ff",
+                    "surface-variant": "#dde3e7",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "on-primary": "#fbf7ff",
+                    "inverse-on-surface": "#9a9d9f",
+                    "outline": "#757c7f",
+                    "on-tertiary-fixed": "#00452d",
+                    "on-background": "#2d3337",
+                    "secondary-container": "#d8e2ff",
+                    "on-primary-fixed": "#0c0090",
+                    "tertiary-dim": "#005f40"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans", "sans-serif"
+                    ],
+                    "display": [
+                            "Plus Jakarta Sans", "sans-serif"
+                    ],
+                    "body": [
+                            "Manrope", "sans-serif"
+                    ],
+                    "label": [
+                            "Manrope", "sans-serif"
+                    ]
+            },
+            "fontSize": {}
+    },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body min-h-screen relative flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar from JSON -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0px_12px_32px_rgba(45,51,55,0.06)] flex items-center justify-between px-6 py-4 w-full docked full-width top-0 z-50 sticky top-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden shadow-sm bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="robot_2" data-weight="fill" style="font-variation-settings: 'FILL' 1;">robot_2</span>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-xl text-indigo-600 dark:text-indigo-400">YesBill</h1>
+</div>
+<button class="text-[#4a4bd7] dark:text-[#6366F1] hover:opacity-80 transition-opacity scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<!-- Chat Canvas Area -->
+<main class="flex-1 overflow-y-auto px-4 pt-6 pb-40 flex flex-col gap-6 w-full max-w-2xl mx-auto">
+<!-- Date Divider -->
+<div class="flex justify-center my-2">
+<span class="text-label text-[0.75rem] font-bold text-outline uppercase tracking-widest bg-surface-container-low px-4 py-1.5 rounded-full">Today</span>
+</div>
+<!-- AI Welcome Message -->
+<div class="flex flex-col gap-2 self-start max-w-[85%]">
+<div class="bg-surface-container-low rounded-lg rounded-tl-sm p-5 text-body text-[0.875rem] leading-relaxed shadow-sm">
+                Good morning! I've reviewed your upcoming schedule. Your <strong>Water &amp; Power</strong> bill is slightly higher than usual this month. How can I assist you with your logistics today?
+            </div>
+</div>
+<!-- User Message -->
+<div class="flex flex-col gap-2 self-end max-w-[85%]">
+<div class="bg-primary text-on-primary rounded-lg rounded-tr-sm p-5 text-body text-[0.875rem] leading-relaxed shadow-[0px_8px_24px_rgba(74,75,215,0.25)]">
+                Can you break down the extra charges on the water bill?
+            </div>
+</div>
+<!-- AI Detailed Response with Highlights -->
+<div class="flex flex-col gap-2 self-start max-w-[85%]">
+<div class="bg-surface-container-low rounded-lg rounded-tl-sm p-5 text-body text-[0.875rem] leading-relaxed shadow-sm">
+<p class="mb-3">Certainly. The increase is primarily due to a spike in usage during the last week of the billing cycle.</p>
+<div class="bg-surface-container-lowest rounded-DEFAULT p-4 flex flex-col gap-2 mb-3">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-[0.875rem]">Base Charge</span>
+<span class="font-medium">$45.00</span>
+</div>
+<div class="flex justify-between items-center text-error">
+<span class="text-[0.875rem] flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">trending_up</span> Excess Usage</span>
+<span class="font-medium">+$22.50</span>
+</div>
+<div class="w-full h-px bg-outline-variant/20 my-1"></div>
+<div class="flex justify-between items-center font-bold text-[1rem]">
+<span>Total Due</span>
+<span>$67.50</span>
+</div>
+</div>
+<p>Would you like me to flag this for review next month or schedule the payment now?</p>
+</div>
+<!-- Quick Action Chips (Ethereal Organizer Style) -->
+<div class="flex flex-wrap gap-2 mt-2">
+<button class="bg-surface-container-lowest border border-outline-variant/15 text-primary hover:bg-primary-fixed/20 transition-colors rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="text-label text-[0.75rem] font-bold uppercase tracking-widest">Mark as Paid</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant/15 text-on-surface hover:bg-surface-container-high transition-colors rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span class="text-label text-[0.75rem] font-bold uppercase tracking-widest">Schedule</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant/15 text-on-surface hover:bg-surface-container-high transition-colors rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="text-label text-[0.75rem] font-bold uppercase tracking-widest">More options</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Floating Input Area -->
+<div class="fixed bottom-[100px] left-0 w-full px-4 z-40 max-w-2xl left-1/2 -translate-x-1/2">
+<div class="bg-surface-container-lowest/90 backdrop-blur-md rounded-full shadow-[0px_12px_32px_rgba(45,51,55,0.06)] border border-outline-variant/15 p-2 flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+<input class="bg-transparent border-none focus:ring-0 flex-1 text-body text-[0.875rem] text-on-surface placeholder:text-outline outline-none px-2" placeholder="Ask about a bill, schedule, or insight..." type="text"/>
+<button class="bg-primary hover:bg-primary-dim transition-colors text-on-primary w-10 h-10 rounded-full flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined" data-icon="send" data-weight="fill" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar from JSON -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl shadow-[0px_-12px_32px_rgba(45,51,55,0.06)] rounded-t-[3rem] md:hidden">
+<!-- Tab 1: Dashboard (Inactive) -->
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="grid_view">grid_view</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Dashboard</span>
+</button>
+<!-- Tab 2: Bills (Inactive) -->
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="receipt_long">receipt_long</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Bills</span>
+</button>
+<!-- Tab 3: AI Chat (Active Match) -->
+<button class="flex flex-col items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="smart_toy" data-weight="fill" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">AI Chat</span>
+</button>
+<!-- Tab 4: Insights (Inactive) -->
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-indigo-500 transition-colors tap-highlight-transparent duration-300">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="analytics">analytics</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest">Insights</span>
+</button>
+</nav>
+</body></html>

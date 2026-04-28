@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- YesBill primary color (indigo-500) used as Material 3 seed color -->
+    <color name="primary_color">#6366F1</color>
+
+    <!-- Notification icon background color -->
+    <color name="notification_color">#6366F1</color>
+
+    <!-- Splash screen background (matches dark theme surface) -->
+    <color name="splash_background">#F8F9FF</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
+</resources>

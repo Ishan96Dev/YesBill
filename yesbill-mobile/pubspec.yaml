@@ -1,0 +1,123 @@
+name: yesbill_mobile
+description: YesBill — Household Service Billing Tracker for Android
+publish_to: none
+version: 1.0.0+2
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  google_fonts: ^6.1.0
+
+  # ── State Management ─────────────────────────────────────────
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Navigation ───────────────────────────────────────────────
+  go_router: ^14.2.0
+
+  # ── HTTP & Networking ────────────────────────────────────────
+  dio: ^5.5.0
+  dio_smart_retry: ^6.0.0
+
+  # ── Supabase ─────────────────────────────────────────────────
+  supabase_flutter: ^2.5.0
+
+  # ── Secure Storage ───────────────────────────────────────────
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.2
+
+  # ── Auth ─────────────────────────────────────────────────────
+  local_auth: ^2.3.0
+  google_sign_in: ^6.2.1
+
+  # ── Firebase (FCM only) ──────────────────────────────────────
+  firebase_core: ^3.3.0
+  firebase_messaging: ^15.1.0
+
+  # ── UI & Animations ──────────────────────────────────────────
+  flutter_animate: ^4.5.0
+  lottie: ^3.1.0
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  fl_chart: ^0.68.0
+  lucide_icons: ^0.257.0
+  modal_bottom_sheet: ^3.0.0
+  gap: ^3.0.1
+  flutter_svg: ^2.0.10
+  connectivity_plus: ^6.0.3
+  permission_handler: ^11.3.1
+
+  # ── PDF & Export ─────────────────────────────────────────────
+  pdf: ^3.11.1
+  printing: ^5.13.0
+  share_plus: ^9.0.0
+  path_provider: ^2.1.4
+
+  # ── Chat & Markdown ──────────────────────────────────────────
+  flutter_markdown: ^0.7.3
+  url_launcher: ^6.3.0
+
+  # ── Date, Timezone & Formatting ──────────────────────────────
+  intl: ^0.19.0
+  timezone: ^0.9.4
+
+  # ── Image ────────────────────────────────────────────────────
+  image_picker: ^1.1.2
+
+  # ── Notifications ────────────────────────────────────────────
+  flutter_local_notifications: ^17.2.2
+
+  # ── Models ───────────────────────────────────────────────────
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # ── Code Generation ──────────────────────────────────────────
+  build_runner: ^2.4.11
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.4.0
+  custom_lint: ^0.6.4
+  riverpod_lint: ^2.3.10
+
+  # ── Launcher Icons ───────────────────────────────────────────
+  flutter_launcher_icons: ^0.13.1
+
+  # ── Testing ──────────────────────────────────────────────────
+  mocktail: ^1.0.3
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+    - assets/icons/providers/
+    - assets/animations/
+    - assets/images/
+    - assets/docs/
+    - assets/docs/getting-started/
+    - assets/docs/services/
+    - assets/docs/calendar/
+    - assets/docs/bills/
+    - assets/docs/ai-features/
+    - assets/docs/settings/
+    - assets/docs/changelog/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/yesbill_logo_launcher.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/yesbill_logo_launcher_foreground.png"
+  adaptive_icon_monochrome: "assets/images/yesbill_logo_launcher_foreground.png"
+  min_sdk_android: 21

@@ -488,17 +488,19 @@ async def _call_google_with_tools(
     _is_thinking_model = model in GOOGLE_THINKING_BUDGET_MODELS or model in GOOGLE_THINKING_LEVEL_MODELS
     _tool_timeout = 300.0 if _is_thinking_model else 60.0
     async with httpx.AsyncClient(timeout=httpx.Timeout(connect=15.0, read=_tool_timeout, write=10.0, pool=5.0)) as client:
+        # Force ANY mode only for Gemini 3.x models — these sometimes respond with
+        # plain text describing what they *would* call instead of emitting a functionCall.
+        # For 2.5.x models keep AUTO so the model can freely respond with text when
+        # clarification is needed (e.g. asking which month before calling generate_bill).
+        _force_any = model in {"gemini-3.1-pro-preview", "gemini-3-pro-preview"}
         r = await client.post(
             f"{url}?key={api_key}",
             json={
                 "contents": contents,
                 "system_instruction": {"parts": [{"text": system_prompt}]},
                 "tools": [{"function_declarations": _google_function_declarations()}],
-                # Force ANY mode: model MUST call one of the available functions.
-                # Without this, thinking models (3.1-pro) sometimes respond with text
-                # that describes what they would call rather than emitting a functionCall.
                 "toolConfig": {
-                    "functionCallingConfig": {"mode": "ANY"}
+                    "functionCallingConfig": {"mode": "ANY" if _force_any else "AUTO"}
                 },
                 "generationConfig": generation_config,
             },
@@ -595,6 +597,30 @@ async def _stream_anthropic_final(
     _tokens_in = 0
     _tokens_out = 0
     _thinking_chars = 0
+    # If messages contain tool_use blocks (from a prior tool-call iteration) Anthropic
+    # requires the tools array to be present in the request, otherwise it returns 400.
+    # Include tools here and let the model decide (tool_choice=auto); since the
+    # non-streaming call already determined there are no new tool calls needed, the
+    # model will respond with text.
+    _has_tool_use = any(
+        isinstance(m.get("content"), list) and any(
+            isinstance(b, dict) and b.get("type") == "tool_use" for b in m["content"]
+        )
+        for m in messages
+    )
+    request_body: dict = {
+        "model": model,
+        "max_tokens": 16000,
+        "thinking": {"type": "enabled", "budget_tokens": 5000},
+        "system": system_prompt,
+        "messages": messages,
+        "stream": True,
+    }
+    if _has_tool_use:
+        request_body["tools"] = _anthropic_tools()
+        # tool_choice "auto" lets the model respond with text (which is its intent here).
+        # "none" would be cleaner but requires a newer anthropic-version header.
+        request_body["tool_choice"] = {"type": "auto"}
     async with httpx.AsyncClient(timeout=httpx.Timeout(connect=15.0, read=300.0, write=10.0, pool=5.0)) as client:
         async with client.stream(
             "POST",
@@ -605,14 +631,7 @@ async def _stream_anthropic_final(
                 "anthropic-beta": "interleaved-thinking-2025-05-14",
                 "content-type": "application/json",
             },
-            json={
-                "model": model,
-                "max_tokens": 16000,
-                "thinking": {"type": "enabled", "budget_tokens": 5000},
-                "system": system_prompt,
-                "messages": messages,
-                "stream": True,
-            },
+            json=request_body,
         ) as resp:
             resp.raise_for_status()
             async for line in resp.aiter_lines():

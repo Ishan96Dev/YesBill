@@ -55,3 +55,435 @@ frontend-next/.turbo/
 # TypeScript build info
 frontend-next/*.tsbuildinfo
 frontend-next/next-env.d.ts
+
+# Internal documentation (not for public repo)
+Internal-docs/
+updates.md
+
+# Local AI assistant config
+.claude/
+
+# Stitch design files (local design tool artifacts)
+.stitch/
+stitch.json
+*.stitch
+
+# Supabase CLI temp files
+supabase/.temp/
+
+# Flutter / Android local artifacts
+yesbill-mobile/.dart_tool/
+yesbill-mobile/build/
+yesbill-mobile/.flutter-plugins
+yesbill-mobile/.flutter-plugins-dependencies
+yesbill-mobile/.packages
+yesbill-mobile/.metadata
+yesbill-mobile/.analyze_output.txt
+yesbill-mobile/analyze_output.txt
+yesbill-mobile/build_log.txt
+yesbill-mobile/yesbill_mobile.iml
+
+# Android build output
+yesbill-mobile/android/.gradle/
+yesbill-mobile/android/.kotlin/
+yesbill-mobile/android/build/
+yesbill-mobile/android/local.properties
+yesbill-mobile/android/app/build/
+
+# Puro Flutter version manager (machine-specific)
+yesbill-mobile/puro.exe
+yesbill-mobile/.puro.json
+yesbill-mobile/pubspec.lock
+
+# Local Flutter SDK bundle (machine-specific)
+flutter_windows_3.41.6-stable/
+flutter_windows_3.41.6-stable.zip
+
+# Local release artifacts
+YesBill.apk
+*.apk
+
+# OS / editor artifacts
+Thumbs.db
+desktop.ini
+*.pyo
+.pytest_cache/
+*.orig
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals
+
+# Auto-added by Copilot gitignore scanner
+Thumbs.db # Windows thumbnails
+desktop.ini # Windows folder config
+*.pyo # Python bytecode
+.pytest_cache/ # Pytest cache
+*.orig # Merge conflict originals

@@ -1,0 +1,24 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  plugins:
+    - custom_lint
+
+linter:
+  rules:
+    # Enforced rules
+    prefer_final_locals: true
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    avoid_print: true
+    use_super_parameters: true
+    sized_box_for_whitespace: true
+
+    # Disabled rules (noisy with generated code patterns)
+    lines_longer_than_80_chars: false
+    avoid_classes_with_only_static_members: false
+    one_member_abstracts: false

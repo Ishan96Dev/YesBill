@@ -22,3 +22,9 @@ All notable changes to YesBill are documented here.
 - React + Vite frontend with Tailwind CSS
 - Supabase Realtime for live notification updates
 - GitHub Pages deployment with GitHub Actions
+
+## [Unreleased]
+
+- 2026-04-24: Completed the task requested in this session.
+
+- 2026-04-23: Completed the task requested in this session.

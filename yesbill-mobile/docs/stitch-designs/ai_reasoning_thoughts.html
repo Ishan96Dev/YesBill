@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Reasoning View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d3dbdf",
+                        "on-secondary-fixed": "#003c86",
+                        "surface-tint": "#4a4bd7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#006544",
+                        "on-background": "#2d3337",
+                        "on-secondary-fixed-variant": "#0057bd",
+                        "secondary-dim": "#004fad",
+                        "inverse-surface": "#0b0f10",
+                        "outline": "#757c7f",
+                        "surface-container": "#eaeef1",
+                        "primary": "#4a4bd7",
+                        "secondary-fixed-dim": "#c3d4ff",
+                        "on-primary-fixed": "#0c0090",
+                        "on-surface-variant": "#596063",
+                        "on-surface": "#2d3337",
+                        "error-dim": "#770326",
+                        "surface-variant": "#dde3e7",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container-high": "#e3e9ec",
+                        "on-tertiary-container": "#005a3c",
+                        "on-secondary": "#f9f8ff",
+                        "on-primary-fixed-variant": "#2d2cbd",
+                        "primary-fixed": "#babbff",
+                        "surface-container-highest": "#dde3e7",
+                        "inverse-primary": "#8083ff",
+                        "tertiary-fixed-dim": "#58e7ab",
+                        "surface-container-low": "#f1f4f6",
+                        "tertiary-container": "#69f6b8",
+                        "surface": "#f7f9fb",
+                        "on-error": "#fff7f7",
+                        "background": "#f7f9fb",
+                        "secondary-container": "#d8e2ff",
+                        "primary-dim": "#3d3dcb",
+                        "primary-container": "#babbff",
+                        "on-secondary-container": "#004eaa",
+                        "tertiary-dim": "#005f40",
+                        "inverse-on-surface": "#9a9d9f",
+                        "error-container": "#f76a80",
+                        "on-tertiary": "#e6ffee",
+                        "on-tertiary-fixed": "#00452d",
+                        "on-error-container": "#68001f",
+                        "tertiary-fixed": "#69f6b8",
+                        "tertiary": "#006d4a",
+                        "surface-bright": "#f7f9fb",
+                        "outline-variant": "#acb3b7",
+                        "primary-fixed-dim": "#aaacff",
+                        "on-primary-container": "#221eb5",
+                        "secondary": "#005bc4",
+                        "on-primary": "#fbf7ff",
+                        "error": "#ac3149"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        h1, h2, h3, h4, h5, h6, .headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(247, 249, 251, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pt-16 pb-24 md:pl-80 md:pb-0">
+<!-- TopAppBar (Web & Mobile) -->
+<header class="flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50 bg-[#f7f9fb]/80 dark:bg-[#1a1c1e]/80 backdrop-blur-md no-border transition-all duration-300 ease-in-out md:ml-80 md:w-[calc(100%-20rem)]">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 text-on-surface hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-['Plus_Jakarta_Sans'] font-semibold tracking-tight text-xl text-[#2d3337] dark:text-white">IntelliChat</h1>
+</div>
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm overflow-hidden border border-outline-variant/15">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIS2CnA5a10YFqK41zgmb_Cge9F-iRhfaG12GLMaxzqcCkILUJ9QWz06_XewrNnNVBJBxKO55fLyFME9DN_CTktYAI6xX_H0n_DWYDgoHO7XvXOjr-AYxr8bvJ_WZfJbDIT9ujQmFP-vMSZVxy3jD8pBMsXmTm-tGuI8YleSEMRYN1AkxI8c50NMKrqMQZEgWO5Z19Yq-A_U006oulmckSrNUnMJUyzBcY3LVbFUtrmBufn0KItjrIZhyYbze_egeKDCBKeA0Pc6Bg"/>
+</div>
+</div>
+</header>
+<!-- NavigationDrawer (Web Only) -->
+<nav class="hidden md:flex fixed inset-y-0 left-0 w-80 z-[60] flex-col py-8 bg-[#ffffff] dark:bg-[#2d3337] rounded-r-[3rem] shadow-[0px_12px_32px_rgba(45,51,55,0.06)] border-r border-outline-variant/10">
+<div class="px-8 mb-8 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/15 shadow-sm">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXWFJOv8AFoxZ4YcCkAQjs2UH1k0YJb_iz_UjZl2VsmfimdPh9_QTM9EIW6rnauXBIfzrlGbW7pSY15T9HbOo-GRzrhYQhydus8Gb93edYY-qEhi7mlQ2Q_kbOL5oktqNQglwh6UxtoDrb15a5lhw9v2KMTUjesXhWRyG75l5jEvlbLE5zotA8WlzPsXtME9dxxbw_mZeedheUvPgYwguf6HmvLAqxvtPjj1bRj8UYGM57_obV_AxwZGD1mBGZW8MJgIFiaDZTjgFa"/>
+</div>
+<div>
+<h2 class="font-['Plus_Jakarta_Sans'] font-bold text-on-surface">Alex Rivera</h2>
+<div class="flex items-center gap-2 text-xs text-on-surface-variant font-['Manrope']">
+<span>Pro Plan</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span>v2.4.0</span>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center gap-4 px-4 py-3 mx-4 my-1 bg-[#4a4bd7] text-white rounded-full font-['Manrope'] text-sm hover:opacity-90 transition-opacity scale-95 active:scale-100 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="add" data-weight="fill" style="font-variation-settings: 'FILL' 1;">add</span>
+<span class="font-medium">New Chat</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 mx-4 my-1 text-[#2d3337] dark:text-white/80 rounded-full font-['Manrope'] text-sm hover:bg-[#f1f4f6] dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-medium">History</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 mx-4 my-1 text-[#2d3337] dark:text-white/80 rounded-full font-['Manrope'] text-sm hover:bg-[#f1f4f6] dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="font-medium">Agents</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 mx-4 my-1 text-[#2d3337] dark:text-white/80 rounded-full font-['Manrope'] text-sm hover:bg-[#f1f4f6] dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-medium">Preferences</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full flex flex-col gap-8">
+<!-- Chat Date Header -->
+<div class="text-center w-full">
+<span class="inline-block px-4 py-1.5 bg-surface-container-low rounded-full text-xs font-bold tracking-wider text-on-surface-variant uppercase">Today, 10:42 AM</span>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end gap-2">
+<div class="bg-surface-container-low text-on-surface px-6 py-4 rounded-xl rounded-tr-sm max-w-[85%] sm:max-w-[70%] font-['Manrope'] text-sm leading-relaxed shadow-sm">
+                Can you explain how quantum computing works, but keep it simple enough for someone who isn't a physicist to understand?
+            </div>
+</div>
+<!-- AI Response with Reasoning View -->
+<div class="flex flex-col items-start gap-4">
+<div class="flex items-center gap-3 ml-2">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="smart_toy" data-weight="fill" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<span class="font-['Plus_Jakarta_Sans'] font-semibold text-sm text-on-surface">IntelliChat AI</span>
+</div>
+<!-- The AI Response Container -->
+<div class="bg-surface-container-lowest border border-outline-variant/15 p-1 rounded-xl shadow-[0px_8px_24px_rgba(45,51,55,0.04)] w-full max-w-[95%] sm:max-w-[85%]">
+<!-- Reasoning Section (Expanded State) -->
+<div class="bg-surface-container-low/50 rounded-lg p-4 mb-2 border border-outline-variant/10">
+<div class="flex items-center justify-between mb-3 cursor-pointer group">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm" data-icon="psychology" data-weight="fill" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm font-semibold tracking-tight">AI Reasoning Process</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform duration-300 group-hover:text-on-surface" data-icon="expand_less">expand_less</span>
+</div>
+<div class="space-y-4 pl-6 border-l-2 border-secondary/20 relative">
+<!-- Step 1 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-surface-container-lowest border-2 border-secondary/40 flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary/60"></div>
+</div>
+<h4 class="font-['Plus_Jakarta_Sans'] text-xs font-bold text-on-surface mb-1">Intent Analysis</h4>
+<p class="text-xs text-on-surface-variant font-['Manrope'] leading-relaxed">
+                                User is asking for an explanation of quantum computing. The constraint is "simple enough for someone who isn't a physicist". I need to avoid complex math, superposition equations, and focus on analogies.
+                            </p>
+</div>
+<!-- Step 2 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-surface-container-lowest border-2 border-secondary/40 flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary/60"></div>
+</div>
+<h4 class="font-['Plus_Jakarta_Sans'] text-xs font-bold text-on-surface mb-1">Concept Mapping</h4>
+<ul class="text-xs text-on-surface-variant font-['Manrope'] leading-relaxed list-disc list-inside space-y-0.5">
+<li>Classical Bits (0 or 1) -&gt; The Coin Flip analogy (Heads or Tails).</li>
+<li>Qubits (Superposition) -&gt; The Spinning Coin analogy (Both at once until stopped).</li>
+<li>Entanglement -&gt; Reading one book instantly tells you what's in another book miles away.</li>
+</ul>
+</div>
+<!-- Step 3 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-surface-container-lowest border-2 border-tertiary/60 flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-tertiary" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<h4 class="font-['Plus_Jakarta_Sans'] text-xs font-bold text-tertiary mb-1">Drafting Response</h4>
+<p class="text-xs text-on-surface-variant font-['Manrope'] leading-relaxed">
+                                Structuring the answer: Start with the coin analogy for superposition, briefly mention entanglement as "magic connections", and conclude with why this matters (solving complex problems faster, like mazes).
+                            </p>
+</div>
+</div>
+</div>
+<!-- Final Answer Content -->
+<div class="p-5 font-['Manrope'] text-sm text-on-surface leading-relaxed space-y-4">
+<p>Imagine you have a regular coin. When you put it on a table, it’s either going to be <strong>Heads</strong> or <strong>Tails</strong>. That’s how normal computers work today—they use information that is either a 0 or a 1. These are called "bits."</p>
+<p>Now, imagine you take that same coin and spin it on the table like a top. While it’s spinning, is it Heads or Tails? It’s kind of a blur of <strong>both at the same time</strong>. It only becomes definitely Heads or Tails when it stops spinning and falls flat.</p>
+<div class="bg-surface-container-low p-4 rounded-lg my-4 border-l-4 border-primary">
+<p class="font-['Plus_Jakarta_Sans'] font-semibold text-primary mb-1">The Core Concept: Superposition</p>
+<p class="text-xs">That spinning coin represents a <strong>Qubit</strong> (Quantum Bit). Because a qubit can be both 0 and 1 at the same time (a state called superposition), it can process multiple possibilities simultaneously, unlike a regular computer that has to process them one by one.</p>
+</div>
+<p>Think of it like trying to find the way out of a maze. A regular computer would try path A, hit a dead end, walk back, try path B, and so on. A quantum computer acts like a liquid poured into the maze—it flows down every possible path at exactly the same time, finding the exit almost instantly.</p>
+<p>While we aren't using them to browse the internet just yet, they hold the potential to solve incredibly complex problems—like discovering new medicines or predicting weather patterns—in minutes instead of millions of years.</p>
+</div>
+<!-- Action Bar -->
+<div class="flex items-center justify-between px-4 py-3 border-t border-outline-variant/10">
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="content_copy">content_copy</span>
+</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="thumb_up">thumb_up</span>
+</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="thumb_down">thumb_down</span>
+</button>
+</div>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full h-20 z-50 flex justify-around items-center px-10 pb-safe bg-[#ffffff]/80 dark:bg-[#1a1c1e]/80 backdrop-blur-2xl rounded-t-[3rem] shadow-[0px_-8px_24px_rgba(0,0,0,0.04)] no-border">
+<a class="flex flex-col items-center justify-center text-[#4a4bd7] dark:text-[#6366F1] scale-110 tap-highlight-none active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2d3337]/40 dark:text-white/40 hover:text-[#4a4bd7] transition-all tap-highlight-none active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2d3337]/40 dark:text-white/40 hover:text-[#4a4bd7] transition-all tap-highlight-none active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Account</span>
+</a>
+</nav>
+</body></html>

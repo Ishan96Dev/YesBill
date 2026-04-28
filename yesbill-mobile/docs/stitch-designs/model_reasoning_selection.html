@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Model Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#d3dbdf",
+                        "on-secondary-fixed": "#003c86",
+                        "surface-tint": "#4a4bd7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#006544",
+                        "on-background": "#2d3337",
+                        "on-secondary-fixed-variant": "#0057bd",
+                        "secondary-dim": "#004fad",
+                        "inverse-surface": "#0b0f10",
+                        "outline": "#757c7f",
+                        "surface-container": "#eaeef1",
+                        "primary": "#4a4bd7",
+                        "secondary-fixed-dim": "#c3d4ff",
+                        "on-primary-fixed": "#0c0090",
+                        "on-surface-variant": "#596063",
+                        "on-surface": "#2d3337",
+                        "error-dim": "#770326",
+                        "surface-variant": "#dde3e7",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container-high": "#e3e9ec",
+                        "on-tertiary-container": "#005a3c",
+                        "on-secondary": "#f9f8ff",
+                        "on-primary-fixed-variant": "#2d2cbd",
+                        "primary-fixed": "#babbff",
+                        "surface-container-highest": "#dde3e7",
+                        "inverse-primary": "#8083ff",
+                        "tertiary-fixed-dim": "#58e7ab",
+                        "surface-container-low": "#f1f4f6",
+                        "tertiary-container": "#69f6b8",
+                        "surface": "#f7f9fb",
+                        "on-error": "#fff7f7",
+                        "background": "#f7f9fb",
+                        "secondary-container": "#d8e2ff",
+                        "primary-dim": "#3d3dcb",
+                        "primary-container": "#babbff",
+                        "on-secondary-container": "#004eaa",
+                        "tertiary-dim": "#005f40",
+                        "inverse-on-surface": "#9a9d9f",
+                        "error-container": "#f76a80",
+                        "on-tertiary": "#e6ffee",
+                        "on-tertiary-fixed": "#00452d",
+                        "on-error-container": "#68001f",
+                        "tertiary-fixed": "#69f6b8",
+                        "tertiary": "#006d4a",
+                        "surface-bright": "#f7f9fb",
+                        "outline-variant": "#acb3b7",
+                        "primary-fixed-dim": "#aaacff",
+                        "on-primary-container": "#221eb5",
+                        "secondary": "#005bc4",
+                        "on-primary": "#fbf7ff",
+                        "error": "#ac3149"
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Plus Jakarta Sans"],
+                        display: ["Plus Jakarta Sans"],
+                        body: ["Manrope"],
+                        label: ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased h-screen overflow-hidden flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50 bg-[#f7f9fb]/80 dark:bg-[#1a1c1e]/80 backdrop-blur-md transition-all duration-300 ease-in-out">
+<button class="text-on-background focus:outline-none p-2 hover:bg-[#f1f4f6]/50 dark:hover:bg-white/10 rounded-full transition-all duration-300 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<div class="font-['Plus_Jakarta_Sans'] font-semibold tracking-tight text-[#4a4bd7] dark:text-[#6366F1] text-xl font-bold">
+            IntelliChat
+        </div>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-surface-container-high border border-surface-variant flex items-center justify-center hover:bg-[#f1f4f6]/50 dark:hover:bg-white/10 transition-all duration-300 ease-in-out cursor-pointer">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto pt-20 pb-28 px-6 no-scrollbar">
+<div class="mb-10 text-center">
+<h1 class="font-headline text-[1.75rem] font-bold tracking-[-0.01em] text-on-background mb-2">Model Configuration</h1>
+<p class="font-body text-[0.875rem] text-on-surface-variant">Select the AI engine and reasoning intensity for your next chat.</p>
+</div>
+<!-- AI Models Section -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline text-[1.375rem] font-semibold text-on-background">AI Engine</h2>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Selected Model -->
+<div class="bg-surface-container-lowest rounded-xl p-5 relative border border-primary ring-4 ring-primary-fixed shadow-[0px_12px_32px_rgba(45,51,55,0.06)] cursor-pointer">
+<div class="absolute top-4 right-4 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div>
+<h3 class="font-headline text-[1.125rem] font-bold text-on-background mb-1">YesBill Pro</h3>
+<p class="font-body text-[0.875rem] text-on-surface-variant leading-relaxed">Our most capable model, optimized for complex financial analysis, deep reasoning, and multi-step bill management tasks.</p>
+<div class="mt-3 flex gap-2">
+<span class="px-2 py-1 rounded-md bg-surface-container-low text-on-surface text-[0.75rem] font-bold uppercase tracking-wider font-label">Complex Tasks</span>
+<span class="px-2 py-1 rounded-md bg-tertiary-container text-on-tertiary-container text-[0.75rem] font-bold uppercase tracking-wider font-label">Highest Accuracy</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Unselected Model -->
+<div class="bg-surface-container-lowest rounded-xl p-5 relative border outline-variant/15 hover:border-primary/50 hover:shadow-[0px_12px_32px_rgba(45,51,55,0.06)] transition-all cursor-pointer">
+<div class="flex items-start gap-4">
+<div class="h-12 w-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div>
+<h3 class="font-headline text-[1.125rem] font-bold text-on-background mb-1">Fast Insight</h3>
+<p class="font-body text-[0.875rem] text-on-surface-variant leading-relaxed">Lightning-fast responses designed for quick questions, simple data retrieval, and everyday conversational tasks.</p>
+<div class="mt-3 flex gap-2">
+<span class="px-2 py-1 rounded-md bg-surface-container-low text-on-surface text-[0.75rem] font-bold uppercase tracking-wider font-label">Speed First</span>
+<span class="px-2 py-1 rounded-md bg-surface-container-low text-on-surface text-[0.75rem] font-bold uppercase tracking-wider font-label">Lower Latency</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Reasoning Intensity Section -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline text-[1.375rem] font-semibold text-on-background">Reasoning Intensity</h2>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Standard (Selected) -->
+<div class="bg-surface-container-lowest rounded-xl p-5 border border-primary ring-4 ring-primary-fixed shadow-[0px_12px_32px_rgba(45,51,55,0.06)] flex flex-col items-center text-center cursor-pointer relative">
+<div class="absolute top-3 right-3 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<h3 class="font-headline text-[1rem] font-bold text-on-background mb-1">Standard</h3>
+<p class="font-body text-[0.75rem] text-on-surface-variant">Balanced analysis for typical queries.</p>
+</div>
+<!-- Deep Dive -->
+<div class="bg-surface-container-lowest rounded-xl p-5 border outline-variant/15 hover:border-primary/50 hover:shadow-[0px_12px_32px_rgba(45,51,55,0.06)] transition-all flex flex-col items-center text-center cursor-pointer">
+<div class="h-10 w-10 rounded-full bg-surface-container-low text-on-surface flex items-center justify-center mb-3">
+<span class="material-symbols-outlined">troubleshoot</span>
+</div>
+<h3 class="font-headline text-[1rem] font-bold text-on-background mb-1">Deep Dive</h3>
+<p class="font-body text-[0.75rem] text-on-surface-variant">Extensive internal processing.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button for Confirmation -->
+<div class="fixed bottom-24 right-6 z-[60]">
+<button class="bg-primary text-on-primary rounded-xl h-14 px-6 flex items-center justify-center gap-2 shadow-[0px_12px_32px_rgba(45,51,55,0.06)] hover:opacity-90 active:scale-95 transition-all font-body font-bold">
+            Start Chat
+            <span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full h-20 z-50 flex justify-around items-center px-10 pb-safe bg-[#ffffff]/80 dark:bg-[#1a1c1e]/80 backdrop-blur-2xl shadow-[0px_-8px_24px_rgba(0,0,0,0.04)] rounded-t-[3rem] transition-all tap-highlight-none active:scale-90">
+<!-- Chat Tab (Inactive for this view, as it's a settings/config view, but keeping active as it's the primary destination for this flow) -->
+<div class="flex flex-col items-center justify-center text-[#4a4bd7] dark:text-[#6366F1] scale-110 cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Chat</span>
+</div>
+<!-- Explore Tab -->
+<div class="flex flex-col items-center justify-center text-[#2d3337]/40 dark:text-white/40 hover:text-[#4a4bd7] transition-all cursor-pointer">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Explore</span>
+</div>
+<!-- Account Tab -->
+<div class="flex flex-col items-center justify-center text-[#2d3337]/40 dark:text-white/40 hover:text-[#4a4bd7] transition-all cursor-pointer">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Manrope'] text-[10px] font-bold uppercase tracking-widest mt-1">Account</span>
+</div>
+</nav>
+</body></html>
