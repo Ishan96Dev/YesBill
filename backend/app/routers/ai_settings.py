@@ -9,7 +9,8 @@ from typing import Optional
 
 import httpx
 import asyncio
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from urllib.parse import urlparse
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from app.core.security import get_current_user_id
 from app.schemas.ai_settings import (
@@ -34,29 +35,66 @@ AI_PROVIDERS = {
         "logo_url": "/assets/icons/openai.png",
         "docs_url": "https://platform.openai.com/api-keys",
         "key_prefix": "sk-",
+        "requires_key": True,
         "models": [
             {
-                "id": "gpt-4o",
-                "name": "GPT-4o",
-                "description": "Latest and most capable",
+                "id": "gpt-5.5",
+                "name": "GPT-5.5",
+                "description": "Flagship model, April 2026",
                 "recommended": True,
             },
             {
-                "id": "gpt-4-turbo",
-                "name": "GPT-4 Turbo",
-                "description": "Fast and efficient",
+                "id": "gpt-5.4",
+                "name": "GPT-5.4",
+                "description": "Advanced reasoning, March 2026",
                 "recommended": False,
             },
             {
-                "id": "gpt-4",
-                "name": "GPT-4",
-                "description": "Most accurate",
+                "id": "gpt-5.2",
+                "name": "GPT-5.2",
+                "description": "Context: 400,000",
                 "recommended": False,
             },
             {
-                "id": "gpt-3.5-turbo",
-                "name": "GPT-3.5 Turbo",
-                "description": "Fast and economical",
+                "id": "gpt-5.1",
+                "name": "GPT-5.1",
+                "description": "Context: 400,000",
+                "recommended": False,
+            },
+            {
+                "id": "gpt-5",
+                "name": "GPT-5",
+                "description": "Context: 400,000",
+                "recommended": False,
+            },
+            {
+                "id": "gpt-5.4-mini",
+                "name": "GPT-5.4 Mini",
+                "description": "Context: 128,000",
+                "recommended": False,
+            },
+            {
+                "id": "gpt-5.4-nano",
+                "name": "GPT-5.4 Nano",
+                "description": "Context: 64,000",
+                "recommended": False,
+            },
+            {
+                "id": "gpt-5-mini",
+                "name": "GPT-5 Mini",
+                "description": "Context: 128,000",
+                "recommended": False,
+            },
+            {
+                "id": "gpt-5-nano",
+                "name": "GPT-5 Nano",
+                "description": "Context: 64,000",
+                "recommended": False,
+            },
+            {
+                "id": "o1",
+                "name": "o1",
+                "description": "Advanced reasoning",
                 "recommended": False,
             },
         ],
@@ -68,6 +106,7 @@ AI_PROVIDERS = {
         "logo_url": "/assets/icons/anthropic.png",
         "docs_url": "https://console.anthropic.com/settings/keys",
         "key_prefix": "sk-ant-",
+        "requires_key": True,
         "models": [
             {
                 "id": "claude-sonnet-4-20250514",
@@ -90,6 +129,7 @@ AI_PROVIDERS = {
         "logo_url": "/assets/icons/google-ai.png",
         "docs_url": "https://aistudio.google.com/apikey",
         "key_prefix": "AI",
+        "requires_key": True,
         "models": [
             {
                 "id": "gemini-2.0-flash",
@@ -104,6 +144,16 @@ AI_PROVIDERS = {
                 "recommended": False,
             },
         ],
+    },
+    "ollama": {
+        "id": "ollama",
+        "name": "Ollama",
+        "description": "Run local AI models on your own machine — no API key required",
+        "logo_url": "/assets/icons/ollama.png",
+        "docs_url": "https://ollama.com",
+        "key_prefix": None,
+        "requires_key": False,
+        "models": [],  # Populated dynamically from the user's Ollama instance
     },
 }
 
@@ -127,6 +177,7 @@ def _format_settings_response(record: dict) -> dict:
         "api_key_masked": _mask_api_key(record.get("api_key_encrypted", "")),
         "is_key_valid": record.get("is_key_valid", False),
         "key_validated_at": record.get("key_validated_at"),
+        "ollama_base_url": record.get("ollama_base_url"),
         "created_at": record["created_at"],
         "updated_at": record["updated_at"],
     }
@@ -182,6 +233,35 @@ async def get_providers():
     return result
 
 
+@router.get("/ollama/models")
+async def get_ollama_models(
+    base_url: str = Query(default="http://localhost:11434"),
+    user_id: str = Depends(get_current_user_id),
+):
+    """Proxy request to the user's local Ollama instance to list available models.
+    SSRF-safe: only http/https schemes are allowed.
+    """
+    parsed = urlparse(base_url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid base URL scheme — only http and https are allowed",
+        )
+    tags_url = f"{base_url.rstrip('/')}/api/tags"
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(tags_url)
+    except httpx.ConnectError:
+        raise HTTPException(status_code=502, detail=f"Cannot connect to Ollama at {base_url}. Is it running?")
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Ollama connection timed out")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"Ollama returned {resp.status_code}")
+    data = resp.json()
+    models = [m["name"] for m in data.get("models", []) if m.get("name")]
+    return {"models": models}
+
+
 @router.get("/settings", response_model=list[AISettingsResponse])
 async def get_all_settings(user_id: str = Depends(get_current_user_id)):
     """Get all AI settings for the current user."""
@@ -218,6 +298,39 @@ async def save_settings(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unknown provider: {provider}",
+        )
+
+    # ── Ollama: no API key, dynamic models, store base_url ─────────────────────
+    if provider == "ollama":
+        if not settings.selected_model:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="selected_model is required for Ollama",
+            )
+        ollama_base_url = (settings.ollama_base_url or "http://localhost:11434").rstrip("/")
+        try:
+            record = await supabase_service.upsert_ai_settings(
+                user_id=user_id,
+                provider=provider,
+                api_key_encrypted="",  # no key for local provider
+                selected_model=settings.selected_model,
+                enable_insights=settings.enable_insights,
+                default_reasoning_effort=settings.default_reasoning_effort or "none",
+                is_key_valid=True,  # no key to validate
+                ollama_base_url=ollama_base_url,
+            )
+            return _format_settings_response(record)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to save AI settings: {str(e)}",
+            )
+
+    # ── Cloud providers: API key required ──────────────────────────────────────
+    if not settings.api_key:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"api_key is required for provider: {provider}",
         )
 
     provider_info = AI_PROVIDERS[provider]
@@ -286,10 +399,33 @@ async def update_settings(
         )
 
     # Build update data from non-None fields
-    api_key = updates.api_key if updates.api_key is not None else existing.get("api_key_encrypted", "")
     selected_model = updates.selected_model if updates.selected_model is not None else existing.get("selected_model", "")
     enable_insights = updates.enable_insights if updates.enable_insights is not None else existing.get("enable_insights", True)
     default_reasoning_effort = updates.default_reasoning_effort if updates.default_reasoning_effort is not None else existing.get("default_reasoning_effort", "none")
+
+    # ── Ollama PATCH: update base_url and/or model only ────────────────────────
+    if provider == "ollama":
+        ollama_base_url = (updates.ollama_base_url or existing.get("ollama_base_url") or "http://localhost:11434").rstrip("/")
+        try:
+            record = await supabase_service.upsert_ai_settings(
+                user_id=user_id,
+                provider=provider,
+                api_key_encrypted="",
+                selected_model=selected_model,
+                enable_insights=enable_insights,
+                default_reasoning_effort=default_reasoning_effort,
+                is_key_valid=True,
+                ollama_base_url=ollama_base_url,
+            )
+            return _format_settings_response(record)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to update AI settings: {str(e)}",
+            )
+
+    # ── Cloud providers PATCH ──────────────────────────────────────────────────
+    api_key = updates.api_key if updates.api_key is not None else existing.get("api_key_encrypted", "")
     is_key_valid = existing.get("is_key_valid", False)
 
     provider_models = await supabase_service.get_ai_models_for_provider(provider, include_deprecated=True)

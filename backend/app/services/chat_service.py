@@ -31,6 +31,10 @@ GOOGLE_STREAM_URL = "https://generativelanguage.googleapis.com/v1beta/models/{mo
 GOOGLE_GENERATE_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 GOOGLE_MODEL_GET_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}"
 GOOGLE_MODELS_LIST_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+# Ollama local inference (OpenAI-compatible endpoints)
+OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
+OLLAMA_CHAT_PATH = "/v1/chat/completions"  # OpenAI-compatible
+OLLAMA_TAGS_PATH = "/api/tags"  # list installed models
 
 # Probe cache and error codes
 MODEL_PROBE_TTL_SECONDS = 300
@@ -183,6 +187,7 @@ _FALLBACK_MODELS = {
             "reasoning_label": "Reasoning support",
         },
     ],
+    "ollama": [],  # Dynamically fetched per user from their local Ollama instance
 }
 
 YESBILL_SYSTEM_PROMPT = """You are YesBill Assistant, a helpful AI for the YesBill personal finance tracking app.
@@ -350,15 +355,27 @@ async def get_user_ai_settings(user_id: str) -> dict | None:
     """Get user's first configured AI provider, model, and API key."""
     all_settings = await supabase_service.get_all_ai_settings(user_id)
     for row in all_settings:
-        key = (row.get("api_key_encrypted") or "").strip()
+        provider = (row.get("provider") or "openai").lower()
         model = (row.get("selected_model") or "").strip()
-        if key and model:
-            return {
-                "provider": (row.get("provider") or "openai").lower(),
-                "model": model,
-                "api_key": key,
-                "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
-            }
+        if provider == "ollama":
+            # Ollama: no API key, base_url carried in api_key field for probe/stream chain compatibility
+            if model:
+                base_url = (row.get("ollama_base_url") or OLLAMA_DEFAULT_BASE_URL).rstrip("/")
+                return {
+                    "provider": provider,
+                    "model": model,
+                    "api_key": base_url,  # repurposed: carries base_url through probe/stream chain
+                    "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
+                }
+        else:
+            key = (row.get("api_key_encrypted") or "").strip()
+            if key and model:
+                return {
+                    "provider": provider,
+                    "model": model,
+                    "api_key": key,
+                    "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
+                }
     return None
 
 
@@ -543,6 +560,25 @@ async def _probe_google_model(api_key: str, model: str) -> Tuple[str, str]:
     return "error", f"Google probe failed ({resp.status_code})."
 
 
+async def _probe_ollama_model(base_url: str, model: str) -> Tuple[str, str]:
+    """Probe an Ollama model by checking /api/tags on the user's local instance."""
+    tags_url = f"{base_url.rstrip('/')}{OLLAMA_TAGS_PATH}"
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(tags_url)
+        if resp.status_code == 200:
+            data = _safe_json(resp)
+            model_names = {m.get("name", "") for m in data.get("models", [])}
+            if model in model_names or any(m.startswith(model + ":") for m in model_names):
+                return "available", "Model is available on your Ollama instance."
+            return "unavailable", f"Model '{model}' not found. Run: ollama pull {model}"
+        return "error", f"Ollama returned {resp.status_code}. Is Ollama running at {base_url}?"
+    except httpx.ConnectError:
+        return "error", f"Cannot connect to Ollama at {base_url}. Is it running?"
+    except httpx.TimeoutException:
+        return "error", "Ollama connection timed out."
+
+
 async def probe_model_availability(
     provider: str,
     api_key: str,
@@ -557,6 +593,9 @@ async def probe_model_availability(
             return await _probe_anthropic_model(api_key, model, anthropic_ids)
         if provider == "google":
             return await _probe_google_model(api_key, model)
+        if provider == "ollama":
+            # api_key carries base_url for Ollama
+            return await _probe_ollama_model(api_key, model)
         return "unknown", f"Unsupported provider: {provider}"
     except httpx.TimeoutException:
         return "error", "Probe timed out."
@@ -1270,6 +1309,49 @@ async def _stream_google(
     }
 
 
+async def _stream_ollama(
+    base_url: str, model: str, system_prompt: str, messages: list[dict],
+) -> AsyncGenerator[dict, None]:
+    """Stream responses from a local Ollama instance via its OpenAI-compatible API.
+    Yields dicts: {"type": "chunk", "content": str}
+    Yields a final {"type": "_usage", "tokens_in": int, "tokens_out": int, "tokens_thinking": int}
+    """
+    url = f"{base_url.rstrip('/')}{OLLAMA_CHAT_PATH}"
+    all_messages = [{"role": "system", "content": system_prompt}] + messages
+    payload = {
+        "model": model,
+        "messages": all_messages,
+        "stream": True,
+        "stream_options": {"include_usage": True},
+    }
+    _usage_data: dict = {"tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0}
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(connect=15.0, read=300.0, write=10.0, pool=5.0)
+    ) as client:
+        async with client.stream("POST", url, json=payload) as resp:
+            resp.raise_for_status()
+            async for line in resp.aiter_lines():
+                if not line.startswith("data: "):
+                    continue
+                data = line[6:]
+                if data.strip() == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(data)
+                    if "usage" in obj and obj.get("usage"):
+                        u = obj["usage"]
+                        _usage_data["tokens_in"] = u.get("prompt_tokens", 0)
+                        _usage_data["tokens_out"] = u.get("completion_tokens", 0)
+                    choices = obj.get("choices") or []
+                    if choices:
+                        chunk = choices[0].get("delta", {}).get("content") or ""
+                        if chunk:
+                            yield {"type": "chunk", "content": chunk}
+                except (json.JSONDecodeError, KeyError, IndexError):
+                    continue
+    yield {"type": "_usage", **_usage_data}
+
+
 async def stream_response(
     user_id: str,
     conv_id: str,
@@ -1366,6 +1448,9 @@ async def stream_response(
                 thinking_param_type=reasoning_meta.get("thinking_param_type", "none"),
                 max_output_tokens=reasoning_meta.get("max_output_tokens", 2000),
             )
+        elif provider == "ollama":
+            # api_key carries the base_url for Ollama
+            gen = _stream_ollama(api_key, model, system_prompt, messages)
         else:
             yield {"type": "error", "message": f"Unsupported provider: {provider}"}
             return

@@ -107,20 +107,28 @@ class NotificationsNotifier
     final previous = state.valueOrNull ?? const <AppNotification>[];
     if (previous.isEmpty) return;
 
-    final ids = previous.map((n) => n.id).toSet();
-    _localReadIds.addAll(ids);
+    // Only target unread rows — avoids firing unnecessary UPDATE events.
+    final unreadIds = previous.where((n) => !n.read).map((n) => n.id).toSet();
+    if (unreadIds.isEmpty) return;
+
+    _localReadIds.addAll(unreadIds);
     state = AsyncData(previous.map((n) => n.copyWith(read: true)).toList());
 
     final client = ref.read(supabaseClientProvider);
     try {
       await _applyReadUpdate(
         client: client,
-        filters: (query) => query.eq('user_id', user.id),
+        // Filter to only the unread rows so RLS-matching is precise
+        // and no spurious realtime UPDATE events are emitted.
+        filters: (query) =>
+            query.eq('user_id', user.id).eq('read', false),
       );
-    } catch (_) {
-      // Keep optimistic read state in UI — don't revert, as _localReadIds
-      // will preserve the read status for this session. The update will
-      // be retried on the next app launch once the DB is reachable.
+    } catch (e) {
+      // DB update failed — log so it's visible during debugging.
+      // The _localReadIds set keeps the UI correct for this session.
+      // On next cold start the unread state will be re-fetched from DB;
+      // retrying here would require persistent storage which is overkill.
+      debugPrint('NotificationsNotifier.markAllAsRead DB error: $e');
     }
   }
 

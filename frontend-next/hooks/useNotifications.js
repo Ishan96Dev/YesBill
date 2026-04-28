@@ -113,10 +113,14 @@ export function useNotifications(userId, _notifPrefs = null) {
   }, [])
 
   const markAllAsRead = useCallback(async () => {
-    // Optimistic update
+    // Optimistic update — mark all read in UI immediately
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-    await notificationService.markAllAsRead(userId)
-  }, [userId])
+    const error = await notificationService.markAllAsRead(userId)
+    if (error) {
+      // DB update failed — re-fetch to restore accurate state from server
+      fetch()
+    }
+  }, [userId, fetch])
 
   const deleteOne = useCallback(async (id) => {
     // Optimistic update

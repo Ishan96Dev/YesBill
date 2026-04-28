@@ -27,10 +27,22 @@ jobs:
           cache: true
 
       - name: Write google-services.json
+        # Secret must be stored as base64 in GitHub:
+        #   cat google-services.json | base64 | tr -d '\n'
+        # Then paste the output as the GOOGLE_SERVICES_JSON secret value.
         working-directory: yesbill-mobile
-        run: echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "ERROR: GOOGLE_SERVICES_JSON_B64 secret is not set"
+            exit 1
+          fi
+          echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > android/app/google-services.json
+          # Validate the file is valid JSON
+          python3 -c "import json,sys; json.load(open('android/app/google-services.json'))" || \
+            { echo "ERROR: google-services.json is not valid JSON"; exit 1; }
+          echo "✓ google-services.json written and validated"
         env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
 
       - name: Install dependencies
         working-directory: yesbill-mobile

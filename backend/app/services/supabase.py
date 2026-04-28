@@ -489,6 +489,7 @@ class SupabaseService:
         is_key_valid: bool = False,
         key_validated_at: Optional[str] = None,
         default_reasoning_effort: str = "none",
+        ollama_base_url: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Create or update AI settings (upsert on user_id + provider).
@@ -501,6 +502,7 @@ class SupabaseService:
             enable_insights: Whether AI insights are enabled
             is_key_valid: Whether the key has been validated
             key_validated_at: Timestamp of last validation
+            ollama_base_url: Base URL for local Ollama instance (Ollama provider only)
 
         Returns:
             Upserted AI settings record
@@ -520,6 +522,8 @@ class SupabaseService:
             }
             if key_validated_at:
                 data["key_validated_at"] = key_validated_at
+            if ollama_base_url is not None:
+                data["ollama_base_url"] = ollama_base_url
 
             response = (
                 self.client.table("user_ai_settings")

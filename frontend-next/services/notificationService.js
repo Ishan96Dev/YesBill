@@ -42,16 +42,21 @@ export const notificationService = {
   },
 
   /**
-   * Mark all notifications as read for a user
+   * Mark all notifications as read for a user.
+   * Returns the error object on failure, or null on success.
    */
   async markAllAsRead(userId) {
-    if (!userId) return
+    if (!userId) return null
     const { error } = await supabase
       .from('notifications')
       .update({ read: true })
       .eq('user_id', userId)
       .eq('read', false)
-    if (error) console.error('notificationService.markAllAsRead error:', error.message)
+    if (error) {
+      console.error('notificationService.markAllAsRead error:', error.message)
+      return error
+    }
+    return null
   },
 
   /**

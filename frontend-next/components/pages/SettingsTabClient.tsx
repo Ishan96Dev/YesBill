@@ -49,7 +49,8 @@ import {
   Check,
   LogOut,
   Monitor,
-  Link2
+  Link2,
+  Bot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WithTooltip } from "@/components/ui/tooltip";
@@ -407,6 +408,11 @@ export default function Settings() {
   const [aiHasExistingKey, setAiHasExistingKey] = useState(false);
   const [modelProbeMap, setModelProbeMap] = useState({}); // { provider: { modelId: { status, message } } }
   const [probingModels, setProbingModels] = useState(false);
+  // -- Ollama-specific state --
+  const [ollamaBaseUrl, setOllamaBaseUrl] = useState('http://localhost:11434');
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [ollamaFetching, setOllamaFetching] = useState(false);
+  const [ollamaFetchError, setOllamaFetchError] = useState('');
 
   // -- Security tab state ----------------------------------------------
   const [secCurrentPassword, setSecCurrentPassword] = useState('');
@@ -905,6 +911,13 @@ export default function Settings() {
         status: current.is_key_valid ? 'valid' : 'idle',
         message: current.is_key_valid ? 'Key verified and active' : '',
       });
+      if (selectedProvider === 'ollama') {
+        setOllamaBaseUrl(current.ollama_base_url || 'http://localhost:11434');
+        // Populate model list from existing selected model if we don't have a list yet
+        if (current.selected_model && ollamaModels.length === 0) {
+          setOllamaModels([current.selected_model]);
+        }
+      }
     } else {
       setAiApiKey('');
       setAiSelectedModel('');
@@ -912,24 +925,46 @@ export default function Settings() {
       setAiDefaultReasoningEffort('none');
       setAiHasExistingKey(false);
       setAiKeyValidation({ status: 'idle', message: '' });
+      if (selectedProvider === 'ollama') {
+        setOllamaBaseUrl('http://localhost:11434');
+        setOllamaModels([]);
+      }
     }
     setShowApiKey(false);
     setAiKeyTouched(false);
+    setOllamaFetchError('');
   }, [selectedProvider, aiSettings]);
+
+  // Deprecated models: shown only when the user has one selected, with a warning
+  const DEPRECATED_MODELS: Record<string, { name: string; note: string; provider: string }> = {
+    'gpt-4o':      { name: 'GPT-4o',       note: 'Retired Feb 2026', provider: 'openai' },
+    'gpt-4o-mini': { name: 'GPT-4o Mini',  note: 'Retired Feb 2026', provider: 'openai' },
+    'gpt-4.1':     { name: 'GPT-4.1',      note: 'Retired Feb 2026', provider: 'openai' },
+    'gpt-4.1-mini':{ name: 'GPT-4.1 Mini', note: 'Retired Feb 2026', provider: 'openai' },
+    'gpt-4.1-nano':{ name: 'GPT-4.1 Nano', note: 'Retired Feb 2026', provider: 'openai' },
+    'o4-mini':     { name: 'o4-mini',      note: 'Retired',          provider: 'openai' },
+    'o3':          { name: 'o3',           note: 'Retired',          provider: 'openai' },
+    'o3-mini':     { name: 'o3-mini',      note: 'Retired',          provider: 'openai' },
+  };
 
   // Get the currently selected provider's models
   const currentProviderInfo = aiProviders.find(p => p.id === selectedProvider) || aiProviders[0];
   const currentModels = (currentProviderInfo?.models || []).filter((m) => !m.is_deprecated);
 
+  const deprecatedModelInfo = DEPRECATED_MODELS[aiSelectedModel];
+  const isSelectedModelDeprecated = Boolean(deprecatedModelInfo && deprecatedModelInfo.provider === selectedProvider);
+
   // Set default model if none selected or selected model is no longer valid
+  // Skip auto-switch if the user has a deprecated model selected — they must choose explicitly
   useEffect(() => {
     if (currentModels.length === 0) return;
+    if (isSelectedModelDeprecated) return;
     const selectedStillVisible = currentModels.some((m) => m.id === aiSelectedModel);
     if (!aiSelectedModel || !selectedStillVisible) {
       const recommended = currentModels.find(m => m.recommended);
       setAiSelectedModel(recommended?.id || currentModels[0].id);
     }
-  }, [currentModels, aiSelectedModel]);
+  }, [currentModels, aiSelectedModel, isSelectedModelDeprecated]);
 
   // -- AI Key Format Validation (on change) --
   const handleAiKeyChange = (value) => {
@@ -982,6 +1017,33 @@ export default function Settings() {
       toast({ title: 'Error', description: 'User session not found. Please refresh.', type: 'error' });
       return;
     }
+
+    // ── Ollama: no API key required ────────────────────────────────────────
+    if (selectedProvider === 'ollama') {
+      if (!aiSelectedModel.trim()) {
+        toast({ title: 'Validation Error', description: 'Please select or enter a model name', type: 'error' });
+        return;
+      }
+      setAiSaving(true);
+      try {
+        const saved = await aiSettingsService.saveSettings(userId, {
+          provider: 'ollama',
+          selected_model: aiSelectedModel,
+          enable_insights: aiEnableInsights,
+          default_reasoning_effort: aiDefaultReasoningEffort,
+          ollama_base_url: ollamaBaseUrl || 'http://localhost:11434',
+        });
+        setAiSettings(prev => ({ ...prev, ollama: saved }));
+        toast({ title: 'Ollama Settings Saved', description: 'Local Ollama configuration saved successfully', type: 'success' });
+      } catch (err: any) {
+        toast({ title: 'Save Failed', description: err.message || 'Could not save Ollama settings', type: 'error' });
+      } finally {
+        setAiSaving(false);
+      }
+      return;
+    }
+
+    // ── Cloud providers ────────────────────────────────────────────────────
     if (!aiApiKey.trim()) {
       toast({ title: 'Validation Error', description: 'Please enter an API key', type: 'error' });
       return;
@@ -1037,6 +1099,33 @@ export default function Settings() {
       toast({ title: 'Save Failed', description: err.message || 'Could not save AI settings', type: 'error' });
     } finally {
       setAiSaving(false);
+    }
+  };
+
+  // -- Fetch Ollama Models from user's local instance --
+  const handleFetchOllamaModels = async () => {
+    setOllamaFetching(true);
+    setOllamaFetchError('');
+    try {
+      const url = new URL('/api/ai/ollama/models', window.location.origin);
+      url.searchParams.set('base_url', ollamaBaseUrl || 'http://localhost:11434');
+      const res = await fetch(url.toString(), { credentials: 'include' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.detail || `Server returned ${res.status}`);
+      }
+      const data = await res.json();
+      const models: string[] = data.models || [];
+      setOllamaModels(models);
+      if (models.length === 0) {
+        setOllamaFetchError('No models found. Run: ollama pull <model>');
+      } else if (!aiSelectedModel || !models.includes(aiSelectedModel)) {
+        setAiSelectedModel(models[0]);
+      }
+    } catch (err: any) {
+      setOllamaFetchError(err.message || 'Could not reach Ollama. Is it running?');
+    } finally {
+      setOllamaFetching(false);
     }
   };
 
@@ -1107,6 +1196,8 @@ export default function Settings() {
         return <img src={assetUrl("/assets/icons/anthropic.png")} alt="Anthropic" width={size} height={size} className="object-contain" />;
       case 'google':
         return <img src={assetUrl("/assets/icons/google-ai.png")} alt="Google AI" width={size} height={size} className="object-contain" />;
+      case 'ollama':
+        return <Bot className="text-gray-700" style={{ width: size, height: size }} />;
       default:
         return <Brain className="text-indigo-500" style={{ width: size, height: size }} />;
     }
@@ -1876,7 +1967,9 @@ export default function Settings() {
                                 {/* Name & models */}
                                 <div className="text-center">
                                   <p className="font-semibold text-gray-900">{provider.name}</p>
-                                  <p className="text-sm text-gray-500 mt-0.5">{provider.models.length} models</p>
+                                  <p className="text-sm text-gray-500 mt-0.5">
+                                    {provider.id === 'ollama' ? 'Local models' : `${provider.models.length} models`}
+                                  </p>
                                 </div>
                                 {aiSettings[provider.id] && (
                                   <div className="text-center mt-3">
@@ -1894,7 +1987,48 @@ export default function Settings() {
                         {/* Divider */}
                         <div className="border-t border-gray-100" />
 
-                        {/* API Key Input with Validation */}
+                        {/* Ollama: Base URL + Fetch Models */}
+                        {selectedProvider === 'ollama' && (
+                          <div>
+                            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">
+                              Ollama Base URL
+                            </label>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <input
+                                type="text"
+                                value={ollamaBaseUrl}
+                                onChange={(e) => setOllamaBaseUrl(e.target.value)}
+                                className="flex-1 px-5 py-3.5 rounded-2xl border-2 border-gray-200 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all font-mono text-sm"
+                                placeholder="http://localhost:11434"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleFetchOllamaModels}
+                                disabled={ollamaFetching}
+                                className="px-5 py-3.5 text-sm font-bold rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-indigo-200 whitespace-nowrap flex-shrink-0"
+                              >
+                                {ollamaFetching ? (
+                                  <span className="flex items-center justify-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Fetching...</span>
+                                ) : (
+                                  <span className="flex items-center justify-center gap-2">Fetch Models</span>
+                                )}
+                              </button>
+                            </div>
+                            {ollamaFetchError && (
+                              <p className="flex items-center gap-1.5 mt-2 text-sm text-red-500 font-medium">
+                                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                {ollamaFetchError}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1.5">
+                              <Info className="w-3.5 h-3.5" />
+                              Your Ollama instance URL. Click &quot;Fetch Models&quot; to load installed models.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Cloud providers: API Key Input with Validation */}
+                        {currentProviderInfo?.requires_key !== false && (
                         <div>
                           <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">
                             <Key className="w-4 h-4" />
@@ -1959,6 +2093,7 @@ export default function Settings() {
                             Your API key is stored securely in your private database
                           </p>
                         </div>
+                        )}
 
                         {/* Divider */}
                         <div className="border-t border-gray-100" />
@@ -1968,8 +2103,83 @@ export default function Settings() {
                           <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">
                             Model Selection
                           </label>
+
+                          {/* Deprecated model warning */}
+                          {isSelectedModelDeprecated && deprecatedModelInfo && (
+                            <div className="mb-3 flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-amber-800">
+                                  {deprecatedModelInfo.name} is deprecated ({deprecatedModelInfo.note})
+                                </p>
+                                <p className="text-xs text-amber-700 mt-0.5">
+                                  Please select a newer model below to continue using AI features.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="space-y-2.5">
-                            {currentModels.map((model) => (
+                            {/* Show deprecated selected model at top with disabled style */}
+                            {isSelectedModelDeprecated && deprecatedModelInfo && (
+                              <div className="p-5 rounded-2xl border-2 border-amber-300 bg-amber-50/50 opacity-70 cursor-not-allowed">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className="font-semibold text-gray-500 line-through">{deprecatedModelInfo.name}</span>
+                                    <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md flex-shrink-0">
+                                      Deprecated
+                                    </span>
+                                  </div>
+                                  <span className="flex items-center gap-1.5 text-amber-600 text-xs font-medium flex-shrink-0">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    Current
+                                  </span>
+                                </div>
+                                <p className="text-xs text-amber-600">{deprecatedModelInfo.note} — choose a model below</p>
+                              </div>
+                            )}
+                            {/* Ollama: dynamic model list */}
+                            {selectedProvider === 'ollama' && ollamaModels.length === 0 && (
+                              <div className="p-5 rounded-2xl border-2 border-dashed border-gray-200 text-center text-sm text-gray-400">
+                                No models loaded — enter your Ollama URL above and click &quot;Fetch Models&quot;, or type a model name below.
+                              </div>
+                            )}
+                            {selectedProvider === 'ollama' && ollamaModels.map((modelName) => (
+                              <div
+                                key={modelName}
+                                onClick={() => setAiSelectedModel(modelName)}
+                                role="button"
+                                tabIndex={0}
+                                className={`cursor-pointer p-5 rounded-2xl border-2 transition-all ${aiSelectedModel === modelName
+                                  ? 'border-primary bg-primary/5 shadow-sm'
+                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
+                                  }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-gray-900 font-mono text-sm">{modelName}</span>
+                                  {aiSelectedModel === modelName && (
+                                    <span className="flex items-center gap-1.5 text-primary text-sm font-semibold flex-shrink-0">
+                                      <Check className="w-4 h-4" />
+                                      Selected
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            {/* Ollama: manual model entry */}
+                            {selectedProvider === 'ollama' && (
+                              <div className="pt-1">
+                                <input
+                                  type="text"
+                                  value={aiSelectedModel}
+                                  onChange={(e) => setAiSelectedModel(e.target.value)}
+                                  className="w-full px-5 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all font-mono text-sm"
+                                  placeholder="Or type a model name, e.g. llama3.2"
+                                />
+                              </div>
+                            )}
+                            {/* Cloud providers: model list */}
+                            {selectedProvider !== 'ollama' && currentModels.map((model) => (
                               <div
                                 key={model.id}
                                 onClick={() => setAiSelectedModel(model.id)}

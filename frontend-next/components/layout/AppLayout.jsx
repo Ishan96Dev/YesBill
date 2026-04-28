@@ -114,6 +114,12 @@ export default function AppLayout({
     ? dedupedNotifs.filter((n) => notifPrefs[n.type] !== false)
     : dedupedNotifs;
 
+  // Count only the notifications that are actually visible in the panel
+  // (respects dedup + notifPrefs filtering). Used for the panel header
+  // badge and the "Mark all read" button — distinct from `unreadCount`
+  // which counts raw allNotifs and drives the bell badge only.
+  const visibleUnreadCount = notifications.filter((n) => !n.read).length;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -380,7 +386,6 @@ export default function AppLayout({
                 onClick={() => {
                   const opening = !notifOpen;
                   setNotifOpen(opening);
-                  if (opening && unreadCount > 0) markAllAsRead();
                   setProfileOpen(false);
                   setSearchOpen(false);
                 }}
@@ -410,18 +415,18 @@ export default function AppLayout({
                       <div className="flex items-center gap-2">
                         <Bell className="w-4 h-4 text-gray-500" />
                         <span className="text-sm font-semibold text-gray-800">Notifications</span>
-                        {unreadCount > 0 && (
+                        {visibleUnreadCount > 0 && (
                           <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                            {unreadCount}
+                            {visibleUnreadCount}
                           </span>
                         )}
                       </div>
                       <button
                         onClick={markAllAsRead}
-                        disabled={unreadCount === 0}
+                        disabled={visibleUnreadCount === 0}
                         className={cn(
                           "flex items-center gap-1 text-xs font-medium transition-colors",
-                          unreadCount > 0
+                          visibleUnreadCount > 0
                             ? "text-primary hover:text-indigo-700 cursor-pointer"
                             : "text-gray-300 cursor-not-allowed"
                         )}
