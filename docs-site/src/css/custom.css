@@ -149,6 +149,28 @@
   border-color: rgba(99, 102, 241, 0.3);
 }
 
+/* ── Fenced code blocks — reset inline overrides ── */
+.markdown pre {
+  border-radius: 10px;
+  border: 1px solid rgba(79, 70, 229, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.markdown pre code {
+  background: transparent !important;
+  color: inherit !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 0.875rem;
+  border-radius: 0;
+}
+
+[data-theme='dark'] .markdown pre code {
+  background: transparent !important;
+  color: inherit !important;
+  border: none !important;
+}
+
 /* ── Callout / admonition overrides ── */
 .admonition-note {
   border-left-color: #4F46E5;

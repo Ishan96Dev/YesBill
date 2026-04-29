@@ -15,6 +15,7 @@ YesBill supports three AI providers. You need an API key from at least one provi
 | **OpenAI** | GPT-4o, GPT-4o Mini, GPT-4.1 | Speed and reliability |
 | **Anthropic** | Claude 3.5 Sonnet, Claude 3 Haiku | Detailed analysis |
 | **Google** | Gemini 2.0 Flash, Gemini 1.5 Pro | Budget-friendly |
+| **Ollama** | Gemma 4, Llama 3.2, Qwen3 Coder, and any locally installed model | Free, fully local — no API key |
 
 ## Getting an API Key
 
@@ -98,3 +99,51 @@ Your API keys are stored only in your browser session and sent directly to the A
 3. Confirm the removal
 
 After removing all keys, AI features will be disabled until you add a new key.
+
+---
+
+## Ollama (Local Models)
+
+Ollama lets you run AI models **entirely on your own machine** — completely free, no API key, no usage costs.
+
+### Why use Ollama?
+- **Free** — no per-token charges ever
+- **Private** — your data never leaves your machine
+- **Offline capable** — works without internet once set up
+- **Any model** — pull any model from the Ollama library
+
+### How it works
+
+YesBill connects to your local Ollama instance through a **Cloudflare Tunnel**, which creates a secure public URL that the cloud backend can reach.
+
+### Setting up Ollama
+
+1. Go to **Settings → AI Configuration**
+2. Click the **Ollama** provider tile
+3. Paste your Cloudflare Tunnel URL in the **Ollama Base URL** field
+4. Click **Fetch Models** to load your installed models
+5. Select a model and click **Save Changes**
+
+:::info
+Ollama requires a one-time local setup. See the full guide:
+[Ollama Setup →](/settings/ollama-setup)
+:::
+
+### Recommended models for YesBill
+
+| Model | Size | Best For |
+|-------|------|---------|
+| `gemma4:latest` | ~5 GB | General use (recommended) |
+| `llama3.2` | ~2 GB | Fast responses |
+| `qwen3-coder:latest` | ~4 GB | Code and bill analysis |
+| `gemma3:latest` | ~3 GB | Balanced |
+
+### Ollama vs cloud providers
+
+| | Ollama | OpenAI / Anthropic / Google |
+|-|--------|----------------------------|
+| Cost | Free | Pay per token |
+| Privacy | Fully local | Sent to provider servers |
+| Speed | Depends on your GPU | Fast cloud inference |
+| Setup | Requires local install | API key only |
+| Offline | Yes (after setup) | No |

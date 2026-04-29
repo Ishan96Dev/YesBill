@@ -10,6 +10,7 @@ const sidebars = {
         'getting-started/creating-account',
         'getting-started/onboarding',
         'getting-started/first-service',
+        'getting-started/dashboard',
       ],
     },
     {
@@ -63,6 +64,7 @@ const sidebars = {
         'settings/notifications',
         'settings/security',
         'settings/ai-configuration',
+        'settings/ollama-setup',
         'settings/support',
       ],
     },
