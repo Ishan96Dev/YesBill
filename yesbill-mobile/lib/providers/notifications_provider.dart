@@ -124,6 +124,9 @@ class NotificationsNotifier
         filters: (query) =>
             query.eq('user_id', user.id).eq('read', false),
       );
+      // Re-fetch from DB to confirm server state. _localReadIds ensures the
+      // optimistic read state is preserved even if the DB returned stale data.
+      ref.invalidateSelf();
     } catch (e) {
       // DB update failed — log so it's visible during debugging.
       // The _localReadIds set keeps the UI correct for this session.

@@ -107,7 +107,23 @@ const _sections = <_DocSection>[
   ),
 ];
 
-const _docsBaseUrl = 'https://yesbill-docs.vercel.app';
+const _docsBaseUrl = 'https://ishan96dev.github.io/YesBill/docs';
+
+/// Flat lookup: Docusaurus page path → _DocItem (for in-app link navigation)
+Map<String, _DocItem> _buildDocPathMap() {
+  final map = <String, _DocItem>{};
+  for (final section in _sections) {
+    for (final item in section.items) {
+      final path = item.asset
+          .replaceFirst('assets/docs', '')
+          .replaceFirst('.md', '');
+      map[path] = item;
+    }
+  }
+  return map;
+}
+
+final _docPathMap = _buildDocPathMap();
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -148,6 +164,7 @@ class _DocsScreenState extends State<DocsScreen> {
         asset: _selectedAsset,
         label: _selectedLabel,
         isDark: isDark,
+        onNavigateDoc: _select,
       ),
     );
   }
@@ -174,7 +191,7 @@ class _DocsDrawerState extends State<_DocsDrawer> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Drawer(
-      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -504,11 +521,13 @@ class _DocsBody extends StatefulWidget {
     required this.asset,
     required this.label,
     required this.isDark,
+    this.onNavigateDoc,
   });
 
   final String asset;
   final String label;
   final bool isDark;
+  final void Function(_DocItem)? onNavigateDoc;
 
   @override
   State<_DocsBody> createState() => _DocsBodyState();
@@ -548,6 +567,43 @@ class _DocsBodyState extends State<_DocsBody> {
     return trimmed.substring(afterNewline + 1).trimLeft();
   }
 
+  /// Converts Docusaurus admonition blocks (:::type ... :::) into styled
+  /// markdown blockquotes that flutter_markdown can render.
+  static String _convertAdmonitions(String content) {
+    return content.replaceAllMapped(
+      RegExp(
+        r':::(info|note|tip|warning|caution|danger)([^\n]*)?\ *\n([\s\S]*?):::',
+        caseSensitive: false,
+      ),
+      (match) {
+        final type = match.group(1)!.toLowerCase();
+        final rawTitle = match.group(2)?.trim() ?? '';
+        final body = match.group(3)!.trim();
+        String emoji;
+        String defaultLabel;
+        if (type == 'tip') {
+          emoji = '\u{1F4A1}';
+          defaultLabel = 'Tip';
+        } else if (type == 'warning' || type == 'caution') {
+          emoji = '\u26A0\uFE0F';
+          defaultLabel = 'Warning';
+        } else if (type == 'danger') {
+          emoji = '\u{1F6A8}';
+          defaultLabel = 'Danger';
+        } else if (type == 'note') {
+          emoji = '\u{1F4DD}';
+          defaultLabel = 'Note';
+        } else {
+          emoji = '\u2139\uFE0F';
+          defaultLabel = 'Info';
+        }
+        final label = rawTitle.isNotEmpty ? rawTitle : defaultLabel;
+        final lines = body.split('\n').map((l) => '> $l').join('\n');
+        return '> **$emoji $label**\n>\n$lines';
+      },
+    );
+  }
+
   Future<void> _loadDoc() async {
     setState(() {
       _loading = true;
@@ -559,7 +615,7 @@ class _DocsBodyState extends State<_DocsBody> {
       if (!mounted) return;
       if (_loadedAsset != widget.asset) return; // stale response
       setState(() {
-        _content = _stripFrontmatter(raw);
+        _content = _convertAdmonitions(_stripFrontmatter(raw));
         _loading = false;
       });
     } catch (e) {
@@ -675,6 +731,22 @@ class _DocsBodyState extends State<_DocsBody> {
             },
             onTapLink: (text, href, title) async {
               if (href == null) return;
+              // Anchor-only links — can't scroll to heading in flutter_markdown
+              if (href.startsWith('#')) return;
+              // Internal doc links (relative or absolute paths, not http/mailto)
+              if (!href.startsWith('http') && !href.startsWith('mailto:')) {
+                final cleanPath = href
+                    .replaceAll('.md', '')
+                    .replaceAll(RegExp(r'#[^#]*$'), '')
+                    .trim();
+                final normalised =
+                    cleanPath.startsWith('/') ? cleanPath : '/$cleanPath';
+                final item = _docPathMap[normalised];
+                if (item != null) {
+                  widget.onNavigateDoc?.call(item);
+                  return;
+                }
+              }
               final uri = Uri.tryParse(href);
               if (uri != null && await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);

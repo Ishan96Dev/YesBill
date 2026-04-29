@@ -65,6 +65,7 @@ import PasswordStrengthBar, { getPasswordStrength } from "@/components/ui/Passwo
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { aiSettingsService } from "@/services/aiSettingsService";
+import { notificationService } from "@/services/notificationService";
 import AppLoadingScreen from "@/components/loading/AppLoadingScreen";
 import { usePageReady } from "@/hooks/usePageReady";
 import { COUNTRY_TIMEZONE } from "@/lib/timezone";
@@ -1002,6 +1003,24 @@ export default function Settings() {
           ...prev,
           [selectedProvider]: { ...prev[selectedProvider], is_key_valid: true },
         }));
+      }
+      // If the key failed and there's a saved record, mark it invalid in the DB and notify
+      if (!result.valid && aiSettings[selectedProvider]?.api_key_encrypted) {
+        setAiSettings(prev => ({
+          ...prev,
+          [selectedProvider]: { ...prev[selectedProvider], is_key_valid: false },
+        }));
+        const userId = resolveUserId();
+        if (userId) {
+          aiSettingsService.updateSettings(userId, selectedProvider, { is_key_valid: false }).catch(() => {});
+          notificationService.create(
+            userId,
+            'ai_key_invalid',
+            `${currentProviderInfo?.name || 'AI'} API key is invalid`,
+            'Your saved API key has expired or been revoked. Please update it in Settings → AI Providers.',
+            { path: '/settings?tab=ai' },
+          ).catch(() => {});
+        }
       }
     } catch (err) {
       setAiKeyValidation({ status: 'error', message: 'Validation failed. Try again.' });

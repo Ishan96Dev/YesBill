@@ -127,16 +127,21 @@ export function useNotifications(userId, _notifPrefs = null) {
   }, [])
 
   const markAllAsRead = useCallback(async () => {
-    // Add all currently-unread IDs to the local set BEFORE the optimistic
-    // update so that any subsequent fetch or realtime event cannot revert them.
+    // Add all currently-unread IDs to the local set inside the functional
+    // updater so we always see the latest state snapshot. Set.add is
+    // idempotent, so this is safe even if React calls the updater twice
+    // (strict mode). The IDs must be recorded before the DB call so that
+    // any realtime UPDATE arriving while the await is in-flight finds the
+    // set already populated and cannot revert the optimistic read state.
     setNotifications((prev) => {
       prev.forEach((n) => { if (!n.read) localReadIdsRef.current.add(n.id) })
       return prev.map((n) => ({ ...n, read: true }))
     })
     await notificationService.markAllAsRead(userId)
-    // No fetch() on failure — localReadIdsRef keeps the UI correct.
-    // Data will reconcile on the next full page load.
-  }, [userId])
+    // Re-fetch to confirm DB state. localReadIdsRef ensures optimistic read
+    // state is preserved even if the DB update was slow or failed silently.
+    await fetch()
+  }, [userId, fetch])
 
   const deleteOne = useCallback(async (id) => {
     // Optimistic update

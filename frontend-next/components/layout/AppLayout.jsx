@@ -393,9 +393,9 @@ export default function AppLayout({
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
+                {visibleUnreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full px-1 ring-2 ring-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {visibleUnreadCount > 9 ? "9+" : visibleUnreadCount}
                   </span>
                 )}
               </button>

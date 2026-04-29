@@ -151,6 +151,7 @@ export const aiSettingsService = {
       if (updates.selected_model !== undefined) updateData.selected_model = updates.selected_model
       if (updates.enable_insights !== undefined) updateData.enable_insights = updates.enable_insights
       if (updates.default_reasoning_effort !== undefined) updateData.default_reasoning_effort = updates.default_reasoning_effort
+      if (updates.is_key_valid !== undefined) updateData.is_key_valid = updates.is_key_valid
       const { data, error } = await supabase
         .from('user_ai_settings')
         .update(updateData)

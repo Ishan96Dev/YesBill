@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models/ai_provider_info.dart';
 import '../data/repositories/ai_settings_repository.dart';
 import '../data/models/ai_settings.dart';
@@ -80,6 +81,33 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
       state = const AiSettingsMutationIdle();
       return result.valid;
     } catch (e) { state = AiSettingsMutationError(e.toString()); return false; }
+  }
+
+  /// Called when an existing saved key fails validation.
+  /// Marks is_key_valid=false in the DB and inserts an ai_key_invalid notification.
+  Future<void> markKeyInvalid(String provider) async {
+    final client = ref.read(supabaseClientProvider);
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await client
+          .from('user_ai_settings')
+          .update({'is_key_valid': false})
+          .eq('user_id', userId)
+          .eq('provider', provider);
+      ref.invalidate(aiSettingsListProvider);
+      // Insert notification (fire-and-forget; ignore duplicate errors)
+      await client.from('notifications').insert({
+        'user_id': userId,
+        'type': 'ai_key_invalid',
+        'title': 'API key is invalid',
+        'message':
+            'Your saved $provider API key has expired or been revoked. Please update it in Settings → AI Providers.',
+        'data': {'path': '/settings/ai/$provider'},
+      });
+    } catch (_) {
+      // Non-fatal — do not surface errors to the user
+    }
   }
 }
 

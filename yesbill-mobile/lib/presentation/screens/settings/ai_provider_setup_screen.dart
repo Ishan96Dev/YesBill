@@ -32,11 +32,49 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
   List<String> _ollamaModels = [];
   bool _loadingOllamaModels = false;
 
+  // ── Inline key-validation state ───────────────────────────────────────────
+  // 'idle' | 'checking' | 'valid' | 'invalid'
+  String _keyValidationStatus = 'idle';
+  String _keyValidationMessage = '';
+
   @override
   void dispose() {
     _apiKeyCtrl.dispose();
     _ollamaBaseUrlCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _validateApiKey() async {
+    final key = _apiKeyCtrl.text.trim();
+    if (key.isEmpty) return;
+    setState(() {
+      _keyValidationStatus = 'checking';
+      _keyValidationMessage = 'Validating…';
+    });
+    final mutation = ref.read(aiSettingsMutationProvider.notifier);
+    final valid = await mutation.validateKey(
+      provider: widget.provider,
+      apiKey: key,
+    );
+    if (!mounted) return;
+    setState(() {
+      _keyValidationStatus = valid ? 'valid' : 'invalid';
+      _keyValidationMessage = valid
+          ? 'Key verified and active'
+          : 'Key validation failed. Please check and retry.';
+    });
+    // If validation failed and there is a saved key for this provider, mark it
+    // invalid in the DB so the invalid state is persisted across sessions.
+    if (!valid) {
+      final existing = ref
+          .read(aiSettingsListProvider)
+          .valueOrNull
+          ?.where((s) => s.provider == widget.provider)
+          .firstOrNull;
+      if (existing?.apiKeyEncrypted?.isNotEmpty == true) {
+        await mutation.markKeyInvalid(widget.provider);
+      }
+    }
   }
 
   Future<void> _loadOllamaModels() async {
@@ -228,6 +266,9 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
             title: Text(provider.name, style: AppTextStyles.h3),
           ),
           body: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewPadding.bottom,
+            ),
             child: Form(
               key: _formKey,
               autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -277,6 +318,41 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                         const SizedBox(height: AppSpacing.lg),
                         const Text('API Key', style: AppTextStyles.label),
                         const SizedBox(height: AppSpacing.sm),
+                        if (existing?.isKeyValid == false &&
+                            existing?.apiKeyEncrypted?.isNotEmpty == true)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withOpacity(0.10),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.error.withOpacity(0.35),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(LucideIcons.alertCircle,
+                                      size: 16, color: AppColors.error),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Saved key is invalid or revoked. Enter a new key below.',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         if (hasExistingKey)
                           Padding(
                             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -328,7 +404,10 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                         TextFormField(
                           controller: _apiKeyCtrl,
                           obscureText: _obscureKey,
-                          onChanged: (_) => setState(() {}),
+                          onChanged: (_) => setState(() {
+                            _keyValidationStatus = 'idle';
+                            _keyValidationMessage = '';
+                          }),
                           validator: (value) {
                             final trimmed = (value ?? '').trim();
                             if (trimmed.isEmpty && hasExistingKey) {
@@ -397,6 +476,77 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                           provider: widget.provider,
                           hasStoredValidKey: hasExistingKey,
                         ),
+                        // ── Validate Key button ──────────────────────────
+                        const SizedBox(height: AppSpacing.sm),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: (_apiKeyCtrl.text.trim().isEmpty || isLoading)
+                                ? null
+                                : _validateApiKey,
+                            icon: _keyValidationStatus == 'checking'
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : Icon(
+                                    LucideIcons.shieldCheck,
+                                    size: 14,
+                                    color: _keyValidationStatus == 'valid'
+                                        ? AppColors.success
+                                        : null,
+                                  ),
+                            label: Text(
+                              _keyValidationStatus == 'checking'
+                                  ? 'Checking…'
+                                  : 'Validate Key',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _keyValidationStatus == 'valid'
+                                  ? AppColors.success
+                                  : _keyValidationStatus == 'invalid'
+                                      ? AppColors.error
+                                      : AppColors.primary,
+                              side: BorderSide(
+                                color: _keyValidationStatus == 'valid'
+                                    ? AppColors.success
+                                    : _keyValidationStatus == 'invalid'
+                                        ? AppColors.error
+                                        : AppColors.primary.withOpacity(0.4),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // ── Validation status message ────────────────────
+                        if (_keyValidationMessage.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          Row(
+                            children: [
+                              Icon(
+                                _keyValidationStatus == 'valid'
+                                    ? LucideIcons.checkCircle
+                                    : LucideIcons.alertCircle,
+                                size: 13,
+                                color: _keyValidationStatus == 'valid'
+                                    ? AppColors.success
+                                    : AppColors.error,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _keyValidationMessage,
+                                style: AppTextStyles.bodySm.copyWith(
+                                  color: _keyValidationStatus == 'valid'
+                                      ? AppColors.success
+                                      : AppColors.error,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         ], // end of non-Ollama section
                         const SizedBox(height: AppSpacing.xl),
                         AppDropdown<String>(

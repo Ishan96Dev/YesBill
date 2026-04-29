@@ -215,7 +215,7 @@ class _AppDropdownSheet<T> extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   controller: scrollCtrl,
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, 32 + MediaQuery.of(context).viewPadding.bottom),
                   itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
