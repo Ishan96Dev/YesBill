@@ -23,13 +23,17 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { notificationService } from '../services/notificationService'
 
+// Module-level singleton — survives AppLayout remounts within the same browser
+// session. AppLayout is embedded in every page component (not a true Next.js root
+// layout), so each navigation unmounts and remounts the hook. Without this
+// singleton the newly-mounted instance would have an empty Set and re-fetching
+// from the DB could temporarily restore the old unread count.
+const _localReadIds = new Set()
+
 export function useNotifications(userId, _notifPrefs = null) {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const channelRef = useRef(null)
-  // Tracks IDs marked as read this session — prevents any subsequent
-  // fetch or realtime UPDATE from reverting the optimistic read state.
-  const localReadIdsRef = useRef(new Set())
 
   const fetch = useCallback(async () => {
     if (!userId) {
@@ -41,9 +45,8 @@ export function useNotifications(userId, _notifPrefs = null) {
     const data = await notificationService.getAll(userId)
     // Re-apply any locally-known read state so that a re-fetch never
     // reverts optimistic updates made earlier in this session.
-    const localIds = localReadIdsRef.current
-    const merged = localIds.size > 0
-      ? data.map((n) => (localIds.has(n.id) ? { ...n, read: true } : n))
+    const merged = _localReadIds.size > 0
+      ? data.map((n) => (_localReadIds.has(n.id) ? { ...n, read: true } : n))
       : data
     setNotifications(merged)
     setLoading(false)
@@ -88,7 +91,7 @@ export function useNotifications(userId, _notifPrefs = null) {
         (payload) => {
           // Apply local read state so a late-arriving UPDATE from the DB
           // cannot flip a locally-marked-as-read notification back to unread.
-          const updated = localReadIdsRef.current.has(payload.new.id)
+          const updated = _localReadIds.has(payload.new.id)
             ? { ...payload.new, read: true }
             : payload.new
           setNotifications((prev) =>
@@ -119,7 +122,7 @@ export function useNotifications(userId, _notifPrefs = null) {
   }, [userId])
 
   const markAsRead = useCallback(async (id) => {
-    localReadIdsRef.current.add(id)
+    _localReadIds.add(id)
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     )
@@ -134,7 +137,7 @@ export function useNotifications(userId, _notifPrefs = null) {
     // any realtime UPDATE arriving while the await is in-flight finds the
     // set already populated and cannot revert the optimistic read state.
     setNotifications((prev) => {
-      prev.forEach((n) => { if (!n.read) localReadIdsRef.current.add(n.id) })
+      prev.forEach((n) => { if (!n.read) _localReadIds.add(n.id) })
       return prev.map((n) => ({ ...n, read: true }))
     })
     await notificationService.markAllAsRead(userId)
@@ -144,12 +147,14 @@ export function useNotifications(userId, _notifPrefs = null) {
   }, [userId, fetch])
 
   const deleteOne = useCallback(async (id) => {
+    _localReadIds.delete(id)
     // Optimistic update
     setNotifications((prev) => prev.filter((n) => n.id !== id))
     await notificationService.deleteOne(id)
   }, [])
 
   const clearAll = useCallback(async () => {
+    _localReadIds.clear()
     setNotifications([])
     await notificationService.deleteAll(userId)
   }, [userId])

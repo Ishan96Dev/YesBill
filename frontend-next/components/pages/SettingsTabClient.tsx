@@ -59,7 +59,7 @@ import { useToast } from "@/components/ui/toaster-custom";
 import { useUser } from "@/hooks/useUser";
 import { profileService } from "@/services/profileService";
 import { authService } from "@/services/authService";
-import { authAPI, generatedBillsAPI } from "@/services/api";
+import api, { authAPI, generatedBillsAPI } from "@/services/api";
 import { servicesService } from "@/services/dataService";
 import PasswordStrengthBar, { getPasswordStrength } from "@/components/ui/PasswordStrengthBar";
 import { supabase } from "@/lib/supabase";
@@ -1123,18 +1123,12 @@ export default function Settings() {
 
   // -- Fetch Ollama Models from user's local instance --
   const handleFetchOllamaModels = async () => {
+    const baseUrl = ollamaBaseUrl || 'http://localhost:11434';
     setOllamaFetching(true);
     setOllamaFetchError('');
     try {
-      const url = new URL('/api/ai/ollama/models', window.location.origin);
-      url.searchParams.set('base_url', ollamaBaseUrl || 'http://localhost:11434');
-      const res = await fetch(url.toString(), { credentials: 'include' });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.detail || `Server returned ${res.status}`);
-      }
-      const data = await res.json();
-      const models: string[] = data.models || [];
+      const res = await api.get('/ai/ollama/models', { params: { base_url: baseUrl } });
+      const models: string[] = res.data?.models || [];
       setOllamaModels(models);
       if (models.length === 0) {
         setOllamaFetchError('No models found. Run: ollama pull <model>');
@@ -1142,7 +1136,8 @@ export default function Settings() {
         setAiSelectedModel(models[0]);
       }
     } catch (err: any) {
-      setOllamaFetchError(err.message || 'Could not reach Ollama. Is it running?');
+      const detail = err?.response?.data?.detail || err.message || 'Could not reach Ollama. Is it running?';
+      setOllamaFetchError(detail);
     } finally {
       setOllamaFetching(false);
     }
