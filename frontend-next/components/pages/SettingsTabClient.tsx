@@ -2305,7 +2305,7 @@ export default function Settings() {
                         <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
                           <Button
                             onClick={handleSaveAISettings}
-                            disabled={aiSaving || !aiApiKey.trim()}
+                            disabled={aiSaving || (selectedProvider !== 'ollama' && !aiApiKey.trim())}
                             className="bg-gradient-to-r from-primary to-indigo-600 shadow-lg hover:shadow-xl transition-all px-8 py-3 text-sm font-bold"
                           >
                             {aiSaving ? (
