@@ -36,6 +36,8 @@ from app.services.chat_service import (
     _GOOGLE_EFFORT_TO_LEVEL,
     _GOOGLE_EFFORT_TO_BUDGET,
     _GOOGLE_EFFORT_TO_READ_TIMEOUT,
+    OLLAMA_CHAT_PATH,
+    _with_thinking_progress,
 )
 from app.services.pricing import calculate_cost
 from app.services.supabase import supabase_service
@@ -751,6 +753,71 @@ async def _stream_google_final(
         "tokens_out": _last_usage.get("candidatesTokenCount", 0),
         "tokens_thinking": _last_usage.get("thoughtsTokenCount", 0),
     }
+
+
+async def _call_ollama_with_tools(
+    base_url: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT
+) -> dict:
+    """Call Ollama's OpenAI-compatible endpoint with tool definitions. Returns raw response dict."""
+    all_messages = [{"role": "system", "content": system_prompt}] + messages
+    url = f"{base_url.rstrip('/')}{OLLAMA_CHAT_PATH}"
+    payload = {
+        "model": model,
+        "messages": all_messages,
+        "max_tokens": 1500,
+        "tools": _openai_tools(),
+        "tool_choice": "auto",
+    }
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        r = await client.post(
+            url,
+            headers={"ngrok-skip-browser-warning": "true", "Content-Type": "application/json"},
+            json=payload,
+        )
+        r.raise_for_status()
+        return r.json()
+
+
+async def _stream_ollama_final(
+    base_url: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT,
+) -> AsyncGenerator[dict, None]:
+    """Stream the final text response from Ollama (no tools). Yields {type, content} dicts."""
+    all_messages = [{"role": "system", "content": system_prompt}] + messages
+    url = f"{base_url.rstrip('/')}{OLLAMA_CHAT_PATH}"
+    payload = {
+        "model": model,
+        "messages": all_messages,
+        "stream": True,
+        "stream_options": {"include_usage": True},
+    }
+    yield {"type": "thinking_wait", "content": "Warming up local model..."}
+    _usage_data: dict = {"tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0}
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(connect=15.0, read=300.0, write=10.0, pool=5.0)
+    ) as client:
+        async with client.stream("POST", url, json=payload,
+                                 headers={"ngrok-skip-browser-warning": "true"}) as resp:
+            resp.raise_for_status()
+            async for line in resp.aiter_lines():
+                if not line.startswith("data: "):
+                    continue
+                data = line[6:]
+                if data.strip() == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(data)
+                    if "usage" in obj and obj.get("usage"):
+                        u = obj["usage"]
+                        _usage_data["tokens_in"] = u.get("prompt_tokens", 0)
+                        _usage_data["tokens_out"] = u.get("completion_tokens", 0)
+                    choices = obj.get("choices") or []
+                    if choices:
+                        chunk = choices[0].get("delta", {}).get("content") or ""
+                        if chunk:
+                            yield {"type": "chunk", "content": chunk}
+                except (json.JSONDecodeError, KeyError, IndexError):
+                    continue
+    yield {"type": "_usage", **_usage_data}
 
 
 # ──────────────────────────────────────────────
@@ -1555,6 +1622,10 @@ async def stream_agent_response(
                 # Preserve full model parts (including thoughtSignature) for next-turn history
                 google_model_parts = (resp.get("candidates") or [{}])[0].get("content") or {}
                 google_model_parts = google_model_parts.get("parts", [])
+            elif provider == "ollama":
+                # api_key carries the base_url for Ollama
+                resp = await _call_ollama_with_tools(api_key, model, messages, agent_system_prompt)
+                text, tool_calls, finish_reason = _parse_openai_response(resp)
             else:
                 yield {"type": "error", "message": f"Unsupported provider: {provider}"}
                 return
@@ -1649,6 +1720,10 @@ async def stream_agent_response(
             _usage_data["tokens_in"] += _tc_usage.get("promptTokenCount", 0)
             _usage_data["tokens_out"] += _tc_usage.get("candidatesTokenCount", 0)
             _usage_data["tokens_thinking"] += _tc_usage.get("thoughtsTokenCount", 0)
+        elif provider == "ollama":
+            _tc_usage = resp.get("usage") or {}
+            _usage_data["tokens_in"] += _tc_usage.get("prompt_tokens", 0)
+            _usage_data["tokens_out"] += _tc_usage.get("completion_tokens", 0)
 
         if not tool_calls:
             # Final text response: stream token by token
@@ -1660,6 +1735,12 @@ async def stream_agent_response(
                     stream_fn = _stream_anthropic_final(api_key, model, messages, agent_system_prompt)
                 elif provider == "google":
                     stream_fn = _stream_google_final(api_key, model, messages, agent_system_prompt, reasoning_effort)
+                elif provider == "ollama":
+                    # api_key carries the base_url for Ollama
+                    stream_fn = _with_thinking_progress(
+                        _stream_ollama_final(api_key, model, messages, agent_system_prompt),
+                        interval=3.0,
+                    )
                 else:
                     if text:
                         full_text = text
@@ -1758,7 +1839,7 @@ async def stream_agent_response(
                 result_str = await _execute_immediate_tool(user_id, tool_name, tool_args)
 
                 # Append tool call + result to messages (provider-specific format)
-                if provider == "openai":
+                if provider in ("openai", "ollama"):
                     messages.append({
                         "role": "assistant",
                         "content": text,

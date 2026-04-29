@@ -1329,6 +1329,10 @@ async def _stream_ollama(
     _usage_data: dict = {"tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0}
     # ngrok free-tier tunnels return an interstitial page unless this header is sent
     ollama_headers = {"ngrok-skip-browser-warning": "true"}
+    # Notify the UI immediately — Ollama may spend 60+ seconds loading the model cold.
+    # _with_thinking_progress (applied in stream_response) will emit periodic elapsed
+    # ticks while no chunks arrive, giving the user live feedback.
+    yield {"type": "thinking_wait", "content": "Warming up local model..."}
     async with httpx.AsyncClient(
         timeout=httpx.Timeout(connect=15.0, read=300.0, write=10.0, pool=5.0)
     ) as client:
@@ -1455,6 +1459,10 @@ async def stream_response(
         elif provider == "ollama":
             # api_key carries the base_url for Ollama
             gen = _stream_ollama(api_key, model, system_prompt, messages)
+            # Wrap with live-progress emitter: Ollama can take 60+ seconds loading the
+            # model cold.  _stream_ollama yields thinking_wait first, which activates
+            # the wrapper so the UI gets elapsed-time ticks every 3 s.
+            gen = _with_thinking_progress(gen, interval=3.0)
         else:
             yield {"type": "error", "message": f"Unsupported provider: {provider}"}
             return
