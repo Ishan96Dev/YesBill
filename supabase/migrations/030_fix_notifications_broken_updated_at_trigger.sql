@@ -1,0 +1,13 @@
+-- ── 030_fix_notifications_broken_updated_at_trigger.sql ─────────────────────
+-- The notifications table has no updated_at column, but at some point the
+-- generic update_notifications_updated_at trigger was attached to it.
+-- That trigger fires update_updated_at_column() on every UPDATE, which does:
+--   NEW.updated_at = TIMEZONE('utc', NOW())
+-- Because the column doesn't exist, Postgres raises:
+--   ERROR 42703: record "new" has no field "updated_at"
+-- This causes ALL UPDATE operations (mark-as-read, mark-all-read) to fail
+-- silently — the Supabase JS client logs the error to the console but the
+-- optimistic UI update masks it.  On hard refresh the DB returns read=false
+-- so the unread count is restored, making it appear that "Mark all read"
+-- has no effect across page navigations or browser refreshes.
+DROP TRIGGER IF EXISTS update_notifications_updated_at ON public.notifications;
