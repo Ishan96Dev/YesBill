@@ -258,6 +258,11 @@ export default function Settings() {
   // Track whether profile data has been loaded from DB for the form
   const profileDataLoadedRef = useRef(false);
 
+  // Prevent the [selectedProvider, aiSettings] useEffect from wiping a just-completed
+  // validation result. Set true before updating aiSettings inside handleValidateKey,
+  // cleared by the effect itself so timing is always correct.
+  const justValidatedRef = useRef(false);
+
   // Helper to populate profileData from a profile object
   const applyProfileToForm = useCallback((data) => {
     if (!data) return;
@@ -901,6 +906,16 @@ export default function Settings() {
 
   // When provider selection changes, update form from cached settings
   useEffect(() => {
+    // If we just ran a validation, aiKeyValidation was already set by handleValidateKey.
+    // Let it stand — don't overwrite with the stale is_key_valid flag from cached settings.
+    if (justValidatedRef.current) {
+      justValidatedRef.current = false;
+      // Still keep hasExistingKey in sync (needed for "Remove" button visibility)
+      const cur = aiSettings[selectedProvider];
+      if (cur) setAiHasExistingKey(!!cur.api_key_encrypted);
+      return;
+    }
+
     const current = aiSettings[selectedProvider];
     if (current) {
       setAiApiKey(current.api_key_encrypted || '');
@@ -997,8 +1012,10 @@ export default function Settings() {
         status: result.valid ? 'valid' : 'invalid',
         message: result.message,
       });
-      // Update cached settings
+      // Update cached settings — set the ref BEFORE setAiSettings so the
+      // [selectedProvider, aiSettings] useEffect knows to skip the reset.
       if (result.valid && aiSettings[selectedProvider]) {
+        justValidatedRef.current = true;
         setAiSettings(prev => ({
           ...prev,
           [selectedProvider]: { ...prev[selectedProvider], is_key_valid: true },
@@ -1006,6 +1023,7 @@ export default function Settings() {
       }
       // If the key failed and there's a saved record, mark it invalid in the DB and notify
       if (!result.valid && aiSettings[selectedProvider]?.api_key_encrypted) {
+        justValidatedRef.current = true;
         setAiSettings(prev => ({
           ...prev,
           [selectedProvider]: { ...prev[selectedProvider], is_key_valid: false },
