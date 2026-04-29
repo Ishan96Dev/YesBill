@@ -31,6 +31,8 @@ import {
   Lock,
   Brain,
   LifeBuoy,
+  BookOpen,
+  ExternalLink,
 } from "lucide-react";
 import AgentButton from "../agent/AgentButton";
 import { Button } from "../ui/button";
@@ -47,6 +49,8 @@ import { useUser, resetUserStore } from "../../hooks/useUser";
 import { useNotifications } from "../../hooks/useNotifications";
 
 // ─── Searchable pages ──────────────────────────────────────────────
+const DOCS_URL = "https://ishan96dev.github.io/YesBill/docs/";
+
 const PAGES = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { name: "Calendar", path: "/calendar", icon: CalendarDays },
@@ -56,6 +60,7 @@ const PAGES = [
   { name: "Analytics", path: "/analytics", icon: BarChart3 },
   { name: "Settings", path: "/settings", icon: Settings },
   { name: "Support", path: "/support", icon: LifeBuoy },
+  { name: "Documentation", path: DOCS_URL, icon: BookOpen, external: true },
 ];
 
 // ─── Notification type → icon mapping ─────────────────────────────
@@ -232,13 +237,18 @@ export default function AppLayout({
       setSearchHighlight((h) => Math.max(h - 1, 0));
     } else if (e.key === "Enter") {
       if (filteredPages[searchHighlight]) {
-        handleSearchSelect(filteredPages[searchHighlight].path);
+        const p = filteredPages[searchHighlight];
+        handleSearchSelect(p.path, p.external);
       }
     }
   }
 
-  function handleSearchSelect(path) {
-    router.push(path);
+  function handleSearchSelect(path, external = false) {
+    if (external) {
+      window.open(path, "_blank", "noopener,noreferrer");
+    } else {
+      router.push(path);
+    }
     setSearchOpen(false);
     setSearchQuery("");
     setSearchHighlight(0);
@@ -356,7 +366,7 @@ export default function AppLayout({
                           return (
                             <button
                               key={page.path}
-                              onMouseDown={() => handleSearchSelect(page.path)}
+                              onMouseDown={() => handleSearchSelect(page.path, page.external)}
                               className={cn(
                                 "w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors",
                                 i === searchHighlight
@@ -366,6 +376,9 @@ export default function AppLayout({
                             >
                               <Icon className="w-4 h-4 shrink-0 text-gray-400" />
                               <span className="font-medium">{page.name}</span>
+                              {page.external && (
+                                <ExternalLink className="w-3 h-3 ml-auto shrink-0 text-gray-300" />
+                              )}
                             </button>
                           );
                         })
@@ -790,6 +803,15 @@ export default function AppLayout({
                 <Link href="/privacy" className="hover:text-primary transition-colors hidden md:block">Privacy</Link>
                 <Link href="/terms" className="hover:text-primary transition-colors hidden md:block">Terms</Link>
                 <Link href="/contact" className="hover:text-primary transition-colors hidden md:block">Support</Link>
+                <a
+                  href={DOCS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors hidden md:flex items-center gap-1"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Docs
+                </a>
               </div>
             )}
           </div>
