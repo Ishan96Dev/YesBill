@@ -52,3 +52,15 @@ This helps you estimate your AI provider bill.
 :::tip
 For everyday use, **GPT-4o Mini** (OpenAI) or **Gemini 2.0 Flash** (Google) are excellent budget-friendly choices. Switch to a more powerful model for complex analysis tasks.
 :::
+
+## Ollama (Local Models)
+
+YesBill supports **Ollama** — run AI models entirely on your own machine with no API key and no usage costs.
+
+To use Ollama you need to:
+1. Install Ollama and pull a model
+2. Start Ollama with the correct host binding
+3. Expose it via a Cloudflare Tunnel so YesBill's backend can reach it
+4. Paste the tunnel URL in Settings → Ollama Base URL → Fetch Models → Save
+
+See the full step-by-step guide: [Ollama Setup →](./ollama-setup)

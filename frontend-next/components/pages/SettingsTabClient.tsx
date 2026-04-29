@@ -2004,6 +2004,17 @@ export default function Settings() {
                         {/* Ollama: Base URL + Fetch Models */}
                         {selectedProvider === 'ollama' && (
                           <div>
+                            {/* Setup instructions banner */}
+                            <div className="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-sm text-indigo-800 space-y-2">
+                              <p className="font-bold flex items-center gap-2"><Info className="w-4 h-4 flex-shrink-0" /> How to connect Ollama</p>
+                              <ol className="list-decimal list-inside space-y-1 text-indigo-700 leading-relaxed">
+                                <li>Install Ollama from <a href="https://ollama.com/download" target="_blank" rel="noopener noreferrer" className="underline font-medium">ollama.com/download</a> and pull a model: <code className="bg-indigo-100 px-1 rounded text-xs">ollama pull gemma4:latest</code></li>
+                                <li>Quit the Ollama tray app, then start it with: <code className="bg-indigo-100 px-1 rounded text-xs">set OLLAMA_HOST=0.0.0.0:11434 &amp;&amp; set OLLAMA_ORIGINS=* &amp;&amp; ollama serve</code></li>
+                                <li>In a new terminal, start a Cloudflare Tunnel: <code className="bg-indigo-100 px-1 rounded text-xs">cloudflared tunnel --url http://localhost:11434</code></li>
+                                <li>Paste the <code className="bg-indigo-100 px-1 rounded text-xs">https://xxxx.trycloudflare.com</code> URL below → click <strong>Fetch Models</strong> → select a model → <strong>Save Changes</strong></li>
+                              </ol>
+                              <p className="text-xs text-indigo-500 pt-1">⚠️ The tunnel URL changes every session — update it here each time you restart cloudflared.</p>
+                            </div>
                             <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">
                               Ollama Base URL
                             </label>
