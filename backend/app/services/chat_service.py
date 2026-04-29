@@ -563,9 +563,11 @@ async def _probe_google_model(api_key: str, model: str) -> Tuple[str, str]:
 async def _probe_ollama_model(base_url: str, model: str) -> Tuple[str, str]:
     """Probe an Ollama model by checking /api/tags on the user's local instance."""
     tags_url = f"{base_url.rstrip('/')}{OLLAMA_TAGS_PATH}"
+    # ngrok free-tier tunnels return an interstitial page unless this header is sent
+    headers = {"ngrok-skip-browser-warning": "true"}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(tags_url)
+            resp = await client.get(tags_url, headers=headers)
         if resp.status_code == 200:
             data = _safe_json(resp)
             model_names = {m.get("name", "") for m in data.get("models", [])}
@@ -1325,10 +1327,12 @@ async def _stream_ollama(
         "stream_options": {"include_usage": True},
     }
     _usage_data: dict = {"tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0}
+    # ngrok free-tier tunnels return an interstitial page unless this header is sent
+    ollama_headers = {"ngrok-skip-browser-warning": "true"}
     async with httpx.AsyncClient(
         timeout=httpx.Timeout(connect=15.0, read=300.0, write=10.0, pool=5.0)
     ) as client:
-        async with client.stream("POST", url, json=payload) as resp:
+        async with client.stream("POST", url, json=payload, headers=ollama_headers) as resp:
             resp.raise_for_status()
             async for line in resp.aiter_lines():
                 if not line.startswith("data: "):

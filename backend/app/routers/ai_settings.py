@@ -248,9 +248,11 @@ async def get_ollama_models(
             detail="Invalid base URL scheme — only http and https are allowed",
         )
     tags_url = f"{base_url.rstrip('/')}/api/tags"
+    # ngrok free-tier tunnels return an interstitial page unless this header is sent
+    headers = {"ngrok-skip-browser-warning": "true"}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(tags_url)
+            resp = await client.get(tags_url, headers=headers)
     except httpx.ConnectError:
         raise HTTPException(status_code=502, detail=f"Cannot connect to Ollama at {base_url}. Is it running?")
     except httpx.TimeoutException:
