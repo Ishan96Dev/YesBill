@@ -92,6 +92,10 @@ export const aiSettingsService = {
     if (settings.default_reasoning_effort !== undefined) {
       upsertData.default_reasoning_effort = settings.default_reasoning_effort || 'none'
     }
+    // Include ollama_base_url for Ollama provider
+    if (provider === 'ollama' && settings.ollama_base_url) {
+      upsertData.ollama_base_url = settings.ollama_base_url
+    }
 
     // Primary path: save directly to Supabase (no backend dependency)
     try {
