@@ -165,22 +165,23 @@
 .theme-code-block,
 div[class*='codeBlockContainer'] {
   margin: 1.35rem 0 1.5rem;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--yb-code-block-border);
-  background: var(--yb-code-block-bg);
-  box-shadow: var(--yb-code-block-shadow);
+  border: 1.5px solid rgba(79, 70, 229, 0.2);
+  box-shadow: 0 2px 16px rgba(79, 70, 229, 0.09);
+  position: relative;
+  /* No background — set on <pre> directly below to override Prism inline style */
 }
 
 div[class*='codeBlockTitle'] {
-  padding: 0.8rem 1.05rem;
-  font-size: 0.76rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--yb-inline-code-fg);
-  background: var(--yb-code-block-header-bg);
-  border-bottom: 1px solid var(--yb-code-block-border);
+  background: rgba(79, 70, 229, 0.05);
+  border-bottom: 1px solid rgba(79, 70, 229, 0.15);
 }
 
 div[class*='codeBlockContent'] {
@@ -188,51 +189,64 @@ div[class*='codeBlockContent'] {
   border-radius: inherit;
 }
 
+/* Override Prism inline background-color with YesBill light theme */
 div[class*='codeBlockContent'] pre[class*='codeBlock'],
 div[class*='codeBlockContainer'] pre[class*='codeBlock'] {
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
-  background: transparent !important;
+  background-color: #F5F3FF !important;
   box-shadow: none !important;
-  border-radius: 0;
+  border-radius: 0 !important;
   overflow-x: auto;
 }
 
+[data-theme='dark'] div[class*='codeBlockContent'] pre[class*='codeBlock'],
+[data-theme='dark'] div[class*='codeBlockContainer'] pre[class*='codeBlock'] {
+  background-color: #1A1E33 !important;
+}
+
+/* The actual code lines — padding and font size live here */
 code[class*='codeBlockLines'] {
   display: block;
   float: none !important;
   min-width: 100%;
-  padding: 1rem 1.1rem 1rem 1.1rem;
-  font-size: 0.98rem;
-  line-height: 1.72;
+  padding: 1.35rem 1.4rem !important;
+  font-size: 0.9rem !important;
+  line-height: 1.8 !important;
   white-space: pre;
 }
 
 code[class*='codeBlockLines'] > span[class*='token-line'] {
   display: block;
-  min-height: 1.72em;
+  min-height: 1.8em;
 }
 
 div[class*='buttonGroup'] {
-  top: 0.7rem;
-  right: 0.7rem;
+  top: 0.6rem;
+  right: 0.6rem;
 }
 
 div[class*='buttonGroup'] button {
-  opacity: 0.72;
-  background: var(--yb-code-block-button-bg);
-  color: var(--yb-code-block-button-color);
-  border-color: var(--yb-code-block-border);
+  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.92);
+  color: #4F46E5;
+  border-color: rgba(79, 70, 229, 0.22);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+}
+
+[data-theme='dark'] div[class*='buttonGroup'] button {
+  background: rgba(26, 30, 51, 0.9);
+  color: #C7D2FE;
+  border-color: rgba(129, 140, 248, 0.28);
 }
 
 .theme-code-block-highlighted-line {
   background: var(--docusaurus-highlighted-code-line-bg);
   display: block;
-  margin: 0 -1.1rem;
-  padding: 0 1.1rem;
+  margin: 0 -1.4rem;
+  padding: 0 1.4rem;
 }
 
 /* ── Callout / admonition overrides ── */
@@ -342,27 +356,27 @@ div[class*='buttonGroup'] button {
   .theme-code-block,
   div[class*='codeBlockContainer'] {
     margin: 1rem 0;
-    border-radius: 14px;
+    border-radius: 10px;
   }
 
   code[class*='codeBlockLines'] {
-    padding: 0.9rem 0.95rem;
-    font-size: 0.88rem;
-    line-height: 1.62;
+    padding: 1.1rem 1rem !important;
+    font-size: 0.85rem !important;
+    line-height: 1.7 !important;
   }
 
   code[class*='codeBlockLines'] > span[class*='token-line'] {
-    min-height: 1.62em;
+    min-height: 1.7em;
   }
 
   .theme-code-block-highlighted-line {
-    margin: 0 -0.95rem;
-    padding: 0 0.95rem;
+    margin: 0 -1rem;
+    padding: 0 1rem;
   }
 
   div[class*='buttonGroup'] {
-    top: 0.55rem;
-    right: 0.55rem;
+    top: 0.5rem;
+    right: 0.5rem;
   }
 }
 
