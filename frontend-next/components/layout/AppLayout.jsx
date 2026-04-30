@@ -60,7 +60,13 @@ const PAGES = [
   { name: "Analytics", path: "/analytics", icon: BarChart3 },
   { name: "Settings", path: "/settings", icon: Settings },
   { name: "Support", path: "/support", icon: LifeBuoy },
-  { name: "Documentation", path: DOCS_URL, icon: BookOpen, external: true },
+  {
+    name: "Documentation",
+    path: DOCS_URL,
+    icon: BookOpen,
+    external: true,
+    searchTerms: ["docs", "documentation", "guide", "help center"],
+  },
 ];
 
 // ─── Notification type → icon mapping ─────────────────────────────
@@ -223,9 +229,12 @@ export default function AppLayout({
   }, [onboardingMode]);
 
   // ── Filtered pages for search ──
-  const filteredPages = PAGES.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPages = PAGES.filter((p) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+    const haystacks = [p.name, ...(p.searchTerms || [])];
+    return haystacks.some((value) => value.toLowerCase().includes(query));
+  });
 
   // ── Search keyboard navigation ──
   function handleSearchKeyDown(e) {
@@ -253,6 +262,12 @@ export default function AppLayout({
     setSearchQuery("");
     setSearchHighlight(0);
     searchInputRef.current?.blur();
+  }
+
+  function openDocsFromProfile() {
+    setProfileOpen(false);
+    setSidebarOpen(false);
+    window.open(DOCS_URL, "_blank", "noopener,noreferrer");
   }
 
   // ── Notification click ──
@@ -612,6 +627,14 @@ export default function AppLayout({
                         <LifeBuoy className="w-4 h-4 text-gray-400" />
                         Support
                       </button>
+                      <button
+                        onClick={openDocsFromProfile}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors text-left"
+                      >
+                        <BookOpen className="w-4 h-4 text-gray-400" />
+                        Docs
+                        <ExternalLink className="w-3.5 h-3.5 ml-auto text-gray-300" />
+                      </button>
                     </div>
 
                     <div className="p-1.5 border-t border-gray-100">
@@ -803,15 +826,6 @@ export default function AppLayout({
                 <Link href="/privacy" className="hover:text-primary transition-colors hidden md:block">Privacy</Link>
                 <Link href="/terms" className="hover:text-primary transition-colors hidden md:block">Terms</Link>
                 <Link href="/contact" className="hover:text-primary transition-colors hidden md:block">Support</Link>
-                <a
-                  href={DOCS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors hidden md:flex items-center gap-1"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  Docs
-                </a>
               </div>
             )}
           </div>

@@ -29,6 +29,12 @@
   --ifm-code-font-size: 90%;
   --ifm-code-background: #f0f0f5;
   --docusaurus-highlighted-code-line-bg: rgba(79, 70, 229, 0.1);
+  --yb-inline-code-bg: #EEF2FF;
+  --yb-inline-code-fg: #4338CA;
+  --yb-inline-code-border: #C7D2FE;
+  --yb-code-block-bg: linear-gradient(180deg, #FCFCFF 0%, #F7F6FF 100%);
+  --yb-code-block-border: rgba(79, 70, 229, 0.14);
+  --yb-code-block-shadow: 0 14px 34px rgba(79, 70, 229, 0.08);
 
   /* Sidebar */
   --ifm-sidebar-width: 280px;
@@ -59,6 +65,12 @@
 
   --ifm-code-background: #1e1e2e;
   --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.15);
+  --yb-inline-code-bg: rgba(99, 102, 241, 0.16);
+  --yb-inline-code-fg: #C7D2FE;
+  --yb-inline-code-border: rgba(129, 140, 248, 0.28);
+  --yb-code-block-bg: linear-gradient(180deg, #181B2E 0%, #111322 100%);
+  --yb-code-block-border: rgba(129, 140, 248, 0.2);
+  --yb-code-block-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
 }
 
 /* ── Navbar logo ── */
@@ -134,41 +146,69 @@
 }
 
 /* ── Inline code ── */
-.markdown code {
-  background: #EEF2FF;
-  color: #4338CA;
-  border-radius: 5px;
-  font-size: 88%;
-  padding: 0.1em 0.4em;
-  border: 1px solid #C7D2FE;
+.markdown :not(pre) > code {
+  background: var(--yb-inline-code-bg);
+  color: var(--yb-inline-code-fg);
+  border-radius: 6px;
+  font-size: 0.88em;
+  padding: 0.14em 0.45em;
+  border: 1px solid var(--yb-inline-code-border);
 }
 
-[data-theme='dark'] .markdown code {
-  background: rgba(99, 102, 241, 0.12);
-  color: #A5B4FC;
-  border-color: rgba(99, 102, 241, 0.3);
+/* ── Fenced code blocks ── */
+.theme-code-block,
+div[class*='codeBlockContainer'] {
+  margin: 1.25rem 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--yb-code-block-border);
+  background: var(--yb-code-block-bg);
+  box-shadow: var(--yb-code-block-shadow);
 }
 
-/* ── Fenced code blocks — reset inline overrides ── */
-.markdown pre {
-  border-radius: 10px;
-  border: 1px solid rgba(79, 70, 229, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+div[class*='codeBlockTitle'] {
+  padding: 0.75rem 1rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--yb-inline-code-fg);
+  background: rgba(79, 70, 229, 0.06);
+  border-bottom: 1px solid var(--yb-code-block-border);
 }
 
-.markdown pre code {
+.markdown pre,
+.theme-code-block pre,
+div[class*='codeBlockContainer'] pre {
+  margin: 0;
+  padding: 1rem 1.125rem;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow-x: auto;
+}
+
+.markdown pre code,
+.theme-code-block pre code,
+div[class*='codeBlockContainer'] pre code,
+.prism-code {
+  display: block;
+  min-width: max-content;
+  white-space: pre;
   background: transparent !important;
   color: inherit !important;
   border: none !important;
   padding: 0 !important;
-  font-size: 0.875rem;
+  font-size: 0.92rem;
+  line-height: 1.75;
   border-radius: 0;
 }
 
-[data-theme='dark'] .markdown pre code {
-  background: transparent !important;
-  color: inherit !important;
-  border: none !important;
+.theme-code-block-highlighted-line {
+  background: var(--docusaurus-highlighted-code-line-bg);
+  display: block;
+  margin: 0 -1.125rem;
+  padding: 0 1.125rem;
 }
 
 /* ── Callout / admonition overrides ── */
@@ -272,5 +312,32 @@
 .pagination-nav__link:hover {
   border-color: #818CF8;
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+}
+
+@media (max-width: 768px) {
+  .theme-code-block,
+  div[class*='codeBlockContainer'] {
+    margin: 1rem 0;
+    border-radius: 14px;
+  }
+
+  .markdown pre,
+  .theme-code-block pre,
+  div[class*='codeBlockContainer'] pre {
+    padding: 0.9rem 0.95rem;
+  }
+
+  .markdown pre code,
+  .theme-code-block pre code,
+  div[class*='codeBlockContainer'] pre code,
+  .prism-code {
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+
+  .theme-code-block-highlighted-line {
+    margin: 0 -0.95rem;
+    padding: 0 0.95rem;
+  }
 }
 
