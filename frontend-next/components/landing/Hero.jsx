@@ -1,5 +1,5 @@
 'use client'
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useRouter } from 'next/navigation';
@@ -84,7 +84,7 @@ export default function Hero() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 px-8 text-base font-semibold rounded-2xl border-2 opacity-50 cursor-not-allowed pointer-events-none select-none"
+              className="h-14 px-8 text-base font-semibold rounded-2xl border-2 opacity-50 cursor-not-allowed pointer-events-none"
               disabled
             >
               <PlayCircle className="mr-2 w-5 h-5 text-gray-400" />
