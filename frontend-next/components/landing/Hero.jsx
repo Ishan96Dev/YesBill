@@ -84,10 +84,10 @@ export default function Hero() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 px-8 text-base font-semibold rounded-2xl border-2 hover:bg-gray-50 hover:text-primary hover:border-primary/20 transition-all duration-300 group"
-              onClick={() => router.push("/demo")}
+              className="h-14 px-8 text-base font-semibold rounded-2xl border-2 opacity-50 cursor-not-allowed pointer-events-none select-none"
+              disabled
             >
-              <PlayCircle className="mr-2 w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
+              <PlayCircle className="mr-2 w-5 h-5 text-gray-400" />
               Watch Demo
             </Button>
           </motion.div>
