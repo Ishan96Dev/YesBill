@@ -1,0 +1,1 @@
+(globalThis.webpackChunkyesbill_docs=globalThis.webpackChunkyesbill_docs||[]).push([[918],{8974(s,l,b){"use strict";b.d(l,{A:()=>a});var c=b(8291);const a=c},5741(){}}]);
