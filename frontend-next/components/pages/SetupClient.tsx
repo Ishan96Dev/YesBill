@@ -52,6 +52,8 @@ function ProviderIcon({ providerId, size = 32 }) {
       return <img src={assetUrl("/assets/icons/anthropic.png")} alt="Anthropic" width={size} height={size} className="object-contain" />;
     case 'google':
       return <img src={assetUrl("/assets/icons/google-ai.png")} alt="Google AI" width={size} height={size} className="object-contain" />;
+    case 'ollama':
+      return <img src={assetUrl("/assets/icons/ollama.png")} alt="Ollama" width={size} height={size} className="object-contain" />;
     default:
       return <Brain className="text-indigo-500" style={{ width: size, height: size }} />;
   }

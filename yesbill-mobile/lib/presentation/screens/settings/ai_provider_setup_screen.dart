@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -94,8 +95,12 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final msg = e is AppException && e is NetworkException
+          ? 'Cannot connect to Ollama at ${_ollamaBaseUrlCtrl.text.trim()}. '
+              'Make sure Ollama is running and "Expose Ollama to the network" is enabled.'
+          : 'Failed to load Ollama models: $e';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load Ollama models: $e')),
+        SnackBar(content: Text(msg)),
       );
     } finally {
       if (mounted) setState(() => _loadingOllamaModels = false);
@@ -216,6 +221,34 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
             ),
           ),
         ),
+      const SizedBox(height: AppSpacing.sm),
+      Container(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: Colors.amber.shade50,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.amber.shade200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'How this URL is used',
+              style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '"Load Models" calls Ollama directly from this device — localhost:11434 works here on the same machine.',
+              style: AppTextStyles.bodySm,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'AI inference (chat, bill generation) runs through the YesBill cloud server, which cannot reach localhost or a private IP. Enter a publicly accessible URL such as a Cloudflare or ngrok tunnel for full AI functionality.',
+              style: AppTextStyles.bodySm,
+            ),
+          ],
+        ),
+      ),
     ];
   }
 

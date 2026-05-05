@@ -1139,23 +1139,40 @@ export default function Settings() {
     }
   };
 
-  // -- Fetch Ollama Models from user's local instance --
+  // -- Fetch Ollama Models directly from the user's local Ollama instance --
+  // We bypass the backend proxy because the backend runs on a cloud server and
+  // cannot reach the user's localhost. VS Code Copilot works the same way —
+  // it calls the Ollama API directly from the local machine.
   const handleFetchOllamaModels = async () => {
-    const baseUrl = ollamaBaseUrl || 'http://localhost:11434';
+    const baseUrl = (ollamaBaseUrl || 'http://localhost:11434').replace(/\/+$/, '');
     setOllamaFetching(true);
     setOllamaFetchError('');
     try {
-      const res = await api.get('/ai/ollama/models', { params: { base_url: baseUrl } });
-      const models: string[] = res.data?.models || [];
+      let res: Response;
+      try {
+        res = await fetch(`${baseUrl}/api/tags`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+        });
+      } catch (_networkErr) {
+        throw new Error(
+          'Cannot connect to Ollama. Make sure Ollama is running and "Expose Ollama to the network" is enabled in its settings.',
+        );
+      }
+      if (!res.ok) {
+        throw new Error(`Ollama returned HTTP ${res.status}. Is it running?`);
+      }
+      const data = await res.json();
+      const models: string[] = (data?.models ?? [])
+        .map((m: any) => m.name as string)
+        .filter(Boolean);
       setOllamaModels(models);
       if (models.length === 0) {
-        setOllamaFetchError('No models found. Run: ollama pull <model>');
+        setOllamaFetchError('No models found. Pull one first: ollama pull <model>');
       } else if (!aiSelectedModel || !models.includes(aiSelectedModel)) {
         setAiSelectedModel(models[0]);
       }
     } catch (err: any) {
-      const detail = err?.response?.data?.detail || err.message || 'Could not reach Ollama. Is it running?';
-      setOllamaFetchError(detail);
+      setOllamaFetchError(err.message || 'Could not reach Ollama. Is it running?');
     } finally {
       setOllamaFetching(false);
     }
@@ -1229,7 +1246,7 @@ export default function Settings() {
       case 'google':
         return <img src={assetUrl("/assets/icons/google-ai.png")} alt="Google AI" width={size} height={size} className="object-contain" />;
       case 'ollama':
-        return <Bot className="text-gray-700" style={{ width: size, height: size }} />;
+        return <img src={assetUrl("/assets/icons/ollama.png")} alt="Ollama" width={size} height={size} className="object-contain" />;
       default:
         return <Brain className="text-indigo-500" style={{ width: size, height: size }} />;
     }
@@ -2063,10 +2080,11 @@ export default function Settings() {
                                 {ollamaFetchError}
                               </p>
                             )}
-                            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1.5">
-                              <Info className="w-3.5 h-3.5" />
-                              Your Ollama instance URL. Click &quot;Fetch Models&quot; to load installed models.
-                            </p>
+                            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3 text-xs text-amber-800 space-y-1.5">
+                              <p className="font-semibold flex items-center gap-1.5"><Info className="w-3.5 h-3.5 flex-shrink-0" /> How the URL is used</p>
+                              <p><span className="font-medium">Fetch Models</span> calls Ollama directly from your browser — so <code className="bg-amber-100 px-1 rounded">localhost:11434</code> works here.</p>
+                              <p><span className="font-medium">AI inference</span> (chat, bill generation) runs through the YesBill cloud server, which cannot reach <code className="bg-amber-100 px-1 rounded">localhost</code> or a private LAN IP. You must enter a publicly accessible URL — use the Cloudflare or ngrok tunnel shown in Step 3 above.</p>
+                            </div>
                           </div>
                         )}
 

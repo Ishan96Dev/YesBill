@@ -55,16 +55,28 @@ class AiSettingsRemoteDataSource {
     }
   }
 
+  // Calls the Ollama API directly from the device — NOT through the backend.
+  // The backend runs on a cloud server and cannot reach the user's localhost/LAN
+  // Ollama instance. This mirrors how VS Code Copilot fetches Ollama models.
   Future<List<String>> getOllamaModels(String baseUrl) async {
     try {
-      final resp = await _dio.get(
-        ApiConstants.aiOllamaModels,
-        queryParameters: {'base_url': baseUrl},
+      final cleanBase = baseUrl.replaceAll(RegExp(r'/+$'), '');
+      final tagsUrl = '$cleanBase/api/tags';
+      final client = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {'ngrok-skip-browser-warning': 'true'},
+        ),
       );
+      final resp = await client.get<dynamic>(tagsUrl);
       final data = resp.data;
-      if (data is List) return data.map((e) => e.toString()).toList();
       if (data is Map && data['models'] is List) {
-        return (data['models'] as List).map((e) => e.toString()).toList();
+        return (data['models'] as List)
+            .whereType<Map>()
+            .map((m) => (m['name'] ?? '').toString())
+            .where((s) => s.isNotEmpty)
+            .toList();
       }
       return [];
     } catch (e) {
