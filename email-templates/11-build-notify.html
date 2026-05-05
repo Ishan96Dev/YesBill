@@ -93,26 +93,45 @@
               <!-- Artifact note -->
               <div style="background-color: #FFFBEB; border-left: 4px solid #F59E0B; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px;">
                 <p style="margin: 0 0 6px; color: #92400E; font-size: 15px; font-weight: 700;">
-                  📦 APK artifact (not attached)
+                  📦 APK artifact ready
                 </p>
                 <p style="margin: 0; color: #78350F; font-size: 14px; line-height: 1.6;">
-                  CI build artifacts require GitHub authentication to download — they are <strong>not</strong> attached here. Click the button below to open the Actions run and download the APK. The artifact expires after <strong>30 days</strong>.
+                  The APK is available as a GitHub Actions artifact. Click <strong>Download APK</strong> below — GitHub login is required. The artifact expires after <strong>30 days</strong>.
                 </p>
               </div>
 
-              <!-- Primary CTA: view run -->
+              <!-- Primary CTA: download artifact -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
+                <tr>
+                  <td align="center">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ARTIFACT_URL}}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="25%" strokecolor="#4F46E5" fillcolor="#4F46E5">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:17px;font-weight:600;">⬇️ Download APK</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="{{ARTIFACT_URL}}" style="display: inline-block; padding: 18px 50px; background-color: #4F46E5; color: #ffffff; text-decoration: none; border-radius: 14px; font-weight: 600; font-size: 17px; mso-padding-alt: 0;">
+                      ⬇️ Download APK
+                    </a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Secondary CTA: view run -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 36px;">
                 <tr>
                   <td align="center">
                     <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{RUN_URL}}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="25%" strokecolor="#4F46E5" fillcolor="#4F46E5">
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{RUN_URL}}" style="height:48px;v-text-anchor:middle;width:240px;" arcsize="25%" strokecolor="#1F2937" fillcolor="#1F2937">
                       <w:anchorlock/>
-                      <center style="color:#ffffff;font-family:sans-serif;font-size:17px;font-weight:600;">🔗 View Build &amp; Download APK</center>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:15px;font-weight:600;">🔗 View Build Run</center>
                     </v:roundrect>
                     <![endif]-->
                     <!--[if !mso]><!-->
-                    <a href="{{RUN_URL}}" style="display: inline-block; padding: 18px 50px; background-color: #4F46E5; color: #ffffff; text-decoration: none; border-radius: 14px; font-weight: 600; font-size: 17px; mso-padding-alt: 0;">
-                      🔗 View Build &amp; Download APK
+                    <a href="{{RUN_URL}}" style="display: inline-block; padding: 14px 42px; background-color: #1F2937; color: #ffffff; text-decoration: none; border-radius: 14px; font-weight: 600; font-size: 15px; mso-padding-alt: 0;">
+                      🔗 View Build Run
                     </a>
                     <!--<![endif]-->
                   </td>

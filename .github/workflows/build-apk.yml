@@ -62,6 +62,7 @@ jobs:
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
 
       - name: Upload APK artifact
+        id: upload-apk
         uses: actions/upload-artifact@v4
         with:
           name: yesbill-release-apk
@@ -69,6 +70,8 @@ jobs:
           retention-days: 30
 
       - name: Render build email template
+        env:
+          ARTIFACT_URL: ${{ steps.upload-apk.outputs.artifact-url }}
         run: |
           BUILD_DATE=$(date -u '+%d %b %Y')
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
@@ -78,6 +81,7 @@ jobs:
             -e "s|{{COMMIT_SHA}}|${SHORT_SHA}|g" \
             -e "s|{{BUILD_DATE}}|${BUILD_DATE}|g" \
             -e "s|{{RUN_URL}}|${RUN_URL}|g" \
+            -e "s|{{ARTIFACT_URL}}|${ARTIFACT_URL}|g" \
             email-templates/11-build-notify.html > /tmp/build-email.html
 
       - name: Send build notification email (Brevo)

@@ -4,6 +4,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import {
   CheckCircle2, Calendar, IndianRupee, Bot, BarChart3,
   MessageSquare, Bell, Smartphone, RefreshCw, Shield,
@@ -122,7 +123,7 @@ function PhoneMockup() {
 }
 
 // ─── Download button ───────────────────────────────────────────────────────────
-function DownloadButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
+function DownloadButton({ size = 'lg', version }: { size?: 'lg' | 'sm'; version?: string | null }) {
   const isLg = size === 'lg'
   return (
     <motion.a
@@ -149,6 +150,9 @@ function DownloadButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
       <div className="flex flex-col items-start leading-none">
         <span className={`${isLg ? 'text-xs' : 'text-[10px]'} text-gray-400 mb-0.5`}>Download APK</span>
         <span className={`font-semibold ${isLg ? 'text-base' : 'text-sm'}`}>YesBill for Android</span>
+        {version && (
+          <span className={`${isLg ? 'text-[11px]' : 'text-[10px]'} text-indigo-400 mt-0.5`}>{version}</span>
+        )}
       </div>
     </motion.a>
   )
@@ -223,6 +227,17 @@ const syncPoints = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function MobileAppClient() {
+  const [latestVersion, setLatestVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/Ishan96Dev/YesBill/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.tag_name) setLatestVersion(d.tag_name) })
+      .catch(() => {}) // silent — button still works without version label
+  }, [])
+
   return (
     <div className="relative min-h-screen">
       <Background />
@@ -259,7 +274,7 @@ export default function MobileAppClient() {
             </p>
 
             <div className="flex flex-wrap gap-4 mb-10">
-              <DownloadButton size="lg" />
+              <DownloadButton size="lg" version={latestVersion} />
               <motion.div
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
@@ -490,7 +505,7 @@ export default function MobileAppClient() {
               Download the free YesBill Android app and bring your billing calendar everywhere.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <DownloadButton size="lg" />
+              <DownloadButton size="lg" version={latestVersion} />
               <motion.div
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
