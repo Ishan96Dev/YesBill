@@ -22,12 +22,12 @@ import urllib.error
 from datetime import datetime, timezone
 
 # ── Environment ────────────────────────────────────────────────────────────────
-api_key        = os.environ.get("BREVO_API_KEY", "")
-notify_email   = os.environ.get("NOTIFY_EMAIL", "")
-branch         = os.environ.get("BRANCH", "main")
-commit_sha     = os.environ.get("COMMIT_SHA", "unknown")
-run_url        = os.environ.get("RUN_URL", "")
-template_path  = os.environ.get("EMAIL_TEMPLATE", "/tmp/build-email.html")
+api_key        = os.environ.get("BREVO_API_KEY", "").strip()
+notify_email   = os.environ.get("NOTIFY_EMAIL", "").strip()
+branch         = os.environ.get("BRANCH", "main").strip()
+commit_sha     = os.environ.get("COMMIT_SHA", "unknown").strip()
+run_url        = os.environ.get("RUN_URL", "").strip()
+template_path  = os.environ.get("EMAIL_TEMPLATE", "/tmp/build-email.html").strip()
 
 if not api_key:
     print("ERROR: BREVO_API_KEY is not set", file=sys.stderr)
