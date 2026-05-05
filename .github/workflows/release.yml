@@ -75,12 +75,17 @@ jobs:
         run: |
           mv yesbill-mobile/build/app/outputs/flutter-apk/app-release.apk \
              yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
+          # Fixed-name copy so /releases/latest/download/YesBill.apk always resolves
+          cp yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk \
+             yesbill-mobile/build/app/outputs/flutter-apk/YesBill.apk
 
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
+          files: |
+            yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
+            yesbill-mobile/build/app/outputs/flutter-apk/YesBill.apk
           name: YesBill ${{ github.ref_name }}
           body: |
             ## YesBill Android App ${{ github.ref_name }}
@@ -117,9 +122,9 @@ jobs:
 
       - name: Send release notification email (Brevo)
         env:
-          BREVO_API_KEY:  ${{ secrets.BREVO_API_KEY }}
-          NOTIFY_EMAIL:   ${{ secrets.NOTIFY_EMAIL }}
-          VERSION:        ${{ github.ref_name }}
-          APK_PATH:       yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
-          EMAIL_TEMPLATE: /tmp/release-email.html
+          BREVO_API_KEY:   ${{ secrets.BREVO_API_KEY }}
+          NOTIFY_EMAIL:    ${{ secrets.NOTIFY_EMAIL }}
+          VERSION:         ${{ github.ref_name }}
+          APK_ASSET_URL:   https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/YesBill-${{ github.ref_name }}.apk
+          EMAIL_TEMPLATE:  /tmp/release-email.html
         run: python3 scripts/send_release_email.py

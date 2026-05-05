@@ -67,3 +67,26 @@ jobs:
           name: yesbill-release-apk
           path: yesbill-mobile/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+      - name: Render build email template
+        run: |
+          BUILD_DATE=$(date -u '+%d %b %Y')
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          RUN_URL="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          sed \
+            -e "s|{{BRANCH}}|${GITHUB_REF_NAME}|g" \
+            -e "s|{{COMMIT_SHA}}|${SHORT_SHA}|g" \
+            -e "s|{{BUILD_DATE}}|${BUILD_DATE}|g" \
+            -e "s|{{RUN_URL}}|${RUN_URL}|g" \
+            email-templates/11-build-notify.html > /tmp/build-email.html
+
+      - name: Send build notification email (Brevo)
+        continue-on-error: true
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          NOTIFY_EMAIL:  ${{ secrets.NOTIFY_EMAIL }}
+          BRANCH:        ${{ github.ref_name }}
+          COMMIT_SHA:    ${{ github.sha }}
+          RUN_URL:       https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EMAIL_TEMPLATE: /tmp/build-email.html
+        run: python3 scripts/send_build_email.py

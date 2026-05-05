@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import Navbar from '@/components/landing/Navbar'
 import Footer from '@/components/landing/Footer'
+import Background from '@/components/landing/Background'
 
 const APK_URL =
   'https://github.com/Ishan96Dev/YesBill/releases/latest/download/YesBill.apk'
@@ -124,12 +125,15 @@ function PhoneMockup() {
 function DownloadButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
   const isLg = size === 'lg'
   return (
-    <a
+    <motion.a
       href={APK_URL}
-      download
+      // Use location.href so the browser handles the GitHub redirect natively
+      onClick={(e) => { e.preventDefault(); window.location.href = APK_URL }}
+      whileHover={{ scale: 1.04, y: -2, boxShadow: '0 12px 32px rgba(17,24,39,0.22)' }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       className={`
-        inline-flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl
-        transition-all duration-200 hover:shadow-xl hover:shadow-gray-900/25 hover:-translate-y-0.5
+        inline-flex items-center gap-3 bg-gray-900 text-white rounded-2xl cursor-pointer
         ${isLg ? 'px-7 py-4 text-base' : 'px-5 py-3 text-sm'}
       `}
     >
@@ -146,7 +150,7 @@ function DownloadButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
         <span className={`${isLg ? 'text-xs' : 'text-[10px]'} text-gray-400 mb-0.5`}>Download APK</span>
         <span className={`font-semibold ${isLg ? 'text-base' : 'text-sm'}`}>YesBill for Android</span>
       </div>
-    </a>
+    </motion.a>
   )
 }
 
@@ -220,17 +224,12 @@ const syncPoints = [
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function MobileAppClient() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="relative min-h-screen">
+      <Background />
       <Navbar />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background blobs */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-indigo-100 rounded-full blur-3xl opacity-50" />
-          <div className="absolute top-1/2 -right-32 w-[500px] h-[500px] bg-violet-100 rounded-full blur-3xl opacity-40" />
-        </div>
-
         <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           {/* Left — text */}
           <motion.div
@@ -238,10 +237,15 @@ export default function MobileAppClient() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 rounded-full px-4 py-2 text-sm font-medium mb-6 border border-indigo-100">
+            <motion.div
+              whileHover={{ scale: 1.06, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+              className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 rounded-full px-4 py-2 text-sm font-medium mb-6 border border-indigo-100 cursor-default"
+            >
               <Smartphone className="w-4 h-4" />
               Now on Android
-            </div>
+            </motion.div>
 
             <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
               YesBill,{' '}
@@ -256,12 +260,18 @@ export default function MobileAppClient() {
 
             <div className="flex flex-wrap gap-4 mb-10">
               <DownloadButton size="lg" />
-              <Link
-                href="#features"
-                className="inline-flex items-center gap-2 px-7 py-4 text-base font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-200 border border-gray-200"
+              <motion.div
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
-                See features <ArrowRight className="w-4 h-4" />
-              </Link>
+                <Link
+                  href="#features"
+                  className="inline-flex items-center gap-2 px-7 py-4 text-base font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors duration-150 border border-gray-200"
+                >
+                  See features <ArrowRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
             </div>
 
             {/* Quick stats */}
@@ -289,7 +299,13 @@ export default function MobileAppClient() {
             <div className="relative">
               {/* Glow behind the phone */}
               <div className="absolute inset-0 bg-gradient-to-b from-indigo-300 to-violet-300 rounded-full blur-3xl opacity-30 scale-75" />
-              <PhoneMockup />
+              {/* Floating animation */}
+              <motion.div
+                animate={{ y: [0, -14, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <PhoneMockup />
+              </motion.div>
             </div>
           </motion.div>
         </div>
@@ -348,7 +364,9 @@ export default function MobileAppClient() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+                  whileHover={{ scale: 1.04, y: -6, boxShadow: '0 16px 40px rgba(99,102,241,0.13)' }}
+                  whileTap={{ scale: 0.97 }}
+                  className="bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl p-6 shadow-sm cursor-default"
                 >
                   <div className={`w-11 h-11 rounded-xl ${f.bg} flex items-center justify-center mb-4`}>
                     <Icon className={`w-5 h-5 ${f.color}`} />
@@ -402,7 +420,8 @@ export default function MobileAppClient() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center"
+                whileHover={{ scale: 1.04, y: -5, boxShadow: '0 14px 36px rgba(0,0,0,0.09)' }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-sm text-center cursor-default"
               >
                 <div className={`w-12 h-12 rounded-2xl border ${s.color} flex items-center justify-center text-xl font-bold mx-auto mb-4`}>
                   {s.step}
@@ -455,12 +474,18 @@ export default function MobileAppClient() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <DownloadButton size="lg" />
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-2 px-7 py-4 text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all duration-200 border border-indigo-200"
+              <motion.div
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
-                Create free account <ChevronRight className="w-4 h-4" />
-              </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-2 px-7 py-4 text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-colors duration-150 border border-indigo-200"
+                >
+                  Create free account <ChevronRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
             </div>
             <p className="mt-6 text-sm text-gray-400">
               Already have an account?{' '}

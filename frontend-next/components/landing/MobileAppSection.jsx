@@ -125,10 +125,15 @@ export default function MobileAppSection() {
             transition={{ duration: 0.6 }}
             className="order-1 lg:order-2"
           >
-            <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 rounded-full px-4 py-2 text-sm font-medium mb-6 border border-indigo-100">
+            <motion.div
+              whileHover={{ scale: 1.06, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+              className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 rounded-full px-4 py-2 text-sm font-medium mb-6 border border-indigo-100 cursor-default"
+            >
               <Smartphone className="w-4 h-4" />
               Android App — Free
-            </div>
+            </motion.div>
 
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-5 leading-tight">
               YesBill{' '}
@@ -144,19 +149,28 @@ export default function MobileAppSection() {
             {/* Feature pills */}
             <div className="grid grid-cols-2 gap-3 mb-8">
               {highlights.map(({ icon: Icon, label, color, bg }) => (
-                <div key={label} className={`flex items-center gap-2.5 ${bg} rounded-xl px-4 py-3 border border-transparent`}>
+                <motion.div
+                  key={label}
+                  whileHover={{ scale: 1.05, y: -3, boxShadow: '0 8px 24px rgba(99,102,241,0.12)' }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className={`flex items-center gap-2.5 ${bg} rounded-xl px-4 py-3 border border-transparent cursor-default`}
+                >
                   <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
                   <span className="text-sm font-medium text-gray-700">{label}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             {/* Download button */}
             <div className="flex flex-wrap gap-4">
-              <a
+              <motion.a
                 href={APK_URL}
-                download
-                className="inline-flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl px-6 py-4 transition-all duration-200 hover:shadow-xl hover:shadow-gray-900/25 hover:-translate-y-0.5"
+                onClick={(e) => { e.preventDefault(); window.location.href = APK_URL }}
+                whileHover={{ scale: 1.04, y: -2, boxShadow: '0 12px 32px rgba(17,24,39,0.22)' }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="inline-flex items-center gap-3 bg-gray-900 text-white rounded-2xl px-6 py-4 cursor-pointer"
               >
                 {/* Android icon */}
                 <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor" aria-hidden="true">
@@ -166,14 +180,20 @@ export default function MobileAppSection() {
                   <span className="text-xs text-gray-400 mb-0.5">Download APK</span>
                   <span className="font-semibold text-sm">YesBill for Android</span>
                 </div>
-              </a>
+                </motion.a>
 
-              <Link
-                href="/mobile"
-                className="inline-flex items-center gap-2 px-6 py-4 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-all duration-200 border border-indigo-200"
+              <motion.div
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
-                Learn more <ArrowRight className="w-4 h-4" />
-              </Link>
+                <Link
+                  href="/mobile"
+                  className="inline-flex items-center gap-2 px-6 py-4 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-colors duration-150 border border-indigo-200"
+                >
+                  Learn more <ArrowRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
             </div>
 
             <p className="mt-5 text-xs text-gray-400">
