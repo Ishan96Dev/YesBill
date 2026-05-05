@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 // Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronLeft,
@@ -67,6 +67,10 @@ export default function ServiceCalendarPage() {
     const [confirmations, setConfirmations] = useState({});
     const [dataLoading, setDataLoading] = useState(true);
     const [paidBillInfo, setPaidBillInfo] = useState(null);
+
+    // Staleness tracking — avoid re-showing loading screen on tab refocus
+    const STALE_MS = 5 * 60 * 1000; // 5 minutes
+    const lastFetchRef = useRef<{ time: number; serviceId: string; yearMonth: string } | null>(null);
     const [pickerMode, setPickerMode] = useState<'days' | 'months' | 'years'>('days');
     const [yearRangeStart, setYearRangeStart] = useState(() => new Date().getFullYear() - 5);
 
@@ -108,6 +112,19 @@ export default function ServiceCalendarPage() {
         if (!user || !serviceId) return;
         let cancelled = false;
 
+        const yearMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+        const now = Date.now();
+        const last = lastFetchRef.current;
+        const sameContext = last?.serviceId === serviceId && last?.yearMonth === yearMonth;
+        const isFresh = sameContext && !!last?.time && (now - last.time) < STALE_MS;
+        const hasData = service !== null;
+
+        // Skip entirely: same service/month, data is fresh
+        if (isFresh && hasData) return;
+
+        // Silent background refresh: context unchanged, data exists but stale
+        if (!sameContext || !hasData) setDataLoading(true);
+
         const load = async () => {
             try {
                 const allServices = await servicesService.getAll();
@@ -121,7 +138,6 @@ export default function ServiceCalendarPage() {
                 }
                 setService(svc);
 
-                const yearMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
                 let indexed;
                 if (svc.type === "yearly") {
                     indexed = await calendarService.getYearIndexed(year, serviceId);
@@ -141,6 +157,7 @@ export default function ServiceCalendarPage() {
                 if (!cancelled) {
                     setConfirmations(indexed);
                     setPaidBillInfo(billInfo);
+                    lastFetchRef.current = { time: Date.now(), serviceId, yearMonth };
                 }
             } catch (err) {
                 console.error("Service calendar load error:", err);
@@ -150,7 +167,6 @@ export default function ServiceCalendarPage() {
             }
         };
 
-        setDataLoading(true);
         load();
         return () => { cancelled = true; };
     }, [user, serviceId, currentDate, toast]);
@@ -289,7 +305,7 @@ export default function ServiceCalendarPage() {
     return (
         <AppLayout>
             <AnimatePresence>
-                {(!pageReady || dataLoading) && <AppLoadingScreen key="loading" pageName="Calendar" pageType="calendar" />}
+                {(!pageReady || (dataLoading && !service)) && <AppLoadingScreen key="loading" pageName="Calendar" pageType="calendar" />}
             </AnimatePresence>
             <div className="p-6 md:p-8 max-w-5xl mx-auto">
                 {/* Header */}

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 // Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -65,6 +65,10 @@ export default function CalendarView() {
   // Paid bills index: { [serviceId]: { is_paid, paid_at, bill_id, payment_method } }
   const [paidBillsIndex, setPaidBillsIndex] = useState({});
 
+  // Staleness tracking — avoid re-showing loading screen on tab refocus
+  const STALE_MS = 5 * 60 * 1000; // 5 minutes
+  const lastFetchRef = useRef<{ time: number; yearMonth: string } | null>(null);
+
   // Role tab: 'consumer' | 'provider'
   const [roleTab, setRoleTab] = useState('consumer');
 
@@ -107,9 +111,21 @@ export default function CalendarView() {
     if (!user) return;
     let cancelled = false;
 
+    const yearMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    const now = Date.now();
+    const last = lastFetchRef.current;
+    const sameMonth = last?.yearMonth === yearMonth;
+    const isFresh = sameMonth && !!last?.time && (now - last.time) < STALE_MS;
+    const hasData = servicesData.length > 0;
+
+    // Skip entirely: same month, data is fresh, already rendered
+    if (isFresh && hasData) return;
+
+    // Silent background refresh: same month, data exists but stale — no full-screen loader
+    if (!sameMonth || !hasData) setDataLoading(true);
+
     const load = async () => {
       try {
-        const yearMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
         // Use the new refreshCalendarData method for consistent data loading
         const [calendarData, billsRes] = await Promise.all([
@@ -137,6 +153,7 @@ export default function CalendarView() {
             });
           });
           setPaidBillsIndex(index);
+          lastFetchRef.current = { time: Date.now(), yearMonth };
         }
       } catch (err) {
         console.error('Calendar load error:', err);
@@ -148,7 +165,6 @@ export default function CalendarView() {
       }
     };
 
-    setDataLoading(true);
     load();
     return () => { cancelled = true; };
   }, [user, currentDate, toast]);
@@ -306,7 +322,7 @@ export default function CalendarView() {
   return (
     <AppLayout>
       <AnimatePresence>
-        {(!pageReady || dataLoading) && <AppLoadingScreen key="loading" pageName="Calendar" pageType="calendar" />}
+        {(!pageReady || (dataLoading && servicesData.length === 0)) && <AppLoadingScreen key="loading" pageName="Calendar" pageType="calendar" />}
       </AnimatePresence>
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
         {/* Header */}
