@@ -437,17 +437,34 @@ export default function MobileAppClient() {
       {/* ── Requirements ──────────────────────────────────────────────── */}
       <section className="py-14 px-6 border-y border-gray-100">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 text-center">Requirements</h2>
+          <motion.h2
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-lg font-semibold text-gray-900 mb-6 text-center"
+          >
+            Requirements
+          </motion.h2>
           <div className="grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
             {[
-              { label: 'Android Version', value: '6.0 (Marshmallow) or higher' },
-              { label: 'Storage', value: 'Approx. 30 MB free space' },
-              { label: 'Internet', value: 'Required for sync & AI features' },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</div>
+              { label: 'Android Version', value: '6.0 (Marshmallow) or higher', icon: '📱' },
+              { label: 'Storage', value: 'Approx. 30 MB free space', icon: '💾' },
+              { label: 'Internet', value: 'Required for sync & AI features', icon: '🌐' },
+            ].map(({ label, value, icon }, i) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                whileHover={{ scale: 1.04, y: -4, boxShadow: '0 10px 28px rgba(99,102,241,0.10)' }}
+                whileTap={{ scale: 0.97 }}
+                className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-gray-100 shadow-sm cursor-default"
+              >
+                <div className="text-2xl mb-3">{icon}</div>
+                <div className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-1">{label}</div>
                 <div className="font-medium text-gray-800">{value}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
