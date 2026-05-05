@@ -23,22 +23,30 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.41.6'
           channel: 'stable'
           cache: true
 
       - name: Write google-services.json
-        run: echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+        working-directory: yesbill-mobile
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo '{"project_info":{"project_id":"placeholder","project_number":"000000000000","firebase_url":"https://placeholder.firebaseio.com","storage_bucket":"placeholder.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.yesbill.yesbill_mobile"}},"oauth_client":[],"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+          else
+            echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > android/app/google-services.json
+            python3 -c "import json,sys; json.load(open('android/app/google-services.json'))" || \
+              { echo "ERROR: google-services.json is not valid JSON"; exit 1; }
+          fi
         env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
 
       - name: Decode keystore
+        working-directory: yesbill-mobile
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > yesbill-release.keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > yesbill-release.keystore
 
       - name: Write key.properties
+        working-directory: yesbill-mobile
         run: |
           cat > android/key.properties << EOF
           storePassword=${{ secrets.STORE_PASSWORD }}
@@ -48,23 +56,70 @@ jobs:
           EOF
 
       - name: Install dependencies
+        working-directory: yesbill-mobile
         run: flutter pub get
 
       - name: Run code generation
+        working-directory: yesbill-mobile
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build release APK
+        working-directory: yesbill-mobile
         run: |
           flutter build apk --release \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
 
+      - name: Rename APK for release
+        run: |
+          mv yesbill-mobile/build/app/outputs/flutter-apk/app-release.apk \
+             yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
+
       - name: Create GitHub Release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
           name: YesBill ${{ github.ref_name }}
+          body: |
+            ## YesBill Android App ${{ github.ref_name }}
+
+            ### What's New
+            See the full changelog below (auto-generated from commits).
+
+            ### Download
+            Download **YesBill-${{ github.ref_name }}.apk** above and install on your Android device.
+            > Enable "Install from unknown sources" in your Android settings if prompted.
+
+            ### Requirements
+            - Android 6.0 (API 23) or higher
           generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Render email template
+        run: |
+          RELEASE_DATE=$(date +'%d %b %Y')
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+          APK_URL="https://github.com/${{ github.repository }}/releases/latest/download/YesBill-${{ github.ref_name }}.apk"
+
+          sed \
+            -e "s|{{VERSION}}|${{ github.ref_name }}|g" \
+            -e "s|{{RELEASE_DATE}}|${RELEASE_DATE}|g" \
+            -e "s|{{COMMIT_SHA}}|${SHORT_SHA}|g" \
+            -e "s|{{RELEASE_URL}}|${RELEASE_URL}|g" \
+            -e "s|{{APK_URL}}|${APK_URL}|g" \
+            email-templates/10-release-notify.html > /tmp/release-email.html
+
+      - name: Send release notification email (Brevo)
+        env:
+          BREVO_API_KEY:  ${{ secrets.BREVO_API_KEY }}
+          NOTIFY_EMAIL:   ${{ secrets.NOTIFY_EMAIL }}
+          VERSION:        ${{ github.ref_name }}
+          APK_PATH:       yesbill-mobile/build/app/outputs/flutter-apk/YesBill-${{ github.ref_name }}.apk
+          EMAIL_TEMPLATE: /tmp/release-email.html
+        run: python3 scripts/send_release_email.py

@@ -60,6 +60,9 @@ export default function Footer() {
                 </li>
               ))}
               <li>
+                <Link href="/mobile" className="hover:text-primary transition-colors">Mobile App</Link>
+              </li>
+              <li>
                 <a
                   href="https://ishan96dev.github.io/YesBill/docs/"
                   target="_blank"

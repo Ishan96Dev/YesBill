@@ -26,6 +26,7 @@ export default function Navbar() {
     { name: "Features", href: "/features" },
     { name: "Pricing", href: "/pricing" },
     { name: "Testimonials", href: "/testimonials" },
+    { name: "Mobile", href: "/mobile" },
     { name: "Contact", href: "/contact" },
     { name: "About", href: "/about" },
     { name: "Docs", href: "https://ishan96dev.github.io/YesBill/docs/", external: true }

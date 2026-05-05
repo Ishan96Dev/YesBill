@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Navbar from './Navbar'
 import Hero from './Hero'
 import Features from './Features'
+import MobileAppSection from './MobileAppSection'
 import Testimonials from './Testimonials'
 import Footer from './Footer'
 import Background from './Background'
@@ -61,6 +62,7 @@ export default function LandingClient() {
       <main className={`flex flex-col gap-0${emailChangeBanner ? ' pt-11' : ''}`}>
         <Hero />
         <Features />
+        <MobileAppSection />
 
         {/* CTA Banner */}
         <section className="relative pt-20 pb-24 lg:pt-32 lg:pb-36 bg-gradient-to-br from-indigo-600 to-violet-700 text-white overflow-hidden mt-12 rounded-t-[3rem] mx-2 shadow-2xl shadow-indigo-900/20">
