@@ -663,40 +663,20 @@ export default function AppLayout({
             const Icon = item.icon;
             const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
             const itemContent = (
-              <motion.span
-                whileHover={lockedNav ? {} : { x: 8, scale: 1.02 }}
-                whileTap={lockedNav ? {} : { scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              <span
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-colors relative group overflow-hidden",
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all duration-150 relative group",
                   lockedNav
                     ? "text-gray-400 opacity-60 cursor-not-allowed"
                     : isActive
                     ? "bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg shadow-primary/20"
-                    : "text-gray-700 hover:bg-gray-100/80"
+                    : "text-gray-700 hover:bg-gray-100/80 hover:translate-x-1"
                 )}
               >
-                {isActive && !lockedNav && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 rounded-xl -z-[0]"
-                    transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.8 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-3 flex-1">
-                  <Icon className={cn("w-5 h-5 shrink-0", lockedNav ? "text-gray-400" : isActive ? "text-white" : "text-gray-500 group-hover:text-primary")} />
-                  <span>{item.name}</span>
-                </span>
-                {lockedNav && <Lock className="w-3.5 h-3.5 text-gray-400 relative z-10 flex-shrink-0" />}
-                {!lockedNav && !isActive && (
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: "100%" }}
-                    transition={{ duration: 0.6, ease: "easeInOut" }}
-                  />
-                )}
-              </motion.span>
+                <Icon className={cn("w-5 h-5 shrink-0 transition-colors", lockedNav ? "text-gray-400" : isActive ? "text-white" : "text-gray-500 group-hover:text-primary")} />
+                <span className="flex-1">{item.name}</span>
+                {lockedNav && <Lock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+              </span>
             );
             return lockedNav ? (
               <span key={item.path} className="block" title="Complete setup to unlock navigation">{itemContent}</span>
@@ -709,11 +689,6 @@ export default function AppLayout({
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 bg-white/40 backdrop-blur-sm">
-          <motion.div
-            whileHover={{ x: 4, scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          >
             <Button
               onClick={handleLogout}
               variant="ghost"
@@ -722,62 +697,53 @@ export default function AppLayout({
               <LogOut className="w-5 h-5 mr-3" />
               Logout
             </Button>
-          </motion.div>
         </div>
       </aside>
 
       {/* ═══════════════════════════════════════════════
           SIDEBAR — Mobile
       ═══════════════════════════════════════════════ */}
-      {sidebarOpen && (
-        <motion.aside
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -300, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="md:hidden fixed left-0 top-[72px] w-64 h-[calc(100vh-72px)] bg-white/95 backdrop-blur-xl border-r border-gray-200/50 shadow-2xl z-40"
-        >
-          <nav className="p-4 space-y-1">
-            {navItems.map((item, index) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
-              const mobileItemContent = (
-                <motion.span
-                  initial={{ x: -50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.05, type: "spring", stiffness: 400, damping: 25 }}
-                  whileTap={lockedNav ? {} : { scale: 0.96 }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-colors",
-                    lockedNav
-                      ? "text-gray-400 opacity-60 cursor-not-allowed"
-                      : isActive
-                      ? "bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg shadow-primary/20"
-                      : "text-gray-700 hover:bg-gray-100/80"
-                  )}
-                >
-                  <Icon className="w-5 h-5 flex-1" />
-                  <span className="flex-1">{item.name}</span>
-                  {lockedNav && <Lock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
-                </motion.span>
-              );
-              return lockedNav ? (
-                <span key={item.path} className="block" title="Complete setup to unlock navigation">{mobileItemContent}</span>
-              ) : (
-                <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)} className="block">
-                  {mobileItemContent}
-                </Link>
-              );
-            })}
-          </nav>
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.aside
+            key="mobile-sidebar"
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+            className="md:hidden fixed left-0 top-[72px] w-64 h-[calc(100vh-72px)] bg-white/95 backdrop-blur-xl border-r border-gray-200/50 shadow-2xl z-40"
+          >
+            <nav className="p-4 space-y-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
+                const mobileItemContent = (
+                  <span
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all duration-150",
+                      lockedNav
+                        ? "text-gray-400 opacity-60 cursor-not-allowed"
+                        : isActive
+                        ? "bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg shadow-primary/20"
+                        : "text-gray-700 hover:bg-gray-100/80 active:scale-[0.98]"
+                    )}
+                  >
+                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-gray-500")} />
+                    <span className="flex-1">{item.name}</span>
+                    {lockedNav && <Lock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+                  </span>
+                );
+                return lockedNav ? (
+                  <span key={item.path} className="block" title="Complete setup to unlock navigation">{mobileItemContent}</span>
+                ) : (
+                  <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)} className="block">
+                    {mobileItemContent}
+                  </Link>
+                );
+              })}
+            </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 bg-white/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              whileTap={{ scale: 0.96 }}
-            >
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200/50 bg-white/60 backdrop-blur-sm">
               <Button
                 onClick={handleLogout}
                 variant="ghost"
@@ -786,10 +752,10 @@ export default function AppLayout({
                 <LogOut className="w-5 h-5 mr-3" />
                 Logout
               </Button>
-            </motion.div>
-          </div>
-        </motion.aside>
-      )}
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* ═══════════════════════════════════════════════
           MAIN CONTENT
