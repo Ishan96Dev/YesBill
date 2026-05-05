@@ -10,6 +10,7 @@ so there is no local file size limit — the APK is NOT read or encoded here.
 
 Required env vars:
   BREVO_API_KEY   — Brevo API key (same one used in Supabase send-bill-email)
+  SENDER_EMAIL    — verified Brevo sender address (from GitHub Secrets)
   NOTIFY_EMAIL    — recipient address (from GitHub Secrets)
   VERSION         — git tag, e.g. v1.2.0
   APK_ASSET_URL   — public GitHub release asset URL for the APK
@@ -20,6 +21,7 @@ import os, sys, json, urllib.request, urllib.error
 
 def main():
     api_key   = os.environ.get("BREVO_API_KEY", "").strip()
+    sender    = os.environ.get("SENDER_EMAIL", "").strip()
     notify    = os.environ.get("NOTIFY_EMAIL", "").strip()
     version   = os.environ.get("VERSION", "").strip()
     apk_url   = os.environ.get("APK_ASSET_URL", "").strip()
@@ -28,6 +30,7 @@ def main():
     # -- Validate --------------------------------------------------------------
     missing = [k for k, v in {
         "BREVO_API_KEY":  api_key,
+        "SENDER_EMAIL":   sender,
         "NOTIFY_EMAIL":   notify,
         "VERSION":        version,
         "APK_ASSET_URL":  apk_url,
@@ -50,7 +53,7 @@ def main():
     # Use `url` field in attachment -- Brevo fetches the file from GitHub Releases.
     # This bypasses the 20 MB API body limit entirely; no local encoding needed.
     payload = {
-        "sender":      {"name": "YesBill CI", "email": "bills@yesbill.app"},
+        "sender":      {"name": "YesBill CI", "email": sender},
         "to":          [{"email": notify}],
         "subject":     f"\U0001f680 YesBill {version} \u2014 Android APK Released",
         "htmlContent": html,

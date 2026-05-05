@@ -7,6 +7,7 @@ No APK attachment (CI artifacts require GitHub auth); links to the run URL.
 
 Required environment variables:
   BREVO_API_KEY   — Brevo transactional email API key (from GitHub Secrets)
+  SENDER_EMAIL    — Verified Brevo sender address (from GitHub Secrets)
   NOTIFY_EMAIL    — Recipient email address
   BRANCH          — Git branch name (e.g. main)
   COMMIT_SHA      — Short commit SHA
@@ -23,6 +24,7 @@ from datetime import datetime, timezone
 
 # ── Environment ────────────────────────────────────────────────────────────────
 api_key        = os.environ.get("BREVO_API_KEY", "").strip()
+sender_email   = os.environ.get("SENDER_EMAIL", "").strip()
 notify_email   = os.environ.get("NOTIFY_EMAIL", "").strip()
 branch         = os.environ.get("BRANCH", "main").strip()
 commit_sha     = os.environ.get("COMMIT_SHA", "unknown").strip()
@@ -31,6 +33,9 @@ template_path  = os.environ.get("EMAIL_TEMPLATE", "/tmp/build-email.html").strip
 
 if not api_key:
     print("ERROR: BREVO_API_KEY is not set", file=sys.stderr)
+    sys.exit(1)
+if not sender_email:
+    print("ERROR: SENDER_EMAIL is not set", file=sys.stderr)
     sys.exit(1)
 if not notify_email:
     print("ERROR: NOTIFY_EMAIL is not set", file=sys.stderr)
@@ -46,7 +51,7 @@ except FileNotFoundError:
 
 # ── Send via Brevo ─────────────────────────────────────────────────────────────
 payload = {
-    "sender": {"name": "YesBill CI", "email": "bills@yesbill.app"},
+    "sender": {"name": "YesBill CI", "email": sender_email},
     "to": [{"email": notify_email}],
     "subject": f"✅ YesBill Build Succeeded — {branch} @ {commit_sha}",
     "htmlContent": html_body,

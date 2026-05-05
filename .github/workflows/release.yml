@@ -123,6 +123,7 @@ jobs:
       - name: Send release notification email (Brevo)
         env:
           BREVO_API_KEY:   ${{ secrets.BREVO_API_KEY }}
+          SENDER_EMAIL:    ${{ secrets.SENDER_EMAIL }}
           NOTIFY_EMAIL:    ${{ secrets.NOTIFY_EMAIL }}
           VERSION:         ${{ github.ref_name }}
           APK_ASSET_URL:   https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/YesBill-${{ github.ref_name }}.apk

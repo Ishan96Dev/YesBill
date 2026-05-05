@@ -84,6 +84,7 @@ jobs:
         continue-on-error: true
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          SENDER_EMAIL:  ${{ secrets.SENDER_EMAIL }}
           NOTIFY_EMAIL:  ${{ secrets.NOTIFY_EMAIL }}
           BRANCH:        ${{ github.ref_name }}
           COMMIT_SHA:    ${{ github.sha }}
