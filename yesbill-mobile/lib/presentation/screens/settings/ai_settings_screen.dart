@@ -135,6 +135,7 @@ String? _providerLocalAsset(String providerId) {
     'openai' => 'assets/images/openai.png',
     'anthropic' => 'assets/images/anthropic.png',
     'google' => 'assets/images/google-ai.png',
+    'ollama' => 'assets/images/ollama.png',
     _ => null,
   };
 }
