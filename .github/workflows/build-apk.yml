@@ -3,6 +3,10 @@ name: Build APK
 on:
   push:
     branches: [main]
+    paths:
+      - 'yesbill-mobile/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -55,24 +59,37 @@ jobs:
 
       - name: Build APK
         working-directory: yesbill-mobile
+        env:
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          API_BASE_URL:      ${{ secrets.API_BASE_URL }}
         run: |
-          flutter build apk --release \
-            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
+          # Only forward dart-defines that are actually set; empty defines
+          # override defaultValue in String.fromEnvironment (Dart quirk).
+          DEFINES=""
+          [ -n "$SUPABASE_URL" ]      && DEFINES="$DEFINES --dart-define=SUPABASE_URL=$SUPABASE_URL"
+          [ -n "$SUPABASE_ANON_KEY" ] && DEFINES="$DEFINES --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+          [ -n "$API_BASE_URL" ]      && DEFINES="$DEFINES --dart-define=API_BASE_URL=$API_BASE_URL"
+          flutter build apk --release $DEFINES
 
-      - name: Upload APK artifact
-        id: upload-apk
-        uses: actions/upload-artifact@v4
+      - name: Rename APK
+        run: |
+          cp yesbill-mobile/build/app/outputs/flutter-apk/app-release.apk /tmp/YesBill.apk
+
+      - name: Publish nightly pre-release
+        uses: softprops/action-gh-release@v2
         with:
-          name: yesbill-release-apk
-          path: yesbill-mobile/build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 30
+          tag_name: nightly
+          name: "Nightly Build (main)"
+          prerelease: true
+          make_latest: false
+          files: /tmp/YesBill.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Render build email template
-        env:
-          ARTIFACT_URL: ${{ steps.upload-apk.outputs.artifact-url }}
         run: |
+          APK_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/nightly/YesBill.apk"
           BUILD_DATE=$(date -u '+%d %b %Y')
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
           RUN_URL="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
@@ -81,7 +98,7 @@ jobs:
             -e "s|{{COMMIT_SHA}}|${SHORT_SHA}|g" \
             -e "s|{{BUILD_DATE}}|${BUILD_DATE}|g" \
             -e "s|{{RUN_URL}}|${RUN_URL}|g" \
-            -e "s|{{ARTIFACT_URL}}|${ARTIFACT_URL}|g" \
+            -e "s|{{APK_URL}}|${APK_URL}|g" \
             email-templates/11-build-notify.html > /tmp/build-email.html
 
       - name: Send build notification email (Brevo)

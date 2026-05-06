@@ -65,11 +65,16 @@ jobs:
 
       - name: Build release APK
         working-directory: yesbill-mobile
+        env:
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          API_BASE_URL:      ${{ secrets.API_BASE_URL }}
         run: |
-          flutter build apk --release \
-            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
+          DEFINES=""
+          [ -n "$SUPABASE_URL" ]      && DEFINES="$DEFINES --dart-define=SUPABASE_URL=$SUPABASE_URL"
+          [ -n "$SUPABASE_ANON_KEY" ] && DEFINES="$DEFINES --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+          [ -n "$API_BASE_URL" ]      && DEFINES="$DEFINES --dart-define=API_BASE_URL=$API_BASE_URL"
+          flutter build apk --release $DEFINES
 
       - name: Rename APK for release
         run: |

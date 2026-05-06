@@ -5,10 +5,11 @@
   on every successful build triggered by a push to main.
 
   Tokens replaced at runtime by the workflow:
-    {{BRANCH}}        — e.g. main
-    {{COMMIT_SHA}}    — short git SHA
-    {{BUILD_DATE}}    — e.g. 05 May 2026
-    {{RUN_URL}}       — GitHub Actions run URL
+    {{BRANCH}}      — e.g. main
+    {{COMMIT_SHA}}  — short git SHA
+    {{BUILD_DATE}}  — e.g. 05 May 2026
+    {{RUN_URL}}     — GitHub Actions run URL
+    {{APK_URL}}     — public direct download URL (nightly GitHub Release)
 
   Required GitHub Secrets:
     BREVO_API_KEY  — Brevo transactional email API key
@@ -62,7 +63,7 @@
                 Build Succeeded
               </h2>
               <p style="margin: 0 0 32px; color: #64748B; font-size: 16px; line-height: 1.7; text-align: center;">
-                A new YesBill APK has been built successfully on <strong>{{BRANCH}}</strong>.<br>The artifact is available for 30 days on GitHub Actions.
+                A new YesBill APK has been built successfully on <strong>{{BRANCH}}</strong>.<br>Tap the button below to download it directly — no login required.
               </p>
 
               <!-- Build details card -->
@@ -90,28 +91,28 @@
                 </table>
               </div>
 
-              <!-- Artifact note -->
-              <div style="background-color: #FFFBEB; border-left: 4px solid #F59E0B; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px;">
-                <p style="margin: 0 0 6px; color: #92400E; font-size: 15px; font-weight: 700;">
-                  📦 APK artifact ready
+              <!-- APK note -->
+              <div style="background-color: #ECFDF5; border-left: 4px solid #10B981; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px;">
+                <p style="margin: 0 0 6px; color: #065F46; font-size: 15px; font-weight: 700;">
+                  📱 APK ready to install
                 </p>
-                <p style="margin: 0; color: #78350F; font-size: 14px; line-height: 1.6;">
-                  The APK is available as a GitHub Actions artifact. Click <strong>Download APK</strong> below — GitHub login is required. The artifact expires after <strong>30 days</strong>.
+                <p style="margin: 0; color: #047857; font-size: 14px; line-height: 1.6;">
+                  This is the latest <strong>nightly build</strong> from the <code>main</code> branch. Tap <strong>Download APK</strong> to save it directly — no GitHub login required.
                 </p>
               </div>
 
-              <!-- Primary CTA: download artifact -->
+              <!-- Primary CTA: direct APK download -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
                 <tr>
                   <td align="center">
                     <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ARTIFACT_URL}}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="25%" strokecolor="#4F46E5" fillcolor="#4F46E5">
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{APK_URL}}" style="height:56px;v-text-anchor:middle;width:280px;" arcsize="25%" strokecolor="#4F46E5" fillcolor="#4F46E5">
                       <w:anchorlock/>
                       <center style="color:#ffffff;font-family:sans-serif;font-size:17px;font-weight:600;">⬇️ Download APK</center>
                     </v:roundrect>
                     <![endif]-->
                     <!--[if !mso]><!-->
-                    <a href="{{ARTIFACT_URL}}" style="display: inline-block; padding: 18px 50px; background-color: #4F46E5; color: #ffffff; text-decoration: none; border-radius: 14px; font-weight: 600; font-size: 17px; mso-padding-alt: 0;">
+                    <a href="{{APK_URL}}" style="display: inline-block; padding: 18px 50px; background-color: #4F46E5; color: #ffffff; text-decoration: none; border-radius: 14px; font-weight: 600; font-size: 17px; mso-padding-alt: 0;">
                       ⬇️ Download APK
                     </a>
                     <!--<![endif]-->

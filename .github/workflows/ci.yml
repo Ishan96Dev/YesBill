@@ -14,17 +14,50 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'frontend/**'
+      - 'frontend-next/**'
+      - 'backend/**'
+      - '.github/workflows/ci.yml'
   push:
     branches:
       - main
+    paths:
+      - 'frontend/**'
+      - 'frontend-next/**'
+      - 'backend/**'
+      - '.github/workflows/ci.yml'
   workflow_dispatch:
 
 jobs:
+  # ─────────────────────────────────────────────
+  # Detect which paths changed
+  # ─────────────────────────────────────────────
+  changes:
+    name: 🔍 Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend:  ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - 'frontend-next/**'
+            backend:
+              - 'backend/**'
+
   # ─────────────────────────────────────────────
   # Frontend: ESLint + TypeScript + Vite Build
   # ─────────────────────────────────────────────
   frontend-ci:
     name: 🖥️ Frontend — Lint & Build
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -61,6 +94,8 @@ jobs:
   # ─────────────────────────────────────────────
   backend-ci:
     name: 🐍 Backend — Lint & Syntax Check
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -97,14 +132,21 @@ jobs:
   ci-status:
     name: ✅ CI Status
     runs-on: ubuntu-latest
-    needs: [frontend-ci, backend-ci]
+    needs: [changes, frontend-ci, backend-ci]
     if: always()
 
     steps:
       - name: Check CI result
         run: |
-          if [ "${{ needs.frontend-ci.result }}" != "success" ] || [ "${{ needs.backend-ci.result }}" != "success" ]; then
-            echo "❌ CI failed — frontend: ${{ needs.frontend-ci.result }}, backend: ${{ needs.backend-ci.result }}"
+          FRONTEND="${{ needs.frontend-ci.result }}"
+          BACKEND="${{ needs.backend-ci.result }}"
+          # "skipped" is acceptable when no relevant files changed
+          if [[ "$FRONTEND" != "success" && "$FRONTEND" != "skipped" ]]; then
+            echo "❌ Frontend CI failed: $FRONTEND"
             exit 1
           fi
-          echo "✅ All CI checks passed!"
+          if [[ "$BACKEND" != "success" && "$BACKEND" != "skipped" ]]; then
+            echo "❌ Backend CI failed: $BACKEND"
+            exit 1
+          fi
+          echo "✅ All CI checks passed (frontend: $FRONTEND, backend: $BACKEND)"
