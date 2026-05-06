@@ -61,20 +61,28 @@ class AppNotificationsSheet extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    notifAsync.valueOrNull?.any((n) => !n.read) == true
-                        ? TextButton(
-                            onPressed: () => ref
-                                .read(notificationsProvider.notifier)
-                                .markAllAsRead(),
-                            child: const Text(
-                              'Mark all read',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
+                    if (notifAsync.valueOrNull?.isNotEmpty == true)
+                      TextButton(
+                        onPressed:
+                            notifAsync.valueOrNull?.any((n) => !n.read) == true
+                                ? () => ref
+                                    .read(notificationsProvider.notifier)
+                                    .markAllAsRead()
+                                : null,
+                        child: Text(
+                          'Mark all read',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                notifAsync.valueOrNull?.any((n) => !n.read) ==
+                                        true
+                                    ? AppColors.primary
+                                    : (isDark
+                                        ? AppColors.textSecondary
+                                        : AppColors.textSecondaryLight),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),

@@ -431,10 +431,17 @@ class _NetBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = stats.netBalance >= 0;
-    final bgColor = isPositive ? const Color(0xFFECFDF5) : const Color(0xFFFFF1F2);
-    final borderColor = isPositive ? const Color(0xFF6EE7B7) : const Color(0xFFFDA4AF);
+    final isDark = AppSurfaces.isDark(context);
+    final bgColor = isPositive
+        ? (isDark ? const Color(0xFF059669).withOpacity(0.12) : const Color(0xFFECFDF5))
+        : (isDark ? const Color(0xFFE11D48).withOpacity(0.12) : const Color(0xFFFFF1F2));
+    final borderColor = isPositive
+        ? (isDark ? const Color(0xFF6EE7B7).withOpacity(0.25) : const Color(0xFF6EE7B7))
+        : (isDark ? const Color(0xFFFDA4AF).withOpacity(0.25) : const Color(0xFFFDA4AF));
     final iconColor = isPositive ? const Color(0xFF059669) : const Color(0xFFE11D48);
-    final valueColor = isPositive ? const Color(0xFF047857) : const Color(0xFFBE123C);
+    final valueColor = isPositive
+        ? (isDark ? AppColors.success : const Color(0xFF047857))
+        : (isDark ? AppColors.error : const Color(0xFFBE123C));
     final sign = isPositive ? '+' : '';
 
     return Container(
@@ -747,7 +754,9 @@ class _ServicePreview extends StatelessWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
+                    color: AppSurfaces.isDark(context)
+                        ? AppColors.surfaceDarkElevated
+                        : const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,
@@ -777,23 +786,22 @@ class _ServicePreview extends StatelessWidget {
             final isDelivered = status == 'delivered';
             final isSkipped = status == 'skipped';
 
-            final bgColor = isDelivered
-                ? const Color(0xFFF0FDF4)
-                : isSkipped
-                    ? const Color(0xFFFFF1F2)
-                : _dashboardCardColor(context);
-            final borderColor = isDelivered
-                ? const Color(0xFF86EFAC)
-                : isSkipped
-                    ? const Color(0xFFFCA5A5)
-                : (Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.cardDarkBorder
-                  : const Color(0xFFE5E7EB));
-            final statusColor = isDelivered
-                ? AppColors.success
-                : isSkipped
-                    ? AppColors.error
-                    : Theme.of(context).colorScheme.onSurfaceVariant;
+            final isDark = AppSurfaces.isDark(context);
+    final bgColor = isDelivered
+        ? (isDark ? const Color(0xFF059669).withOpacity(0.15) : const Color(0xFFF0FDF4))
+        : isSkipped
+            ? (isDark ? const Color(0xFFE11D48).withOpacity(0.15) : const Color(0xFFFFF1F2))
+            : _dashboardCardColor(context);
+    final borderColor = isDelivered
+        ? (isDark ? const Color(0xFF6EE7B7).withOpacity(0.3) : const Color(0xFF86EFAC))
+        : isSkipped
+            ? (isDark ? const Color(0xFFFCA5A5).withOpacity(0.3) : const Color(0xFFFCA5A5))
+            : (isDark ? AppColors.cardDarkBorder : const Color(0xFFE5E7EB));
+    final statusColor = isDelivered
+        ? AppColors.success
+        : isSkipped
+            ? AppColors.error
+            : Theme.of(context).colorScheme.onSurfaceVariant;
             final statusLabel = isDelivered
                 ? service.deliveredLabel.toUpperCase()
                 : isSkipped

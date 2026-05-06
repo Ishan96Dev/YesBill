@@ -15,23 +15,12 @@ class AppConfig {
   static const _rawSupabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
   static const _rawApiBaseUrl     = String.fromEnvironment('API_BASE_URL');
 
-  // ── Public getters with hardcoded fallbacks ─────────────────────────────────
-  // Supabase project ref is public — safe to hard-code as fallback.
-  static String get supabaseUrl =>
-      _rawSupabaseUrl.isEmpty
-          ? 'https://dmabraziqscumpbwhjbf.supabase.co'
-          : _rawSupabaseUrl;
-
-  // Supabase anon key is public (JWT, not a secret).
-  static String get supabaseAnonKey =>
-      _rawSupabaseAnonKey.isEmpty
-          ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtYWJyYXppcXNjdW1wYndoamJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMTExNzUsImV4cCI6MjA4NTc4NzE3NX0.W_AApu-t2O-RbxO9AN-wTYmdIX7IBRAi08rBOF_dTDY'
-          : _rawSupabaseAnonKey;
-
-  static String get apiBaseUrl =>
-      _rawApiBaseUrl.isEmpty
-          ? 'https://yesbill.onrender.com'
-          : _rawApiBaseUrl;
+  // ── Public getters — values come entirely from dart-define (via .env + build script)
+  // No hardcoded fallbacks; if a define is missing the app will show the
+  // "App configuration missing" screen, making misconfiguration obvious.
+  static String get supabaseUrl    => _rawSupabaseUrl;
+  static String get supabaseAnonKey => _rawSupabaseAnonKey;
+  static String get apiBaseUrl     => _rawApiBaseUrl;
 
   /// Optional Google OAuth Web client ID used for native Google sign-in.
   /// Required for reliable `idToken` retrieval on Android.
@@ -43,7 +32,7 @@ class AppConfig {
   static const appName = 'YesBill';
   static const appVersion = '1.0.0';
 
-  static const connectTimeoutSeconds = 30;
+  static const connectTimeoutSeconds = 60; // Allow for Render.com free-tier cold starts
   static const receiveTimeoutSeconds = 90; // Generous for AI endpoints
   static const sendTimeoutSeconds = 30;
 

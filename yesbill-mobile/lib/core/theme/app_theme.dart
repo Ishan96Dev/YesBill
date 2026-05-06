@@ -307,6 +307,24 @@ class AppTheme {
         space: 1,
       ),
 
+      // ── Popup Menu ───────────────────────────────────────────────────────
+      popupMenuTheme: PopupMenuThemeData(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        textStyle: TextStyle(
+          color: isDark ? AppColors.textPrimary : AppColors.textPrimaryLight,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        iconColor: isDark ? AppColors.textPrimary : AppColors.textPrimaryLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color:
+                isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0),
+          ),
+        ),
+      ),
+
       // ── Switch ────────────────────────────────────────────────────────────
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {

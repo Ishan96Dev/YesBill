@@ -1,18 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models/ai_provider_info.dart';
 import '../data/repositories/ai_settings_repository.dart';
 import '../data/models/ai_settings.dart';
+import 'auth_provider.dart';
 import 'core_providers.dart';
 
 final aiSettingsRepositoryProvider = Provider<AiSettingsRepository>((ref) =>
     AiSettingsRepository(remoteDs: ref.watch(aiSettingsRemoteDsProvider)));
 
-final aiSettingsListProvider = FutureProvider<List<AiSettings>>((ref) =>
-    ref.watch(aiSettingsRepositoryProvider).getAllSettings());
+final aiSettingsListProvider = FutureProvider<List<AiSettings>>((ref) {
+  final authState = ref.watch(authProvider);
+  if (!authState.isAuthenticated) return Future.value([]);
+  return ref.watch(aiSettingsRepositoryProvider).getAllSettings();
+});
 
-final aiProviderCatalogProvider = FutureProvider<List<AiProviderInfo>>((ref) =>
-  ref.watch(aiSettingsRepositoryProvider).getProviders());
+final aiProviderCatalogProvider = FutureProvider<List<AiProviderInfo>>((ref) {
+  final authState = ref.watch(authProvider);
+  if (!authState.isAuthenticated) return Future.value([]);
+  return ref.watch(aiSettingsRepositoryProvider).getProviders();
+});
 
 sealed class AiSettingsMutationState { const AiSettingsMutationState(); }
 final class AiSettingsMutationIdle extends AiSettingsMutationState { const AiSettingsMutationIdle(); }

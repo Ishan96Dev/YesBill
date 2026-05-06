@@ -115,10 +115,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
             const SizedBox(height: 16),
             billsAsync.when(
               loading: () => const ShimmerList(count: 1, itemHeight: 110),
-              error: (error, _) => ErrorRetryView(
-                error: error,
-                onRetry: () => ref.invalidate(generatedBillsProvider),
-              ),
+              error: (_, __) => const SizedBox.shrink(),
               data: (bills) => _BillsSummaryCard(bills: bills),
             ),
             const SizedBox(height: 12),

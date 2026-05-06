@@ -6,6 +6,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/extensions/date_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../data/models/user_service.dart';
 
@@ -173,7 +174,7 @@ class _ServiceFormState extends State<ServiceForm> {
             decoration: InputDecoration(
               hintText: 'e.g., Netflix, Rent, Electricity',
               filled: true,
-              fillColor: const Color(0xFFF4F5F7),
+              fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : const Color(0xFFF4F5F7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
                 borderSide: BorderSide.none,
@@ -223,9 +224,15 @@ class _ServiceFormState extends State<ServiceForm> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
+                color: AppSurfaces.isDark(context)
+                    ? const Color(0xFF059669).withOpacity(0.12)
+                    : const Color(0xFFF0FDF4),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFBBF7D0)),
+                border: Border.all(
+                  color: AppSurfaces.isDark(context)
+                      ? const Color(0xFF6EE7B7).withOpacity(0.25)
+                      : const Color(0xFFBBF7D0),
+                ),
               ),
               child: Column(
                 children: [
@@ -236,7 +243,7 @@ class _ServiceFormState extends State<ServiceForm> {
                       hintText: 'e.g. Rahul Sharma',
                       prefixIcon: const Icon(LucideIcons.user, size: 18),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
@@ -256,7 +263,7 @@ class _ServiceFormState extends State<ServiceForm> {
                             prefixIcon:
                                 const Icon(LucideIcons.phone, size: 18),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide.none,
@@ -275,7 +282,7 @@ class _ServiceFormState extends State<ServiceForm> {
                             prefixIcon:
                                 const Icon(LucideIcons.mail, size: 18),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide.none,
@@ -293,7 +300,7 @@ class _ServiceFormState extends State<ServiceForm> {
                       hintText: 'Optional client address',
                       prefixIcon: const Icon(LucideIcons.mapPin, size: 18),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
@@ -323,7 +330,9 @@ class _ServiceFormState extends State<ServiceForm> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: selected ? AppColors.primary : Colors.white,
+                    color: selected
+                        ? AppColors.primary
+                        : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
                     borderRadius: BorderRadius.circular(999),
                     border: selected
                         ? null
@@ -346,14 +355,14 @@ class _ServiceFormState extends State<ServiceForm> {
                           size: 14,
                           color: selected
                               ? Colors.white
-                              : const Color(0xFF596063)),
+                              : Theme.of(context).colorScheme.onSurfaceVariant),
                       const SizedBox(width: 6),
                       Text(
                         label,
                         style: AppTextStyles.bodySm.copyWith(
                           color: selected
                               ? Colors.white
-                              : const Color(0xFF2D3337),
+                              : Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -379,7 +388,9 @@ class _ServiceFormState extends State<ServiceForm> {
                     margin: const EdgeInsets.only(right: 6),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: selected ? AppColors.primary : Colors.white,
+                      color: selected
+                          ? AppColors.primary
+                          : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
                       borderRadius: BorderRadius.circular(12),
                       border: selected
                           ? null
@@ -393,7 +404,7 @@ class _ServiceFormState extends State<ServiceForm> {
                       style: AppTextStyles.bodySm.copyWith(
                         color: selected
                             ? Colors.white
-                            : const Color(0xFF2D3337),
+                            : Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -423,7 +434,9 @@ class _ServiceFormState extends State<ServiceForm> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: selected ? AppColors.primary : Colors.white,
+                      color: selected
+                          ? AppColors.primary
+                          : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
                       borderRadius: BorderRadius.circular(999),
                       border: selected
                           ? null
@@ -435,7 +448,7 @@ class _ServiceFormState extends State<ServiceForm> {
                     child: Text(
                       _monthOptions[index],
                       style: AppTextStyles.bodySm.copyWith(
-                        color: selected ? Colors.white : const Color(0xFF2D3337),
+                        color: selected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -448,7 +461,7 @@ class _ServiceFormState extends State<ServiceForm> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: const [
                 BoxShadow(
@@ -473,7 +486,7 @@ class _ServiceFormState extends State<ServiceForm> {
                     decoration: BoxDecoration(
                       color: selected
                           ? AppColors.primary
-                          : const Color(0xFFF4F5F7),
+                          : (AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : const Color(0xFFF4F5F7)),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
@@ -481,7 +494,7 @@ class _ServiceFormState extends State<ServiceForm> {
                       '$day',
                       style: AppTextStyles.bodySm.copyWith(
                         color:
-                            selected ? Colors.white : const Color(0xFF2D3337),
+                            selected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -507,7 +520,9 @@ class _ServiceFormState extends State<ServiceForm> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: selected ? AppColors.primary : Colors.white,
+                    color: selected
+                        ? AppColors.primary
+                        : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
                     borderRadius: BorderRadius.circular(999),
                     border: selected
                         ? null
@@ -520,7 +535,7 @@ class _ServiceFormState extends State<ServiceForm> {
                     style: AppTextStyles.bodySm.copyWith(
                       color: selected
                           ? Colors.white
-                          : const Color(0xFF2D3337),
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -600,7 +615,7 @@ class _ServiceFormState extends State<ServiceForm> {
               hintText: 'e.g. 15.49',
               prefixText: '₹  ',
               filled: true,
-              fillColor: const Color(0xFFF4F5F7),
+              fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : const Color(0xFFF4F5F7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
                 borderSide: BorderSide.none,
@@ -650,7 +665,7 @@ class _ServiceFormState extends State<ServiceForm> {
             decoration: InputDecoration(
               hintText: 'Optional notes for billing context',
               filled: true,
-              fillColor: const Color(0xFFF4F5F7),
+              fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : const Color(0xFFF4F5F7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
@@ -790,7 +805,9 @@ class _RoleSelectorCard extends StatelessWidget {
       child: Ink(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFEEF1FF) : Colors.white,
+          color: selected
+              ? (AppSurfaces.isDark(context) ? AppColors.primary.withOpacity(0.18) : const Color(0xFFEEF1FF))
+              : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
           borderRadius: BorderRadius.circular(22),
           border: selected
               ? Border.all(color: AppColors.primary, width: 1.5)
@@ -811,7 +828,9 @@ class _RoleSelectorCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: selected ? AppColors.primary : const Color(0xFFDDE4F8),
+                color: selected
+                    ? AppColors.primary
+                    : (AppSurfaces.isDark(context) ? AppColors.cardDarkBorder : const Color(0xFFDDE4F8)),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -856,7 +875,9 @@ class _IconChip extends StatelessWidget {
         height: 48,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: selected ? const Color(0xFFEEF1FF) : Colors.white,
+          color: selected
+              ? (AppSurfaces.isDark(context) ? AppColors.primary.withOpacity(0.18) : const Color(0xFFEEF1FF))
+              : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
           border: selected
               ? Border.all(color: AppColors.primary, width: 1.5)
               : null,
@@ -904,7 +925,9 @@ class _StatusCard extends StatelessWidget {
       child: Ink(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFFEEF1FF) : Colors.white,
+          color: active
+              ? (AppSurfaces.isDark(context) ? AppColors.primary.withOpacity(0.18) : const Color(0xFFEEF1FF))
+              : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
           borderRadius: BorderRadius.circular(18),
           border: active
               ? Border.all(color: AppColors.primary.withOpacity(0.4), width: 1.2)
@@ -969,7 +992,7 @@ class _DatePickerButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
               color: const Color(0xFFACB3B7).withOpacity(0.35)),
@@ -987,7 +1010,7 @@ class _DatePickerButton extends StatelessWidget {
                   Text(
                     label,
                     style: AppTextStyles.labelSm.copyWith(
-                      color: const Color(0xFF596063),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -997,8 +1020,8 @@ class _DatePickerButton extends StatelessWidget {
                         : 'Not set',
                     style: AppTextStyles.bodySm.copyWith(
                       color: hasDate
-                          ? const Color(0xFF2D3337)
-                          : const Color(0xFFACB3B7),
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

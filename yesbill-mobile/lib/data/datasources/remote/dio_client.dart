@@ -33,7 +33,8 @@ Dio createDioClient({required AuthInterceptor authInterceptor}) {
       retryDelays: const [Duration(seconds: 1), Duration(seconds: 2)],
       retryEvaluator: (error, attempt) async {
         return error.type == DioExceptionType.connectionTimeout ||
-            error.type == DioExceptionType.connectionError;
+            error.type == DioExceptionType.connectionError ||
+            error.type == DioExceptionType.receiveTimeout;
       },
     ),
   );

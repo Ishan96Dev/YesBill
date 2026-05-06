@@ -9,6 +9,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_surfaces.dart';
 import '../../../providers/ai_settings_provider.dart';
+import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/gradient_card.dart';
 
 class AiSettingsScreen extends ConsumerWidget {
@@ -49,12 +50,9 @@ class AiSettingsScreen extends ConsumerWidget {
             Expanded(
               child: providersAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Center(
-                  child: Text(
-                    error.toString(),
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySm,
-                  ),
+                error: (error, _) => ErrorRetryView(
+                  error: error,
+                  onRetry: () => ref.invalidate(aiProviderCatalogProvider),
                 ),
                 data: (providers) {
                   return ListView.separated(

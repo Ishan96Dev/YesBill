@@ -48,7 +48,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/login',
         '/signup',
         '/forgot-password',
-        '/onboarding'
+        // NOTE: /onboarding is intentionally NOT here — it is a pre-auth
+        // informational screen and must never be blocked by auth state.
       ];
       final isAuthRoute = authRoutes.any((r) => path.startsWith(r));
 

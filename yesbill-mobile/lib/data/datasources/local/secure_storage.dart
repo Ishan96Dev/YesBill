@@ -8,8 +8,14 @@ class SecureStorageService {
 
   final FlutterSecureStorage _storage;
 
+  // resetOnError: on Android, if the Keystore master key exists but the
+  // EncryptedSharedPreferences file was wiped (e.g. "Clear Data"), the
+  // library throws a PlatformException instead of returning null.
+  // resetOnError silently deletes the corrupt entry and returns null,
+  // which lets the splash screen route to /onboarding instead of crashing.
   static const _androidOptions = AndroidOptions(
     encryptedSharedPreferences: true,
+    resetOnError: true,
   );
 
   Future<void> writeAccessToken(String token) =>

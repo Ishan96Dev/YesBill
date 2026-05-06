@@ -642,10 +642,7 @@ class _ShellHeader extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => ProviderScope(
-        parent: ProviderScope.containerOf(context),
-        child: const AppNotificationsSheet(),
-      ),
+      builder: (_) => const AppNotificationsSheet(),
     );
   }
 

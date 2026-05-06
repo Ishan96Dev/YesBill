@@ -50,13 +50,32 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (!mounted) return;
 
     final storage = ref.read(secureStorageProvider);
-    final hasToken = await storage
-        .hasSession()
-        .timeout(const Duration(seconds: 2), onTimeout: () => false);
+    // Belt-and-suspenders: hasSession() should not throw (resetOnError is set
+    // on the underlying storage), but if it does for any reason, treat it as
+    // "no token" so we still fall through to the onboarding check below.
+    final bool hasToken;
+    try {
+      hasToken = await storage
+          .hasSession()
+          .timeout(const Duration(seconds: 2), onTimeout: () => false);
+    } catch (_) {
+      // Storage is unreadable on this boot — go to onboarding if the user
+      // has no session, not directly to login.
+      final onboardingDone = ref.read(preferencesProvider).onboardingCompleted;
+      _go(onboardingDone ? '/login' : '/onboarding');
+      return;
+    }
     final onboardingCompleted = ref.read(preferencesProvider).onboardingCompleted;
 
     if (!hasToken) {
-      if (onboardingCompleted) {
+      // Bug guard: onboardingCompleted can be true from a previous APK install
+      // because Android SharedPreferences persists across upgrades (not uninstalls).
+      // Only treat it as "already seen" when Supabase also has a known user,
+      // meaning this is a genuine returning user — not a clean reinstall.
+      final supabase = ref.read(supabaseClientProvider);
+      final hasKnownUser = supabase.auth.currentUser != null;
+
+      if (onboardingCompleted && hasKnownUser) {
         _go('/login');
       } else {
         _go('/onboarding');

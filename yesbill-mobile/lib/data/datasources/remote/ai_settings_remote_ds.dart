@@ -160,8 +160,9 @@ class AiSettingsRemoteDataSource {
   Future<List<AiProviderInfo>> getProviders() async {
     try {
       final resp = await _dio.get(ApiConstants.aiProviders);
-      final raw = resp.data as List<dynamic>;
-      return raw
+      final data = resp.data;
+      final list = data is List<dynamic> ? data : <dynamic>[];
+      return list
           .whereType<Map>()
           .map((e) => AiProviderInfo.fromJson(Map<String, dynamic>.from(e)))
           .toList();

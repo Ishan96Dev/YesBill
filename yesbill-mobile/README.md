@@ -76,13 +76,20 @@ E:\flutter\bin\flutter.bat pub get
 
 ### 2. Configure environment
 
-Create `lib/core/config/env.dart` (not committed) with your Supabase credentials:
-```dart
-class Env {
-  static const supabaseUrl = 'https://YOUR_PROJECT.supabase.co';
-  static const supabaseAnonKey = 'YOUR_ANON_KEY';
-}
+Copy `.env.example` to `.env` (gitignored) and fill in your values:
+```powershell
+Copy-Item .env.example .env
 ```
+
+Edit `.env`:
+```
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+API_BASE_URL=https://your-backend-url.example.com
+GOOGLE_WEB_CLIENT_ID=   # optional
+```
+
+Values are injected at build time via `--dart-define`. The app reads them through `AppConfig` — if any required value is missing, the app shows an "App configuration missing" screen.
 
 ### 3. Firebase (optional — for push notifications)
 Place `google-services.json` in `android/app/`.
@@ -122,31 +129,69 @@ E:\flutter\bin\flutter.bat test
 
 ## Building the APK
 
+### Option 1 — Build script (recommended)
+
+Use the build script at `tools/build-apk.ps1`. It reads values from `.env` and
+passes them as `--dart-define` flags automatically — no manual flags needed.
+
+```
+yesbill-mobile/
+└── tools/
+    └── build-apk.ps1   ← build script (reads .env automatically)
+```
+
 ```powershell
-# Clean previous build artifacts
+# From yesbill-mobile/
+
+# Debug build (default)
+.\tools\build-apk.ps1
+
+# Release build
+.\tools\build-apk.ps1 -Release
+```
+
+Output paths:
+```
+yesbill-mobile\build\app\outputs\flutter-apk\app-debug.apk    # debug
+yesbill-mobile\build\app\outputs\flutter-apk\app-release.apk  # release
+```
+
+---
+
+### Option 2 — Manual terminal commands
+
+Run these from `yesbill-mobile/` with Flutter in your PATH:
+
+```powershell
+# From: E:\Projects-Repository\YesBill\yesbill-mobile\
+
+# 1. Clean previous build artifacts
 E:\flutter\bin\flutter.bat clean
 
-# Get dependencies (required before build)
+# 2. Get dependencies
 E:\flutter\bin\flutter.bat pub get
 
-# Remove any old APKs
+# 3. Remove any old APKs
 Remove-Item "build\app\outputs\flutter-apk\*.apk" -Force -ErrorAction SilentlyContinue
 
-# Build release APK
+# 4. Build release APK
 E:\flutter\bin\flutter.bat build apk --release
 
-# Rename to YesBill.apk
+# 5. Rename to YesBill.apk
 Rename-Item "build\app\outputs\flutter-apk\app-release.apk" "YesBill.apk"
 ```
 
 The final APK is at:
 ```
-build\app\outputs\flutter-apk\YesBill.apk
+E:\Projects-Repository\YesBill\yesbill-mobile\build\app\outputs\flutter-apk\YesBill.apk
 ```
 
+---
+
 ### Build an App Bundle (for Play Store)
+
 ```powershell
-E:\flutter\bin\flutter.bat build appbundle --release
+flutter build appbundle --release
 # Output: build\app\outputs\bundle\release\app-release.aab
 ```
 

@@ -216,10 +216,7 @@ void showShellNotificationSheet(BuildContext context) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => ProviderScope(
-      parent: ProviderScope.containerOf(context),
-      child: const AppNotificationsSheet(),
-    ),
+    builder: (_) => const AppNotificationsSheet(),
   );
 }
 
@@ -268,6 +265,7 @@ class ShellHeaderActions extends ConsumerWidget {
           userEmail: userEmail,
           isDark: isDark,
           onSettings: () => context.go('/settings'),
+          onSupport: () => context.go('/support'),
           onSignOut: () async {
             try {
               await ref.read(authProvider.notifier).signOut();
@@ -368,7 +366,7 @@ class _BellBtn extends StatelessWidget {
   }
 }
 
-enum _ProfileAction { settings, signOut }
+enum _ProfileAction { settings, support, signOut }
 
 class _ProfileMenu extends StatelessWidget {
   const _ProfileMenu({
@@ -377,6 +375,7 @@ class _ProfileMenu extends StatelessWidget {
     required this.userEmail,
     required this.isDark,
     required this.onSettings,
+    required this.onSupport,
     required this.onSignOut,
   });
 
@@ -385,6 +384,7 @@ class _ProfileMenu extends StatelessWidget {
   final String? userEmail;
   final bool isDark;
   final VoidCallback onSettings;
+  final VoidCallback onSupport;
   final VoidCallback onSignOut;
 
   @override
@@ -401,6 +401,7 @@ class _ProfileMenu extends StatelessWidget {
       ),
       onSelected: (value) {
         if (value == _ProfileAction.settings) onSettings();
+        if (value == _ProfileAction.support) onSupport();
         if (value == _ProfileAction.signOut) onSignOut();
       },
       itemBuilder: (context) => [
@@ -433,6 +434,11 @@ class _ProfileMenu extends StatelessWidget {
           value: _ProfileAction.settings,
           child: _MenuRow(icon: LucideIcons.settings, label: 'Settings'),
         ),
+        PopupMenuItem<_ProfileAction>(
+          value: _ProfileAction.support,
+          child: _MenuRow(icon: LucideIcons.lifeBuoy, label: 'Support'),
+        ),
+        const PopupMenuDivider(),
         PopupMenuItem<_ProfileAction>(
           value: _ProfileAction.signOut,
           child: _MenuRow(icon: LucideIcons.logOut, label: 'Log out', destructive: true),
@@ -477,7 +483,10 @@ class _MenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = destructive ? AppColors.error : null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultColor =
+        isDark ? AppColors.textPrimary : AppColors.textPrimaryLight;
+    final color = destructive ? AppColors.error : defaultColor;
     return Row(
       children: [
         Icon(icon, size: 16, color: color),

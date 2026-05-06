@@ -312,7 +312,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
+                      color: AppSurfaces.isDark(context)
+                          ? AppColors.surfaceDarkElevated
+                          : const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     alignment: Alignment.center,
@@ -496,7 +498,9 @@ class _MonthCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: selected
                                 ? Colors.white.withValues(alpha: 0.18)
-                                : const Color(0xFFDCE3F3),
+                                : (Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.cardDarkBorder
+                                    : const Color(0xFFDCE3F3)),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
@@ -643,15 +647,21 @@ class _DayServiceRow extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: service.isProvider
-                      ? const Color(0xFFECFDF5)
-                      : const Color(0xFFEEF2FF),
+                      ? (AppSurfaces.isDark(context)
+                          ? const Color(0xFF065F46).withOpacity(0.28)
+                          : const Color(0xFFECFDF5))
+                      : (AppSurfaces.isDark(context)
+                          ? AppColors.primary.withOpacity(0.18)
+                          : const Color(0xFFEEF2FF)),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   service.isProvider ? 'PROVIDER' : 'CONSUMER',
                   style: AppTextStyles.labelSm.copyWith(
                     color: service.isProvider
-                        ? const Color(0xFF047857)
+                        ? (AppSurfaces.isDark(context)
+                            ? AppColors.success
+                            : const Color(0xFF047857))
                         : AppColors.primary,
                     fontWeight: FontWeight.w700,
                   ),

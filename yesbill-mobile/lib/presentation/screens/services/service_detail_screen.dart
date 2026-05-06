@@ -29,6 +29,7 @@ class ServiceDetailScreen extends ConsumerWidget {
             tooltip: 'Edit',
             onPressed: () => context.push('/services/$serviceId/edit'),
             icon: const Icon(LucideIcons.pencil),
+            padding: const EdgeInsets.only(right: 12),
           ),
         ],
       ),
