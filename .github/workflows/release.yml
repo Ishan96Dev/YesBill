@@ -33,7 +33,7 @@ jobs:
           if [ -z "$GOOGLE_SERVICES_JSON_B64" ]; then
             echo '{"project_info":{"project_id":"placeholder","project_number":"000000000000","firebase_url":"https://placeholder.firebaseio.com","storage_bucket":"placeholder.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.yesbill.yesbill_mobile"}},"oauth_client":[],"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
           else
-            echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > android/app/google-services.json
+            echo "$GOOGLE_SERVICES_JSON_B64" | tr -d '[:space:]' | base64 --decode > android/app/google-services.json
             python3 -c "import json,sys; json.load(open('android/app/google-services.json'))" || \
               { echo "ERROR: google-services.json is not valid JSON"; exit 1; }
           fi
@@ -43,7 +43,7 @@ jobs:
       - name: Decode keystore
         working-directory: yesbill-mobile
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > yesbill-release.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '[:space:]' | base64 --decode > yesbill-release.keystore
 
       - name: Write key.properties
         working-directory: yesbill-mobile
