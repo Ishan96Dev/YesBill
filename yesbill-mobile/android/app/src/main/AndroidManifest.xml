@@ -93,6 +93,47 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="yesbill_notifications" />
+
+        <!-- ── Home Screen Widgets ──────────────────────────────── -->
+
+        <!-- Calendar widget (4×2): shows today's delivery status -->
+        <receiver
+            android:name=".CalendarWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_calendar_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_calendar_info" />
+        </receiver>
+
+        <!-- Services widget (4×2): shows active services + rates -->
+        <receiver
+            android:name=".ServicesWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_services_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_services_info" />
+        </receiver>
+
+        <!-- Chat widget (2×2): quick launcher to YesBill AI -->
+        <receiver
+            android:name=".ChatWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_chat_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_chat_info" />
+        </receiver>
     </application>
 
     <!-- Required for url_launcher to open HTTPS links on Android 11+ (API 30+) -->

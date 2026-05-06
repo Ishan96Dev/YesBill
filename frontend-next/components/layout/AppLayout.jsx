@@ -33,6 +33,7 @@ import {
   LifeBuoy,
   BookOpen,
   ExternalLink,
+  Smartphone,
 } from "lucide-react";
 import AgentButton from "../agent/AgentButton";
 import { Button } from "../ui/button";
@@ -50,6 +51,7 @@ import { useNotifications } from "../../hooks/useNotifications";
 
 // ─── Searchable pages ──────────────────────────────────────────────
 const DOCS_URL = "https://ishan96dev.github.io/YesBill/docs/";
+const APK_URL = "https://github.com/Ishan96Dev/YesBill/releases/latest/download/YesBill.apk";
 
 const PAGES = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -435,7 +437,7 @@ export default function AppLayout({
                     initial={{ opacity: 0, y: -8, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.1 }}
                     className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200/60 overflow-hidden z-50"
                   >
                     {/* Header */}
@@ -577,7 +579,7 @@ export default function AppLayout({
                     initial={{ opacity: 0, y: -8, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.1 }}
                     className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200/60 overflow-hidden z-50"
                   >
                     {/* User info */}
@@ -635,6 +637,19 @@ export default function AppLayout({
                         Docs
                         <ExternalLink className="w-3.5 h-3.5 ml-auto text-gray-300" />
                       </button>
+                      <button
+                        onClick={() => {
+                          setProfileOpen(false);
+                          window.open(APK_URL, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-green-50 rounded-xl transition-colors text-left"
+                      >
+                        <Smartphone className="w-4 h-4 text-green-500" />
+                        Download APK
+                        <span className="ml-auto text-[10px] font-semibold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded-md">
+                          Android
+                        </span>
+                      </button>
                     </div>
 
                     <div className="p-1.5 border-t border-gray-100">
@@ -665,12 +680,12 @@ export default function AppLayout({
             const itemContent = (
               <span
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all duration-150 relative group",
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-colors duration-100 relative group",
                   lockedNav
                     ? "text-gray-400 opacity-60 cursor-not-allowed"
                     : isActive
                     ? "bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg shadow-primary/20"
-                    : "text-gray-700 hover:bg-gray-100/80 hover:translate-x-1"
+                    : "text-gray-700 hover:bg-gray-100/80"
                 )}
               >
                 <Icon className={cn("w-5 h-5 shrink-0 transition-colors", lockedNav ? "text-gray-400" : isActive ? "text-white" : "text-gray-500 group-hover:text-primary")} />
@@ -720,7 +735,7 @@ export default function AppLayout({
                 const mobileItemContent = (
                   <span
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all duration-150",
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-colors duration-100",
                       lockedNav
                         ? "text-gray-400 opacity-60 cursor-not-allowed"
                         : isActive

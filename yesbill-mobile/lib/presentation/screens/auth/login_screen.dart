@@ -10,6 +10,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/auth_widgets.dart';
+import '../../widgets/common/app_background_effects.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -68,7 +69,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          const AppBackgroundEffects(),
+          SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxHeight < 780;
@@ -233,6 +237,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             );
           },
         ),
+          ),
+        ],
       ),
     );
   }

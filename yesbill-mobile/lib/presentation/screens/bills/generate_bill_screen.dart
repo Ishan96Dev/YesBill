@@ -7,6 +7,7 @@ import '../../../core/constants/service_icons.dart';
 import '../../../core/extensions/context_extensions.dart';
 import '../../../core/extensions/date_extensions.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../data/models/user_service.dart';
@@ -284,20 +285,14 @@ class _MonthChip extends StatelessWidget {
       child: Ink(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : Colors.white,
+          color: selected ? AppColors.primary : AppSurfaces.panel(context),
           borderRadius: BorderRadius.circular(14),
           border: selected
               ? Border.all(color: AppColors.primary, width: 1.5)
-              : null,
+              : Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3), width: 1),
           boxShadow: selected
               ? null
-              : const [
-                  BoxShadow(
-                    color: Color(0x0A2D3337),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ],
+              : AppSurfaces.softShadow(context),
         ),
         child: Column(
           children: [

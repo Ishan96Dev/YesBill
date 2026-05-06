@@ -3,13 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/core_providers.dart';
+import '../../widgets/common/app_background_effects.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -24,30 +23,47 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   static const _pages = [
     _OnboardingPage(
-      icon: LucideIcons.package,
-      title: 'Track Your Services',
+      imagePath: 'assets/onboarding/onboarding_1_welcome.png',
+      title: 'Welcome to YesBill',
       description:
-          'Add all your recurring household services — milk, newspapers, internet, tiffin, and more.',
+          'Your personal daily billing tracker for every household service. Smart, simple, and always in sync.',
     ),
     _OnboardingPage(
-      icon: LucideIcons.calendarCheck,
-      title: 'Mark Daily Deliveries',
+      imagePath: 'assets/onboarding/onboarding_2_services.png',
+      title: 'Add Your Services',
       description:
-          'Tap on any day to record which services were delivered, skipped, or pending.',
+          'Set up milk, newspapers, internet, cleaning, tiffin, and any recurring service in seconds.',
     ),
     _OnboardingPage(
-      icon: LucideIcons.sparkles,
-      title: 'AI-Powered Bills',
+      imagePath: 'assets/onboarding/onboarding_3_calendar.png',
+      title: 'Mark What Arrived',
       description:
-          'Generate accurate monthly bills instantly with AI. Get insights and recommendations on your spending.',
+          'Tap once each day to log what was delivered. Your billing calendar fills automatically.',
+    ),
+    _OnboardingPage(
+      imagePath: 'assets/onboarding/onboarding_4_bills.png',
+      title: 'Instant Monthly Bills',
+      description:
+          'Generate your complete bill in one tap at the end of the month. Share it as a PDF.',
+    ),
+    _OnboardingPage(
+      imagePath: 'assets/onboarding/onboarding_5_ai.png',
+      title: 'AI That Gets Your Bills',
+      description:
+          'Chat with YesBill AI for spending summaries, smart tips, and insights about your services.',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      body: SafeArea(
-        child: Column(
+      backgroundColor: cs.surface,
+      body: Stack(
+        children: [
+          const AppBackgroundEffects(),
+          SafeArea(
+            child: Column(
           children: [
             Expanded(
               child: PageView.builder(
@@ -66,6 +82,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             const Gap(24),
           ],
         ),
+          ),
+        ],
       ),
     );
   }
@@ -87,11 +105,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 class _OnboardingPage {
   const _OnboardingPage({
-    required this.icon,
+    required this.imagePath,
     required this.title,
     required this.description,
   });
-  final IconData icon;
+  final String imagePath;
   final String title;
   final String description;
 }
@@ -103,32 +121,36 @@ class _OnboardingPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppGradients.primary,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Icon(page.icon, color: Colors.white, size: 48),
-          ).animate().fadeIn().scale(begin: const Offset(0.8, 0.8)),
-          const Gap(40),
+          Expanded(
+            flex: 5,
+            child: Image.asset(
+              page.imagePath,
+              fit: BoxFit.contain,
+            ).animate().fadeIn(duration: 400.ms).scale(
+                  begin: const Offset(0.92, 0.92),
+                  end: const Offset(1, 1),
+                  duration: 400.ms,
+                  curve: Curves.easeOut,
+                ),
+          ),
+          const Spacer(),
           Text(
             page.title,
             style: AppTextStyles.h1,
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
-          const Gap(16),
+          const Gap(12),
           Text(
             page.description,
             style: AppTextStyles.bodyLg
                 .copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 350.ms),
+          const Spacer(),
         ],
       ),
     );

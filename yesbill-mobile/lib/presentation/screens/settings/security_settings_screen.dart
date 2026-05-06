@@ -169,7 +169,7 @@ class _SecuritySettingsScreenState
                   decoration: InputDecoration(
                     hintText: 'DELETE',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppSurfaces.elevated(context),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

@@ -1,4 +1,5 @@
-﻿import 'dart:ui';
+﻿import 'dart:async';
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import '../../../providers/core_providers.dart';
 import '../../../providers/notifications_provider.dart';
 import '../../../providers/shell_chrome_provider.dart';
 import '../../../services/permission_service.dart';
+import '../../../services/widget_service.dart';
+import 'app_background_effects.dart';
 import 'notifications_sheet.dart';
 
 /// Main app shell: wraps all authenticated screens with top header,
@@ -114,7 +117,29 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestPermissionsIfNeeded();
+      _checkSetupStatus();
     });
+  }
+
+  /// Redirect to /setup if the user hasn't completed the account setup wizard.
+  /// Runs once when the authenticated shell first mounts (covers login redirect).
+  Future<void> _checkSetupStatus() async {
+    if (!mounted) return;
+    try {
+      final profile = await ref.read(userProfileProvider.future);
+      if (!mounted) return;
+      if (profile != null && !profile.onboardingCompleted) {
+        context.go('/setup');
+      }
+      // Seed the Chat widget greeting once profile is available
+      if (profile != null) {
+        unawaited(WidgetService.pushChatData(
+          displayName: profile.displayName ?? '',
+        ));
+      }
+    } catch (_) {
+      // Profile fetch failed — allow user through to dashboard
+    }
   }
 
   Future<void> _signOutFromUi() async {
@@ -548,7 +573,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              const _AnimatedBackgroundEffects(),
+              const AppBackgroundEffects(),
               SafeArea(
                 top: false,
                 bottom: false,
@@ -925,114 +950,6 @@ class _BadgeBellButton extends StatelessWidget {
 }
 
 
-
-class _AnimatedBackgroundEffects extends StatelessWidget {
-  const _AnimatedBackgroundEffects();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return IgnorePointer(
-      child: RepaintBoundary(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(
-              top: -130,
-              left: -110,
-              child: _GlowOrb(
-                size: 300,
-                color: isDark
-                    ? AppColors.primary.withOpacity(0.26)
-                    : AppColors.primary.withOpacity(0.18),
-                begin: const Offset(-10, -6),
-                end: const Offset(20, 16),
-                duration: 7.seconds,
-              ),
-            ),
-            Positioned(
-              bottom: -160,
-              right: -90,
-              child: _GlowOrb(
-                size: 340,
-                color: isDark
-                    ? const Color(0xFF60A5FA).withOpacity(0.18)
-                    : const Color(0xFF60A5FA).withOpacity(0.14),
-                begin: const Offset(8, 8),
-                end: const Offset(-18, -12),
-                duration: 9.seconds,
-              ),
-            ),
-            Align(
-              alignment: const Alignment(0.1, -0.25),
-              child: _GlowOrb(
-                size: 180,
-                color: isDark
-                    ? const Color(0xFFA78BFA).withOpacity(0.14)
-                    : const Color(0xFFA78BFA).withOpacity(0.1),
-                begin: const Offset(0, -8),
-                end: const Offset(0, 10),
-                duration: 8.seconds,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-    required this.begin,
-    required this.end,
-    required this.duration,
-  });
-
-  final double size;
-  final Color color;
-  final Offset begin;
-  final Offset end;
-  final Duration duration;
-
-  @override
-  Widget build(BuildContext context) {
-    final orb = Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color,
-            color.withOpacity(0.45),
-            color.withOpacity(0.0),
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
-      ),
-    );
-
-    return orb
-        .animate(onPlay: (controller) => controller.repeat(reverse: true))
-        .move(
-            begin: begin, end: end, duration: duration, curve: Curves.easeInOut)
-        .scale(
-          begin: const Offset(0.96, 0.96),
-          end: const Offset(1.07, 1.07),
-          duration: duration,
-          curve: Curves.easeInOut,
-        )
-        .fade(
-            begin: 0.72,
-            end: 0.94,
-            duration: duration,
-            curve: Curves.easeInOut);
-  }
-}
 
 class _ShellBottomArea extends StatelessWidget {
   const _ShellBottomArea({

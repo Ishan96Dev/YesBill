@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -38,7 +39,7 @@ class SupportScreen extends StatelessWidget {
         elevation: 0,
         title: const Text('Support'),
         titleTextStyle: AppTextStyles.h3.copyWith(
-          color: const Color(0xFF2D3337),
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -84,14 +85,14 @@ class SupportScreen extends StatelessWidget {
                         'Support Center',
                         style: AppTextStyles.h3.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF2D3337),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         "We're here to help. Report bugs, request\nfeatures, or reach out directly.",
                         style: AppTextStyles.bodySm.copyWith(
-                          color: const Color(0xFF596063),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -206,15 +207,15 @@ class SupportScreen extends StatelessWidget {
                         'Quick Response Commitment',
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF2D3337),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
                           style: AppTextStyles.bodySm.copyWith(
-                              color: const Color(0xFF596063)),
-                          children: const [
+                              color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          children: [
                             TextSpan(
                                 text:
                                     'Bug reports are triaged within '),
@@ -222,7 +223,7 @@ class SupportScreen extends StatelessWidget {
                               text: '24 hours',
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF2D3337)),
+                                  color: Theme.of(context).colorScheme.onSurface),
                             ),
                             TextSpan(
                                 text:
@@ -252,15 +253,9 @@ class SupportScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: AppSurfaces.panel(context),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x0A2D3337),
-                  blurRadius: 16,
-                  offset: Offset(0, 4),
-                ),
-              ],
+              boxShadow: AppSurfaces.softShadow(context),
             ),
             child: Column(
               children: [
@@ -307,7 +302,7 @@ class _SectionLabel extends StatelessWidget {
     return Text(
       label,
       style: AppTextStyles.labelSm.copyWith(
-        color: const Color(0xFF596063),
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         letterSpacing: 0.6,
         fontWeight: FontWeight.w700,
       ),
@@ -339,30 +334,24 @@ class _GitHubCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = horizontal
-        ? _buildHorizontal()
-        : _buildVertical();
+        ? _buildHorizontal(context)
+        : _buildVertical(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0A2D3337),
-              blurRadius: 16,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: content,
+        color: AppSurfaces.panel(context),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: AppSurfaces.softShadow(context),
+      ),
+      child: content,
       ),
     );
   }
 
-  Widget _buildVertical() {
+  Widget _buildVertical(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -376,12 +365,12 @@ class _GitHubCard extends StatelessWidget {
         Text(
           title,
           style: AppTextStyles.body.copyWith(
-              fontWeight: FontWeight.w700, color: const Color(0xFF2D3337)),
+              fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 4),
         Text(
           description,
-          style: AppTextStyles.bodySm.copyWith(color: const Color(0xFF596063)),
+          style: AppTextStyles.bodySm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -399,7 +388,7 @@ class _GitHubCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontal() {
+  Widget _buildHorizontal(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -417,11 +406,11 @@ class _GitHubCard extends StatelessWidget {
               Text(
                 title,
                 style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w700, color: const Color(0xFF2D3337)),
+                    fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
               ),
               Text(
                 description,
-                style: AppTextStyles.bodySm.copyWith(color: const Color(0xFF596063)),
+                style: AppTextStyles.bodySm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -467,15 +456,9 @@ class _SupportGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppSurfaces.panel(context),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2D3337),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: AppSurfaces.softShadow(context),
       ),
       child: Column(
         children: [
@@ -508,10 +491,10 @@ class _SupportTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F1F5),
+                color: AppSurfaces.elevated(context),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(data.icon, size: 16, color: const Color(0xFF596063)),
+              child: Icon(data.icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -522,19 +505,19 @@ class _SupportTile extends StatelessWidget {
                     data.label,
                     style: AppTextStyles.body.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2D3337),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     data.subtitle,
                     style: AppTextStyles.bodySm.copyWith(
-                      color: const Color(0xFF596063),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(data.trailing, size: 14, color: const Color(0xFFACB3B7)),
+            Icon(data.trailing, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ],
         ),
       ),
@@ -572,7 +555,7 @@ class _TipRow extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: AppTextStyles.bodySm.copyWith(color: const Color(0xFF596063)),
+            style: AppTextStyles.bodySm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
       ],

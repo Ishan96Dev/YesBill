@@ -14,7 +14,7 @@ class PreferencesService {
     return switch (val) {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,
-            _ => ThemeMode.light,
+            _ => ThemeMode.dark,
     };
   }
 

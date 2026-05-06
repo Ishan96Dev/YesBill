@@ -17,6 +17,7 @@ import '../screens/calendar/service_calendar_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/setup/account_setup_screen.dart';
 import '../screens/services/add_service_screen.dart';
 import '../screens/services/edit_service_screen.dart';
 import '../screens/services/service_detail_screen.dart';
@@ -72,6 +73,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (_, __) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/setup',
+        builder: (_, __) => const AccountSetupScreen(),
       ),
       GoRoute(
         path: '/login',

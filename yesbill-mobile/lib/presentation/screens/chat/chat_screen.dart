@@ -11,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../data/models/ai_provider_info.dart';
@@ -804,7 +805,7 @@ class _AskAiLandingState extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: _chatMd3SurfaceContainerLowest,
+            color: _chatMd3SurfaceContainerLowest(context),
             borderRadius: BorderRadius.circular(24),
             boxShadow: const [
               BoxShadow(
@@ -831,7 +832,7 @@ class _AskAiLandingState extends StatelessWidget {
               Text(
                 'Ask anything about your services, bills, renewals, and monthly spending.',
                 style: AppTextStyles.body.copyWith(
-                  color: _chatMd3OnSurfaceVariant,
+                  color: _chatMd3OnSurfaceVariant(context),
                 ),
               ),
               const SizedBox(height: 20),
@@ -880,7 +881,7 @@ class _ConversationStarterState extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: _chatMd3SurfaceContainerLowest,
+            color: _chatMd3SurfaceContainerLowest(context),
             borderRadius: BorderRadius.circular(24),
             boxShadow: const [
               BoxShadow(
@@ -898,10 +899,10 @@ class _ConversationStarterState extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'What would you like to ask?',
                       style: TextStyle(
-                        color: _chatMd3OnSurface,
+                        color: _chatMd3OnSurface(context),
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
@@ -910,7 +911,7 @@ class _ConversationStarterState extends StatelessWidget {
                     Text(
                       'Try one of these prompts below.',
                       style: AppTextStyles.caption.copyWith(
-                        color: _chatMd3OnSurfaceVariant,
+                        color: _chatMd3OnSurfaceVariant(context),
                       ),
                     ),
                   ],
@@ -939,7 +940,7 @@ class _SuggestedPromptGrid extends StatelessWidget {
         Text(
           'SUGGESTED PROMPTS',
           style: AppTextStyles.labelSm.copyWith(
-            color: _chatMd3OnSurfaceVariant,
+            color: _chatMd3OnSurfaceVariant(context),
             fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
           ),
@@ -954,10 +955,10 @@ class _SuggestedPromptGrid extends StatelessWidget {
               child: Ink(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _chatMd3SurfaceContainerLowest,
+                  color: _chatMd3SurfaceContainerLowest(context),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: _chatMd3OutlineVariant.withOpacity(0.4)),
+                      color: _chatMd3OutlineVariant(context).withOpacity(0.4)),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x072D3337),
@@ -972,7 +973,7 @@ class _SuggestedPromptGrid extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: _chatMd3PrimaryContainer,
+                        color: _chatMd3PrimaryContainer(context),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
@@ -988,14 +989,14 @@ class _SuggestedPromptGrid extends StatelessWidget {
                         prompt,
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: _chatMd3OnSurface,
+                          color: _chatMd3OnSurface(context),
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       LucideIcons.chevronRight,
                       size: 16,
-                      color: _chatMd3OnSurfaceVariant,
+                      color: _chatMd3OnSurfaceVariant(context),
                     ),
                   ],
                 ),
@@ -1094,9 +1095,9 @@ class _StaticInfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: _chatMd3SurfaceContainerLowest,
+        color: _chatMd3SurfaceContainerLowest(context),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: _chatMd3OutlineVariant.withOpacity(0.3)),
+        border: Border.all(color: _chatMd3OutlineVariant(context).withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1107,7 +1108,7 @@ class _StaticInfoChip extends StatelessWidget {
             label,
             style: AppTextStyles.bodySm.copyWith(
               fontWeight: FontWeight.w600,
-              color: _chatMd3OnSurface,
+              color: _chatMd3OnSurface(context),
             ),
           ),
         ],
@@ -1172,7 +1173,7 @@ class _ConversationDrawer extends StatelessWidget {
               const Spacer(),
               IconButton(
                 icon: const Icon(LucideIcons.x, size: 18),
-                color: _chatMd3OnSurfaceVariant,
+                color: _chatMd3OnSurfaceVariant(context),
                 onPressed: () => Navigator.of(context).pop(),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -1250,7 +1251,7 @@ class _ConversationDrawer extends StatelessWidget {
             child: Text(
               'RECENT',
               style: AppTextStyles.labelSm.copyWith(
-                color: _chatMd3OnSurfaceVariant,
+                color: _chatMd3OnSurfaceVariant(context),
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
               ),
@@ -1265,24 +1266,24 @@ class _ConversationDrawer extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           LucideIcons.messageCircle,
                           size: 42,
-                          color: _chatMd3OutlineVariant,
+                          color: _chatMd3OutlineVariant(context),
                         ),
                         const SizedBox(height: 10),
                         Text(
                           'No conversations yet',
                           style: AppTextStyles.body.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: _chatMd3OnSurfaceVariant,
+                            color: _chatMd3OnSurfaceVariant(context),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Start a new chat to get going',
                           style: AppTextStyles.caption.copyWith(
-                            color: _chatMd3OnSurfaceVariant,
+                            color: _chatMd3OnSurfaceVariant(context),
                           ),
                         ),
                       ],
@@ -1300,7 +1301,7 @@ class _ConversationDrawer extends StatelessWidget {
                     return Material(
                       color: selected
                           ? _chatMd3Primary.withOpacity(0.08)
-                          : _chatMd3SurfaceContainerLow,
+                          : _chatMd3SurfaceContainerLow(context),
                       borderRadius: BorderRadius.circular(16),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
@@ -1333,7 +1334,7 @@ class _ConversationDrawer extends StatelessWidget {
                                             : FontWeight.w600,
                                         color: selected
                                             ? _chatMd3Primary
-                                            : _chatMd3OnSurface,
+                                            : _chatMd3OnSurface(context),
                                       ),
                                     ),
                                     const SizedBox(height: 3),
@@ -1341,7 +1342,7 @@ class _ConversationDrawer extends StatelessWidget {
                                       _timeAgo(conversation.updatedAt ??
                                           conversation.createdAt),
                                       style: AppTextStyles.caption.copyWith(
-                                        color: _chatMd3OnSurfaceVariant,
+                                        color: _chatMd3OnSurfaceVariant(context),
                                       ),
                                     ),
                                   ],
@@ -1354,7 +1355,7 @@ class _ConversationDrawer extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   side: BorderSide(
-                                    color: _chatMd3OutlineVariant
+                                    color: _chatMd3OutlineVariant(context)
                                         .withOpacity(0.35),
                                   ),
                                 ),
@@ -1395,10 +1396,10 @@ class _ConversationDrawer extends StatelessWidget {
                                     ),
                                   ),
                                 ],
-                                icon: const Icon(
+                                icon: Icon(
                                   LucideIcons.moreVertical,
                                   size: 16,
-                                  color: _chatMd3OnSurfaceVariant,
+                                  color: _chatMd3OnSurfaceVariant(context),
                                 ),
                               ),
                             ],
@@ -1422,8 +1423,8 @@ class _ConversationDrawer extends StatelessWidget {
                       : onDownloadAllConversations,
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                        color: _chatMd3OutlineVariant.withOpacity(0.5)),
-                    foregroundColor: _chatMd3OnSurfaceVariant,
+                        color: _chatMd3OutlineVariant(context).withOpacity(0.5)),
+                    foregroundColor: _chatMd3OnSurfaceVariant(context),
                   ),
                   icon: exportingAll
                       ? const SizedBox(
@@ -1498,13 +1499,13 @@ class _DrawerNavItem extends StatelessWidget {
       leading: Icon(
         icon,
         size: 18,
-        color: active ? _chatMd3Primary : _chatMd3OnSurfaceVariant,
+        color: active ? _chatMd3Primary : _chatMd3OnSurfaceVariant(context),
       ),
       title: Text(
         label,
         style: AppTextStyles.body.copyWith(
           fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-          color: active ? _chatMd3Primary : _chatMd3OnSurface,
+          color: active ? _chatMd3Primary : _chatMd3OnSurface(context),
         ),
       ),
     );
@@ -1538,15 +1539,21 @@ class _ConversationMenuRow extends StatelessWidget {
   }
 }
 
-// Stitch MD3 design tokens (local to chat UI)
+// Chat UI design tokens — theme-aware
 const _chatMd3Primary = AppColors.primary;
-const _chatMd3PrimaryContainer = Color(0xFFE0E7FF);
 const _chatMd3Secondary = AppColors.info;
-const _chatMd3SurfaceContainerLowest = AppColors.cardLight;
-const _chatMd3SurfaceContainerLow = Color(0xFFEFF3FF);
-const _chatMd3OnSurface = AppColors.textPrimaryLight;
-const _chatMd3OnSurfaceVariant = AppColors.textSecondaryLight;
-const _chatMd3OutlineVariant = Color(0xFFCBD5E1);
+Color _chatMd3PrimaryContainer(BuildContext ctx) =>
+    Theme.of(ctx).colorScheme.primaryContainer;
+Color _chatMd3SurfaceContainerLowest(BuildContext ctx) =>
+    AppSurfaces.panel(ctx);
+Color _chatMd3SurfaceContainerLow(BuildContext ctx) =>
+    AppSurfaces.elevated(ctx);
+Color _chatMd3OnSurface(BuildContext ctx) =>
+    Theme.of(ctx).colorScheme.onSurface;
+Color _chatMd3OnSurfaceVariant(BuildContext ctx) =>
+    Theme.of(ctx).colorScheme.onSurfaceVariant;
+Color _chatMd3OutlineVariant(BuildContext ctx) =>
+    Theme.of(ctx).colorScheme.outline;
 
 class _ChatBubble extends StatelessWidget {
   const _ChatBubble({
@@ -1590,7 +1597,7 @@ class _ChatBubble extends StatelessWidget {
                       child: Text(
                         'YesBill',
                         style: AppTextStyles.labelSm.copyWith(
-                          color: _chatMd3OnSurfaceVariant,
+                          color: _chatMd3OnSurfaceVariant(context),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1612,7 +1619,7 @@ class _ChatBubble extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isUser
                           ? _chatMd3Primary
-                          : _chatMd3SurfaceContainerLowest,
+                          : _chatMd3SurfaceContainerLowest(context),
                       borderRadius: isUser
                           ? const BorderRadius.only(
                               topLeft: Radius.circular(18),
@@ -1671,13 +1678,13 @@ class _ChatBubble extends StatelessWidget {
                                 MarkdownStyleSheet.fromTheme(Theme.of(context))
                                     .copyWith(
                               p: AppTextStyles.body
-                                  .copyWith(color: _chatMd3OnSurface),
+                                  .copyWith(color: _chatMd3OnSurface(context)),
                               a: AppTextStyles.body.copyWith(
                                 color: _chatMd3Primary,
                                 decoration: TextDecoration.underline,
                               ),
                               code: AppTextStyles.body.copyWith(
-                                color: _chatMd3OnSurface,
+                                color: _chatMd3OnSurface(context),
                                 fontFamily: 'monospace',
                                 backgroundColor: const Color(0x14ACB3B7),
                               ),
@@ -1743,7 +1750,7 @@ class _ReasoningPanelState extends State<_ReasoningPanel> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: _chatMd3SurfaceContainerLow.withOpacity(0.7),
+          color: _chatMd3SurfaceContainerLow(context).withOpacity(0.7),
           borderRadius: BorderRadius.circular(12),
           border: Border(
             left: BorderSide(
@@ -1771,7 +1778,7 @@ class _ReasoningPanelState extends State<_ReasoningPanel> {
 
     return Container(
       decoration: BoxDecoration(
-        color: _chatMd3SurfaceContainerLow.withOpacity(0.7),
+        color: _chatMd3SurfaceContainerLow(context).withOpacity(0.7),
         borderRadius: BorderRadius.circular(12),
         border: Border(
           left: BorderSide(
@@ -1828,7 +1835,7 @@ class _ReasoningPanelState extends State<_ReasoningPanel> {
               child: Text(
                 widget.reasoning,
                 style: AppTextStyles.caption.copyWith(
-                  color: _chatMd3OnSurfaceVariant,
+                  color: _chatMd3OnSurfaceVariant(context),
                   height: 1.5,
                 ),
               ),
@@ -1864,10 +1871,10 @@ class _ChatComposer extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: _chatMd3SurfaceContainerLowest,
+            color: _chatMd3SurfaceContainerLowest(context),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: _chatMd3OutlineVariant.withOpacity(0.3),
+              color: _chatMd3OutlineVariant(context).withOpacity(0.3),
             ),
             boxShadow: const [
               BoxShadow(
@@ -1882,17 +1889,17 @@ class _ChatComposer extends StatelessWidget {
               IconButton(
                 onPressed: onNewConversation,
                 style: IconButton.styleFrom(
-                  backgroundColor: _chatMd3SurfaceContainerLow,
+                  backgroundColor: _chatMd3SurfaceContainerLow(context),
                   minimumSize: const Size(42, 42),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   padding: EdgeInsets.zero,
                 ),
-                icon: const Icon(
+                icon: Icon(
                   LucideIcons.plusCircle,
                   size: 20,
-                  color: _chatMd3OnSurfaceVariant,
+                  color: _chatMd3OnSurfaceVariant(context),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1914,7 +1921,7 @@ class _ChatComposer extends StatelessWidget {
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     hintStyle: AppTextStyles.body.copyWith(
-                      color: _chatMd3OnSurfaceVariant,
+                      color: _chatMd3OnSurfaceVariant(context),
                     ),
                   ),
                 ),
@@ -1929,7 +1936,7 @@ class _ChatComposer extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: canSend
                         ? _chatMd3Primary
-                        : _chatMd3OutlineVariant.withOpacity(0.4),
+                        : _chatMd3OutlineVariant(context).withOpacity(0.4),
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: canSend
                         ? const [

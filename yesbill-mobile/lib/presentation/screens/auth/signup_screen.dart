@@ -9,6 +9,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/auth_widgets.dart';
+import '../../widgets/common/app_background_effects.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -58,7 +59,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           SnackBar(content: Text(error), backgroundColor: AppColors.error),
         );
       } else {
-        context.go('/dashboard');
+        context.go('/setup');
       }
     }
   }
@@ -82,7 +83,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          const AppBackgroundEffects(),
+          SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -261,6 +265,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
           ),
         ),
+          ),
+        ],
       ),
     );
   }

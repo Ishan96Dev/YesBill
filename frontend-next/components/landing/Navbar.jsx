@@ -43,7 +43,7 @@ export default function Navbar() {
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: "circOut" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-full flex items-center justify-between w-full">
           <div className="flex items-center cursor-pointer group" onClick={() => router.push("/")}>
@@ -107,8 +107,9 @@ export default function Navbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-gray-600"
+            className="md:hidden p-2 text-gray-600 touch-manipulation"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{ touchAction: 'manipulation' }}
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>

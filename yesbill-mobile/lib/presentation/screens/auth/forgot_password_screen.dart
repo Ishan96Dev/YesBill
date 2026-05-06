@@ -10,6 +10,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/validators.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/auth_widgets.dart';
+import '../../widgets/common/app_background_effects.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -36,7 +37,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          const AppBackgroundEffects(),
+          SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxHeight < 760;
@@ -144,6 +148,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             );
           },
         ),
+          ),
+        ],
       ),
     );
   }

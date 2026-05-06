@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget labels shown in the widget picker -->
+    <string name="widget_calendar_label">YesBill Calendar</string>
+    <string name="widget_services_label">YesBill Services</string>
+    <string name="widget_chat_label">YesBill AI Chat</string>
+
+    <!-- Widget descriptions shown in Android 12+ widget picker -->
+    <string name="widget_calendar_description">Shows today\'s delivery status for your household services</string>
+    <string name="widget_services_description">Shows your active household services and their rates</string>
+    <string name="widget_chat_description">Quick access to YesBill AI assistant</string>
+</resources>

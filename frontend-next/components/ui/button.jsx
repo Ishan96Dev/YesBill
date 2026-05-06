@@ -5,10 +5,9 @@
 import * as React from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden active:scale-[0.98] select-none touch-manipulation",
   {
     variants: {
       variant: {
@@ -36,21 +35,14 @@ const buttonVariants = cva(
 );
 
 const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? React.Fragment : motion.button;
-  
-  const additionalProps = asChild ? {} : {
-    whileHover: { scale: 1.02 },
-    whileTap: { scale: 0.98 },
-  };
-
   return (
-    <Comp
+    <button
       ref={ref}
       className={cn(
         buttonVariants({ variant, size, className }),
         variant === 'gradient' && "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500"
       )}
-      {...additionalProps}
+      style={{ touchAction: 'manipulation' }}
       {...props}
     >
       {/* Shine effect for gradient buttons */}
@@ -58,6 +50,15 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] hover:translate-x-[100%] transition-transform duration-700" />
       )}
       <span className="relative z-10 flex items-center gap-2">
+        {props.children}
+      </span>
+    </button>
+  );
+});
+Button.displayName = "Button";
+
+export { Button, buttonVariants };
+
         {props.children}
       </span>
     </Comp>
