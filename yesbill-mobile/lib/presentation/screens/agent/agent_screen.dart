@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -37,15 +37,69 @@ const _reasoningOptions = <({String value, String label})>[
   (value: 'xhigh', label: 'Max'),
 ];
 
-// Stitch MD3 color tokens
+// Theme-invariant MD3 colour tokens (same value in light and dark)
 const _agentMd3Primary = AppColors.primary;
-const _agentMd3PrimaryContainer = Color(0xFFE0E7FF);
 const _agentMd3Secondary = AppColors.info;
-const _agentMd3SurfaceContainerLowest = AppColors.cardLight;
-const _agentMd3SurfaceContainerLow = Color(0xFFEFF3FF);
-const _agentMd3OnSurface = AppColors.textPrimaryLight;
-const _agentMd3OnSurfaceVariant = AppColors.textSecondaryLight;
-const _agentMd3OutlineVariant = Color(0xFFCBD5E1);
+
+/// Runtime colour palette for the Agentic AI screen.
+/// Instantiate once at the top of each [build] method via [_AgentPalette.of].
+class _AgentPalette {
+  _AgentPalette.of(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    surface = dark ? AppColors.surfaceDarkElevated : AppColors.cardLight;
+    surfaceLow = dark ? AppColors.cardDark : const Color(0xFFEFF3FF);
+    onSurface = dark ? AppColors.textPrimary : AppColors.textPrimaryLight;
+    onSurfaceVariant =
+        dark ? AppColors.textSecondary : AppColors.textSecondaryLight;
+    outline = dark ? AppColors.cardDarkBorder : const Color(0xFFCBD5E1);
+    primaryContainer =
+        dark ? const Color(0xFF1C1C4A) : const Color(0xFFE0E7FF);
+    // Confirmation card (warning / amber tone)
+    confirmBg = dark ? const Color(0xFF2D2000) : const Color(0xFFFFFBEB);
+    confirmBorder =
+        dark ? const Color(0xFF7A5500) : const Color(0xFFFCD34D);
+    confirmIconBg =
+        dark ? const Color(0xFF3D2D00) : const Color(0xFFFEF3C7);
+    confirmTitle =
+        dark ? const Color(0xFFFFD166) : const Color(0xFF92400E);
+    confirmSubtitle =
+        dark ? const Color(0xFFFFC107) : const Color(0xFFB45309);
+    confirmBody =
+        dark ? const Color(0xFFFFE08A) : const Color(0xFF78350F);
+    confirmDiffBg = dark
+        ? const Color(0xFF1A1500).withValues(alpha: 0.7)
+        : Colors.white.withValues(alpha: 0.7);
+    confirmDiffBorder =
+        dark ? const Color(0xFF5A4000) : const Color(0xFFFDE68A);
+    confirmDiffLabel =
+        dark ? const Color(0xFFFFD166) : const Color(0xFF92400E);
+    // Error banner (red / pink tone)
+    errorBg = dark ? const Color(0xFF2D0808) : const Color(0xFFFFF1F2);
+    errorBorder =
+        dark ? const Color(0xFF7A1414) : const Color(0xFFFDA4AF);
+    errorText =
+        dark ? const Color(0xFFFF9999) : const Color(0xFFBE123C);
+  }
+
+  late final Color surface;
+  late final Color surfaceLow;
+  late final Color onSurface;
+  late final Color onSurfaceVariant;
+  late final Color outline;
+  late final Color primaryContainer;
+  late final Color confirmBg;
+  late final Color confirmBorder;
+  late final Color confirmIconBg;
+  late final Color confirmTitle;
+  late final Color confirmSubtitle;
+  late final Color confirmBody;
+  late final Color confirmDiffBg;
+  late final Color confirmDiffBorder;
+  late final Color confirmDiffLabel;
+  late final Color errorBg;
+  late final Color errorBorder;
+  late final Color errorText;
+}
 
 class AgentScreen extends ConsumerStatefulWidget {
   const AgentScreen({super.key});
@@ -73,6 +127,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     final aiSettingsAsync = ref.watch(aiSettingsListProvider);
     final conversationsAsync = ref.watch(agentConversationsProvider);
     final activeConversationId = ref.watch(activeAgentConversationIdProvider);
@@ -87,6 +142,12 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
       agentConversations,
       activeConversationId,
     );
+    // Watch agentProvider at the top level of build() — outside any when()
+    // callback — so Riverpod manages the subscription lifecycle in sync with
+    // Flutter's widget rebuild cycle, avoiding the _dependents.isEmpty crash.
+    final agentState = selectedConversation != null
+        ? ref.watch(agentProvider(selectedConversation.id))
+        : null;
 
     if (activeConversationId != null &&
         selectedConversation == null &&
@@ -178,9 +239,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
               onRetry: () => ref.invalidate(agentConversationsProvider),
             ),
             data: (conversations) {
-              final activeId = ref.watch(activeAgentConversationIdProvider);
-              final currentConversation =
-                  _findConversation(conversations, activeId);
+              final currentConversation = selectedConversation;
 
               if (currentConversation == null) {
                 return _AgentLandingState(
@@ -204,7 +263,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                 );
               }
 
-              final state = ref.watch(agentProvider(currentConversation.id));
+              final state = agentState!;
               final messages = state.messages;
               final isBusy = state is AgentStreaming || _creatingConversation;
               final waitingForConfirmation = state is AgentAwaitingConfirmation;
@@ -595,13 +654,14 @@ class _AgentLandingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
       children: [
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: _agentMd3SurfaceContainerLowest,
+            color: pal.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: const [
               BoxShadow(
@@ -644,7 +704,7 @@ class _AgentLandingState extends StatelessWidget {
                             Text(
                               'Online and ready to plan actions',
                               style: AppTextStyles.bodySm.copyWith(
-                                color: _agentMd3OnSurfaceVariant,
+                                color: pal.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -658,7 +718,7 @@ class _AgentLandingState extends StatelessWidget {
               Text(
                 'Use Agentic AI to plan service reminders, review bills, and confirm important actions safely.',
                 style: AppTextStyles.body.copyWith(
-                  color: _agentMd3OnSurfaceVariant,
+                  color: pal.onSurfaceVariant,
                   height: 1.45,
                 ),
               ),
@@ -756,7 +816,7 @@ class _AgentLandingState extends StatelessWidget {
         Text(
           'SUGGESTED PROMPTS',
           style: AppTextStyles.labelSm.copyWith(
-            color: _agentMd3OnSurfaceVariant,
+            color: pal.onSurfaceVariant,
             letterSpacing: 0.8,
             fontWeight: FontWeight.w700,
           ),
@@ -773,10 +833,10 @@ class _AgentLandingState extends StatelessWidget {
                 child: Ink(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: _agentMd3SurfaceContainerLowest,
+                    color: pal.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: _agentMd3OutlineVariant.withOpacity(0.4)),
+                        color: pal.outline.withOpacity(0.4)),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x082D3337),
@@ -791,7 +851,7 @@ class _AgentLandingState extends StatelessWidget {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: _agentMd3PrimaryContainer,
+                          color: pal.primaryContainer,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         alignment: Alignment.center,
@@ -807,12 +867,12 @@ class _AgentLandingState extends StatelessWidget {
                           prompt,
                           style: AppTextStyles.body.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: _agentMd3OnSurface,
+                            color: pal.onSurface,
                           ),
                         ),
                       ),
-                      const Icon(LucideIcons.chevronRight,
-                          size: 16, color: _agentMd3OnSurfaceVariant),
+                      Icon(LucideIcons.chevronRight,
+                          size: 16, color: pal.onSurfaceVariant),
                     ],
                   ),
                 ),
@@ -842,13 +902,14 @@ class _AgentSessionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _agentMd3SurfaceContainerLowest,
+        color: pal.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _agentMd3OutlineVariant.withOpacity(0.28)),
+        border: Border.all(color: pal.outline.withOpacity(0.28)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A2D3337),
@@ -877,14 +938,14 @@ class _AgentSessionBanner extends StatelessWidget {
                           'Agentic AI session',
                           style: AppTextStyles.body.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: _agentMd3OnSurface,
+                            color: pal.onSurface,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           '$sessionCount saved session${sessionCount == 1 ? '' : 's'}',
                           style: AppTextStyles.bodySm.copyWith(
-                            color: _agentMd3OnSurfaceVariant,
+                            color: pal.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -909,7 +970,7 @@ class _AgentSessionBanner extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: _agentMd3Primary,
                       side: BorderSide(
-                        color: _agentMd3OutlineVariant.withOpacity(0.35),
+                        color: pal.outline.withOpacity(0.35),
                       ),
                     ),
                   ),
@@ -930,7 +991,7 @@ class _AgentSessionBanner extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: _agentMd3Primary,
                         side: BorderSide(
-                          color: _agentMd3OutlineVariant.withOpacity(0.35),
+                          color: pal.outline.withOpacity(0.35),
                         ),
                       ),
                     ),
@@ -957,6 +1018,7 @@ class _ReasoningSelectorChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return PillSelectorChip<String>(
       icon: LucideIcons.brain,
       label: label,
@@ -988,6 +1050,7 @@ class _AgentMetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -996,9 +1059,9 @@ class _AgentMetaChip extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: _agentMd3SurfaceContainerLowest,
+            color: pal.surface,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: _agentMd3OutlineVariant.withOpacity(0.3)),
+            border: Border.all(color: pal.outline.withOpacity(0.3)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1008,7 +1071,7 @@ class _AgentMetaChip extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.labelSm.copyWith(
-                  color: _agentMd3OnSurface,
+                  color: pal.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1035,6 +1098,7 @@ class _AgentDrawerNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return ListTile(
       onTap: onTap,
       dense: true,
@@ -1045,13 +1109,13 @@ class _AgentDrawerNavItem extends StatelessWidget {
       leading: Icon(
         icon,
         size: 18,
-        color: active ? _agentMd3Primary : _agentMd3OnSurfaceVariant,
+        color: active ? _agentMd3Primary : pal.onSurfaceVariant,
       ),
       title: Text(
         label,
         style: AppTextStyles.body.copyWith(
           fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-          color: active ? _agentMd3Primary : _agentMd3OnSurface,
+          color: active ? _agentMd3Primary : pal.onSurface,
         ),
       ),
     );
@@ -1080,6 +1144,7 @@ class _AgentConversationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1102,7 +1167,7 @@ class _AgentConversationDrawer extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(LucideIcons.x, size: 18),
-                color: _agentMd3OnSurfaceVariant,
+                color: pal.onSurfaceVariant,
                 onPressed: () => Navigator.of(context).pop(),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -1165,7 +1230,7 @@ class _AgentConversationDrawer extends StatelessWidget {
             child: Text(
               'RECENT',
               style: AppTextStyles.labelSm.copyWith(
-                color: _agentMd3OnSurfaceVariant,
+                color: pal.onSurfaceVariant,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
               ),
@@ -1179,24 +1244,24 @@ class _AgentConversationDrawer extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           LucideIcons.messageCircle,
                           size: 42,
-                          color: _agentMd3OutlineVariant,
+                          color: pal.outline,
                         ),
                         const SizedBox(height: 10),
                         Text(
                           'No agent sessions yet',
                           style: AppTextStyles.body.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: _agentMd3OnSurfaceVariant,
+                            color: pal.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Start a new session to plan actions with AI',
                           style: AppTextStyles.caption.copyWith(
-                            color: _agentMd3OnSurfaceVariant,
+                            color: pal.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -1214,7 +1279,7 @@ class _AgentConversationDrawer extends StatelessWidget {
                     return Material(
                       color: selected
                           ? _agentMd3Primary.withOpacity(0.08)
-                          : _agentMd3SurfaceContainerLow,
+                          : pal.surfaceLow,
                       borderRadius: BorderRadius.circular(16),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
@@ -1247,7 +1312,7 @@ class _AgentConversationDrawer extends StatelessWidget {
                                             : FontWeight.w600,
                                         color: selected
                                             ? _agentMd3Primary
-                                            : _agentMd3OnSurface,
+                                            : pal.onSurface,
                                       ),
                                     ),
                                     const SizedBox(height: 3),
@@ -1257,7 +1322,7 @@ class _AgentConversationDrawer extends StatelessWidget {
                                             conversation.createdAt,
                                       ),
                                       style: AppTextStyles.caption.copyWith(
-                                        color: _agentMd3OnSurfaceVariant,
+                                        color: pal.onSurfaceVariant,
                                       ),
                                     ),
                                   ],
@@ -1268,7 +1333,7 @@ class _AgentConversationDrawer extends StatelessWidget {
                                 onPressed: () =>
                                     onDeleteConversation(conversation),
                                 icon: const Icon(LucideIcons.trash2, size: 18),
-                                color: _agentMd3OnSurfaceVariant,
+                                color: pal.onSurfaceVariant,
                               ),
                             ],
                           ),
@@ -1316,15 +1381,16 @@ class _AgentConversationEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
       children: [
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: _agentMd3SurfaceContainerLowest,
+            color: pal.surface,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: _agentMd3OutlineVariant.withOpacity(0.3)),
+            border: Border.all(color: pal.outline.withOpacity(0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1333,14 +1399,14 @@ class _AgentConversationEmptyState extends StatelessWidget {
                 'What would you like the agent to do?',
                 style: AppTextStyles.h3.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: _agentMd3OnSurface,
+                  color: pal.onSurface,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 'Try one of these actions to kick off the session.',
                 style: AppTextStyles.body.copyWith(
-                  color: _agentMd3OnSurfaceVariant,
+                  color: pal.onSurfaceVariant,
                 ),
               ),
             ],
@@ -1356,10 +1422,10 @@ class _AgentConversationEmptyState extends StatelessWidget {
               child: Ink(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: _agentMd3SurfaceContainerLowest,
+                  color: pal.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: _agentMd3OutlineVariant.withOpacity(0.4)),
+                      color: pal.outline.withOpacity(0.4)),
                 ),
                 child: Row(
                   children: [
@@ -1367,7 +1433,7 @@ class _AgentConversationEmptyState extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: _agentMd3PrimaryContainer,
+                        color: pal.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
@@ -1383,12 +1449,12 @@ class _AgentConversationEmptyState extends StatelessWidget {
                         prompt,
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: _agentMd3OnSurface,
+                          color: pal.onSurface,
                         ),
                       ),
                     ),
-                    const Icon(LucideIcons.chevronRight,
-                        size: 16, color: _agentMd3OnSurfaceVariant),
+                    Icon(LucideIcons.chevronRight,
+                        size: 16, color: pal.onSurfaceVariant),
                   ],
                 ),
               ),
@@ -1415,6 +1481,7 @@ class _AgentConfirmationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     final diff = payload['diff'] as Map<String, dynamic>?;
     final diffRows = diff?['rows'] as List<dynamic>?;
 
@@ -1430,9 +1497,9 @@ class _AgentConfirmationCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
+        color: pal.confirmBg,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFCD34D)),
+        border: Border.all(color: pal.confirmBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1443,13 +1510,13 @@ class _AgentConfirmationCard extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
+                  color: pal.confirmIconBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
-                child: const Icon(
+                child: Icon(
                   LucideIcons.shieldCheck,
-                  color: Color(0xFFD97706),
+                  color: pal.confirmSubtitle,
                   size: 18,
                 ),
               ),
@@ -1462,14 +1529,14 @@ class _AgentConfirmationCard extends StatelessWidget {
                       'Action Required',
                       style: AppTextStyles.body.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF92400E),
+                        color: pal.confirmTitle,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Review this change before the agent executes it.',
                       style: AppTextStyles.bodySm.copyWith(
-                        color: const Color(0xFFB45309),
+                        color: pal.confirmSubtitle,
                       ),
                     ),
                   ],
@@ -1481,7 +1548,7 @@ class _AgentConfirmationCard extends StatelessWidget {
           Text(
             description,
             style: AppTextStyles.body.copyWith(
-              color: const Color(0xFF78350F),
+              color: pal.confirmBody,
               height: 1.45,
             ),
           ),
@@ -1491,9 +1558,9 @@ class _AgentConfirmationCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
+                color: pal.confirmDiffBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                border: Border.all(color: pal.confirmDiffBorder),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1509,7 +1576,7 @@ class _AgentConfirmationCard extends StatelessWidget {
                           Text(
                             label,
                             style: AppTextStyles.labelSm.copyWith(
-                              color: const Color(0xFF92400E),
+                              color: pal.confirmDiffLabel,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1523,12 +1590,12 @@ class _AgentConfirmationCard extends StatelessWidget {
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
                             child: Icon(
                               LucideIcons.arrowRight,
                               size: 12,
-                              color: Color(0xFFB45309),
+                              color: pal.confirmSubtitle,
                             ),
                           ),
                         ],
@@ -1586,13 +1653,14 @@ class _AgentErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F2),
+        color: pal.errorBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFDA4AF)),
+        border: Border.all(color: pal.errorBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1603,7 +1671,7 @@ class _AgentErrorBanner extends StatelessWidget {
             child: Text(
               message,
               style: AppTextStyles.bodySm.copyWith(
-                color: const Color(0xFFBE123C),
+                color: pal.errorText,
                 height: 1.4,
               ),
             ),
@@ -1628,12 +1696,13 @@ class _AgentMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     final isUser = message.isUser;
     final hasThought = (message.reasoning ?? '').trim().isNotEmpty ||
         message.thinkingDurationSeconds != null;
     final bubbleColor =
-        isUser ? _agentMd3Primary : _agentMd3SurfaceContainerLowest;
-    final textColor = isUser ? Colors.white : _agentMd3OnSurface;
+        isUser ? _agentMd3Primary : pal.surface;
+    final textColor = isUser ? Colors.white : pal.onSurface;
     final radius = isUser
         ? const BorderRadius.only(
             topLeft: Radius.circular(18),
@@ -1672,7 +1741,7 @@ class _AgentMessageBubble extends StatelessWidget {
                       child: Text(
                         'YesBill Assistant',
                         style: AppTextStyles.labelSm.copyWith(
-                          color: _agentMd3OnSurfaceVariant,
+                          color: pal.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -1740,14 +1809,14 @@ class _AgentMessageBubble extends StatelessWidget {
                               Theme.of(context),
                             ).copyWith(
                               p: AppTextStyles.body.copyWith(
-                                color: _agentMd3OnSurface,
+                                color: pal.onSurface,
                               ),
                               a: AppTextStyles.body.copyWith(
                                 color: _agentMd3Primary,
                                 decoration: TextDecoration.underline,
                               ),
                               code: AppTextStyles.body.copyWith(
-                                color: _agentMd3OnSurface,
+                                color: pal.onSurface,
                                 fontFamily: 'monospace',
                                 backgroundColor: const Color(0x14ACB3B7),
                               ),
@@ -1806,13 +1875,14 @@ class _AgentReasoningPanelState extends State<_AgentReasoningPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     final hasReasoningText = widget.reasoning.trim().isNotEmpty;
 
     if (!hasReasoningText && widget.thinkingDurationSeconds != null) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: _agentMd3SurfaceContainerLow.withOpacity(0.7),
+          color: pal.surfaceLow.withOpacity(0.7),
           borderRadius: BorderRadius.circular(12),
           border: Border(
             left: BorderSide(
@@ -1840,7 +1910,7 @@ class _AgentReasoningPanelState extends State<_AgentReasoningPanel> {
 
     return Container(
       decoration: BoxDecoration(
-        color: _agentMd3SurfaceContainerLow.withOpacity(0.7),
+        color: pal.surfaceLow.withOpacity(0.7),
         borderRadius: BorderRadius.circular(12),
         border: Border(
           left: BorderSide(
@@ -1892,7 +1962,7 @@ class _AgentReasoningPanelState extends State<_AgentReasoningPanel> {
               child: Text(
                 widget.reasoning,
                 style: AppTextStyles.caption.copyWith(
-                  color: _agentMd3OnSurfaceVariant,
+                  color: pal.onSurfaceVariant,
                   height: 1.5,
                 ),
               ),
@@ -1920,6 +1990,7 @@ class _AgentComposer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = _AgentPalette.of(context);
     final canSend = enabled && !busy;
     return SafeArea(
       top: false,
@@ -1928,9 +1999,9 @@ class _AgentComposer extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: _agentMd3SurfaceContainerLowest,
+            color: pal.surface,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: _agentMd3OutlineVariant.withOpacity(0.3)),
+            border: Border.all(color: pal.outline.withOpacity(0.3)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0A2D3337),
@@ -1943,13 +2014,13 @@ class _AgentComposer extends StatelessWidget {
             children: [
               IconButton(
                   onPressed: onNewConversation,
-                  icon: const Icon(
+                  icon: Icon(
                     LucideIcons.plusCircle,
                     size: 20,
-                    color: _agentMd3OnSurfaceVariant,
+                    color: pal.onSurfaceVariant,
                   ),
                   style: IconButton.styleFrom(
-                    backgroundColor: _agentMd3SurfaceContainerLow,
+                    backgroundColor: pal.surfaceLow,
                     fixedSize: const Size(42, 42),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -1985,7 +2056,7 @@ class _AgentComposer extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: canSend
                       ? _agentMd3Primary
-                      : _agentMd3OutlineVariant.withOpacity(0.3),
+                      : pal.outline.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: canSend
                       ? [
@@ -2017,7 +2088,7 @@ class _AgentComposer extends StatelessWidget {
                               size: 16,
                               color: canSend
                                   ? Colors.white
-                                  : _agentMd3OnSurfaceVariant,
+                                  : pal.onSurfaceVariant,
                             ),
                     ),
                   ),

@@ -53,8 +53,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ];
       final isAuthRoute = authRoutes.any((r) => path.startsWith(r));
 
-      // Always allow splash through (it handles its own redirect logic)
-      if (path == '/splash') return null;
+      // Always allow pre-auth screens through — splash handles its own logic;
+      // onboarding must never be blocked because it runs before any account exists.
+      if (path == '/splash' || path == '/onboarding') return null;
 
       // Not authenticated and trying to access protected route
       if (!isAuthenticated && !isAuthRoute) {

@@ -106,6 +106,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             activeConvId: activeConvId,
           )
         : null;
+    // Watch message providers at the top level of build() — outside any when()
+    // callback — to avoid the _dependents.isEmpty assertion when the provider
+    // is auto-disposed during a nested-when rebuild.
+    final chatMessages = selectedConv != null
+        ? ref.watch(chatMessagesProvider(selectedConv.id))
+        : const <ChatMessage>[];
+    final chatMessagesLoading = selectedConv != null
+        ? ref.watch(chatMessagesLoadingProvider(selectedConv.id))
+        : false;
+    final chatMessagesError = selectedConv != null
+        ? ref.watch(chatMessagesErrorProvider(selectedConv.id))
+        : null;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -265,12 +277,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 );
               }
 
-              final messages =
-                  ref.watch(chatMessagesProvider(selectedConversation.id));
-              final messagesLoading = ref
-                  .watch(chatMessagesLoadingProvider(selectedConversation.id));
-              final messagesError =
-                  ref.watch(chatMessagesErrorProvider(selectedConversation.id));
+              final messages = chatMessages;
+              final messagesLoading = chatMessagesLoading;
+              final messagesError = chatMessagesError;
 
               return Column(
                 children: [
