@@ -110,9 +110,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     final dataAsync = ref.watch(aiAnalyticsProvider(_selectedMonth));
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      color: cs.surface,
-      child: ListView(
+    return ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
         children: [
           Row(
@@ -170,7 +168,6 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 ),
               ],
         ],
-      ),
     );
   }
 }

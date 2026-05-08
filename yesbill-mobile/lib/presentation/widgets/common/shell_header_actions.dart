@@ -38,8 +38,21 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
   final searchCtrl = TextEditingController();
   var query = '';
 
-  await showModalBottomSheet<void>(
+  // Capture the GoRouter instance NOW, before the sheet opens.
+  // GoRouter is a plain ChangeNotifier — calling router.go() after the sheet
+  // closes does NOT use BuildContext or touch any InheritedWidget, so it cannot
+  // trigger the '_dependents.isEmpty' assertion that fires when context.go()
+  // is called while the sheet's dismissal animation is still running and its
+  // InheritedWidget subtree is still mounted.
+  final router = GoRouter.of(context);
+
+  final destPath = await showModalBottomSheet<String>(
     context: context,
+    useRootNavigator: true, // Push onto root Navigator — above GoRouter's ShellRoute
+    // inner Navigator. Without this, calling router.go() while the sheet's
+    // reverse animation is still running deactivates InheritedWidgets from
+    // GoRouter's inner tree that the sheet's subtree still depends on,
+    // triggering the _dependents.isEmpty assertion in framework.dart:6268.
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) {
@@ -143,10 +156,9 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
                                     leading: Icon(dest.icon, size: 18),
                                     title: Text(dest.label),
                                     trailing: const Icon(LucideIcons.chevronRight, size: 16),
-                                    onTap: () {
-                                      Navigator.of(ctx).pop();
-                                      if (!isCurrent) context.go(dest.path);
-                                    },
+                                    onTap: () => Navigator.of(ctx).pop(
+                                      isCurrent ? null : dest.path,
+                                    ),
                                   ),
                                 );
                               },
@@ -168,10 +180,7 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
-                            onTap: () {
-                              Navigator.of(ctx).pop();
-                              context.go('/chat');
-                            },
+                            onTap: () => Navigator.of(ctx).pop('/chat'),
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               child: Row(
@@ -207,6 +216,19 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
   );
 
   searchCtrl.dispose();
+
+  if (destPath != null) {
+    // The modal's reverse animation takes ~200 ms. showModalBottomSheet uses
+    // InheritedTheme.capture(from: context, ...) which wraps GoRouter's
+    // InheritedWidgets around the sheet content. When router.go() fires, GoRouter
+    // rebuilds those InheritedElements on the next frame (~16 ms) while the sheet
+    // widgets are still alive and registered as dependents → _dependents.isEmpty
+    // assertion. Waiting 300 ms guarantees the animation is fully complete and
+    // all sheet widgets have been deactivated before the GoRouter rebuild runs.
+    Future.delayed(const Duration(milliseconds: 300), () {
+      router.go(destPath);
+    });
+  }
 }
 
 // ── Notification sheet helper ─────────────────────────────────────────────────

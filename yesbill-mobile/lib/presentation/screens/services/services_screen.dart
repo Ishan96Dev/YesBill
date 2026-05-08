@@ -209,8 +209,10 @@ class _PrimaryServiceCard extends StatelessWidget {
               Container(
                 width: 38,
                 height: 38,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF1F4FF),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.surfaceDarkElevated
+                      : const Color(0xFFF1F4FF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -380,8 +382,10 @@ class _ServiceRow extends StatelessWidget {
             Container(
               width: 30,
               height: 30,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F4FF),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.surfaceDarkElevated
+                    : const Color(0xFFF1F4FF),
                 shape: BoxShape.circle,
               ),
               child: Icon(

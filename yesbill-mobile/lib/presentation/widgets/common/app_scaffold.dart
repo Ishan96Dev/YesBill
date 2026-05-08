@@ -231,8 +231,15 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     final searchCtrl = TextEditingController();
     var query = '';
 
-    await showModalBottomSheet<void>(
+    // Capture router before sheet opens. router.go() does not use BuildContext
+    // so it is safe to call after the modal future resolves (while the sheet's
+    // reverse-animation may still be running) without triggering the
+    // '_dependents.isEmpty' InheritedElement assertion.
+    final router = GoRouter.of(context);
+
+    final destPath = await showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true, // Push above GoRouter's ShellRoute inner Navigator
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
@@ -377,11 +384,9 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                                         LucideIcons.chevronRight,
                                         size: 16,
                                       ),
-                                      onTap: () {
-                                        Navigator.of(context).pop();
-                                        if (isCurrent || !mounted) return;
-                                        this.context.go(destination.path);
-                                      },
+                                      onTap: () => Navigator.of(sheetContext).pop(
+                                        isCurrent ? null : destination.path,
+                                      ),
                                     ),
                                   );
                                 },
@@ -408,11 +413,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () {
-                                Navigator.of(context).pop();
-                                if (!mounted) return;
-                                this.context.go('/chat');
-                              },
+                              onTap: () => Navigator.of(sheetContext).pop('/chat'),
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 14,
@@ -459,6 +460,20 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     );
 
     searchCtrl.dispose();
+
+    if (destPath != null) {
+      // The modal's reverse (close) animation takes ~200 ms. Navigating
+      // immediately after pop starts causes the '_dependents.isEmpty'
+      // InheritedWidget assertion because showModalBottomSheet captures
+      // InheritedWidgets from context via InheritedTheme.capture — those
+      // wrapped widgets are still alive during the animation and GoRouter
+      // would rebuild their originals on the very next frame (~16 ms).
+      // Waiting 300 ms guarantees the animation is fully complete and all
+      // sheet widgets have been deactivated before the GoRouter rebuild.
+      Future.delayed(const Duration(milliseconds: 300), () {
+        router.go(destPath);
+      });
+    }
   }
 
   Future<void> _handleRootBack() async {
@@ -589,15 +604,17 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                         onSignOut: _signOutFromUi,
                       ),
                     Expanded(
-                      child: AnimatedSwitcher(
-                        duration: 360.ms,
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        child: KeyedSubtree(
-                          key: ValueKey(location),
-                          child: widget.child,
-                        ),
-                      ),
+                      // AnimatedSwitcher intentionally removed: it kept the
+                      // previous screen alive for 360 ms as an exit-animation
+                      // "zombie".  During those 360 ms the old screen's widgets
+                      // remained registered as dependents of GoRouter's
+                      // InheritedGoRouter.  When GoRouter fired its second
+                      // state update to finalise navigation it tried to notify
+                      // those dependents while they were being deactivated
+                      // → '_dependents.isEmpty: is not true' (framework.dart).
+                      // GoRouter provides its own page transitions inside its
+                      // Navigator, so no cross-fade is needed here.
+                      child: widget.child,
                     ),
                   ],
                 ),
@@ -736,6 +753,9 @@ class _ShellHeader extends ConsumerWidget {
                   case _HeaderMenuAction.settings:
                     context.go('/settings');
                     break;
+                  case _HeaderMenuAction.support:
+                    context.go('/support');
+                    break;
                   case _HeaderMenuAction.signOut:
                     onSignOut();
                     break;
@@ -778,6 +798,14 @@ class _ShellHeader extends ConsumerWidget {
                     label: 'Settings',
                   ),
                 ),
+                const PopupMenuItem<_HeaderMenuAction>(
+                  value: _HeaderMenuAction.support,
+                  child: _HeaderMenuRow(
+                    icon: LucideIcons.lifeBuoy,
+                    label: 'Support',
+                  ),
+                ),
+                const PopupMenuDivider(),
                 const PopupMenuItem<_HeaderMenuAction>(
                   value: _HeaderMenuAction.signOut,
                   child: _HeaderMenuRow(
@@ -1244,6 +1272,9 @@ class _AppBottomNav extends StatelessWidget {
   }
 
   void _showMoreSheet(BuildContext context, bool isDark) {
+    // Capture router before the sheet opens so navigation after the sheet
+    // closes does not need BuildContext (avoids any context lifecycle issues).
+    final router = GoRouter.of(context);
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1301,7 +1332,12 @@ class _AppBottomNav extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                             onTap: () {
                               Navigator.of(sheetContext).pop();
-                              context.go(tab.path);
+                              // Delay navigation until after the sheet's
+                              // 200 ms close animation finishes.
+                              Future.delayed(
+                                const Duration(milliseconds: 300),
+                                () => router.go(tab.path),
+                              );
                             },
                             child: Ink(
                               padding: const EdgeInsets.symmetric(
@@ -1410,6 +1446,7 @@ class _SearchDestination {
 
 enum _HeaderMenuAction {
   settings,
+  support,
   signOut,
 }
 

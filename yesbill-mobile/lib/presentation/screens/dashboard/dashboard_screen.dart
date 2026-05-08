@@ -982,9 +982,11 @@ class _UpcomingRenewals extends StatelessWidget {
                   Container(
                     width: 28,
                     height: 28,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFFF1F4FF),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.surfaceDarkElevated
+                          : const Color(0xFFF1F4FF),
                     ),
                     child: Icon(
                       ServiceIcons.fromName(service.iconName),
@@ -1295,7 +1297,9 @@ class _ServiceBreakdownCard extends StatelessWidget {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F4FF),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.surfaceDarkElevated
+                            : const Color(0xFFF1F4FF),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
