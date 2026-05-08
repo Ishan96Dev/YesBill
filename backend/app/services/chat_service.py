@@ -351,31 +351,60 @@ def _build_model_unavailable_event(
     return event
 
 
+def _extract_setting_payload(row: dict) -> dict | None:
+    """Extract a usable AI settings payload from a DB row, or None if incomplete."""
+    provider = (row.get("provider") or "openai").lower()
+    model = (row.get("selected_model") or "").strip()
+    if provider == "ollama":
+        if model:
+            base_url = (row.get("ollama_base_url") or OLLAMA_DEFAULT_BASE_URL).rstrip("/")
+            return {
+                "provider": provider,
+                "model": model,
+                "api_key": base_url,  # repurposed: carries base_url through probe/stream chain
+                "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
+            }
+    else:
+        key = (row.get("api_key_encrypted") or "").strip()
+        if key and model:
+            return {
+                "provider": provider,
+                "model": model,
+                "api_key": key,
+                "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
+            }
+    return None
+
+
 async def get_user_ai_settings(user_id: str) -> dict | None:
-    """Get user's first configured AI provider, model, and API key."""
+    """Return the best configured AI provider for this user.
+
+    Selection priority (mirrors the mobile app):
+      1. Most-recently-updated setting where ``is_key_valid`` is True.
+      2. Fallback: most-recently-updated setting that has a non-empty key+model,
+         regardless of validation status (handles fresh keys not yet probed).
+
+    ``get_all_ai_settings`` already orders rows by ``updated_at DESC``, so
+    iterating in order gives us "most recent first" for free.
+    """
     all_settings = await supabase_service.get_all_ai_settings(user_id)
+
+    # Pass 1 — prefer a validated key (is_key_valid = True).
     for row in all_settings:
-        provider = (row.get("provider") or "openai").lower()
-        model = (row.get("selected_model") or "").strip()
-        if provider == "ollama":
-            # Ollama: no API key, base_url carried in api_key field for probe/stream chain compatibility
-            if model:
-                base_url = (row.get("ollama_base_url") or OLLAMA_DEFAULT_BASE_URL).rstrip("/")
-                return {
-                    "provider": provider,
-                    "model": model,
-                    "api_key": base_url,  # repurposed: carries base_url through probe/stream chain
-                    "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
-                }
-        else:
-            key = (row.get("api_key_encrypted") or "").strip()
-            if key and model:
-                return {
-                    "provider": provider,
-                    "model": model,
-                    "api_key": key,
-                    "default_reasoning_effort": row.get("default_reasoning_effort") or "none",
-                }
+        if not row.get("is_key_valid"):
+            continue
+        payload = _extract_setting_payload(row)
+        if payload:
+            return payload
+
+    # Pass 2 — fall back to any row with a non-empty key + model (not yet probed,
+    # or probe failed transiently).  Allows users to chat immediately after
+    # entering a key before the first probe completes.
+    for row in all_settings:
+        payload = _extract_setting_payload(row)
+        if payload:
+            return payload
+
     return None
 
 

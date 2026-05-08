@@ -108,24 +108,36 @@ export const chatService = {
         }
         const { data } = await supabase
           .from('user_ai_settings')
-          .select('provider, selected_model, default_reasoning_effort, api_key_encrypted')
+          .select('provider, selected_model, default_reasoning_effort, api_key_encrypted, is_key_valid')
           .eq('user_id', userId)
+          .eq('is_key_valid', true)
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle()
-        if (!data || !data.api_key_encrypted) {
+        // If no validated setting, fall back to any setting with a key (not yet probed).
+        const row = data || await (async () => {
+          const { data: fallback } = await supabase
+            .from('user_ai_settings')
+            .select('provider, selected_model, default_reasoning_effort, api_key_encrypted')
+            .eq('user_id', userId)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+          return fallback
+        })()
+        if (!row || !row.api_key_encrypted) {
           return { configured: false, provider: null, selected_model: null, selected_model_info: null, models: [], default_reasoning_effort: 'none' }
         }
-        const selectedModelInfo = data.selected_model
-          ? { id: data.selected_model, name: data.selected_model, availability_status: 'unknown' }
+        const selectedModelInfo = row.selected_model
+          ? { id: row.selected_model, name: row.selected_model, availability_status: 'unknown' }
           : null
         return {
           configured: true,
-          provider: data.provider,
-          selected_model: data.selected_model,
+          provider: row.provider,
+          selected_model: row.selected_model,
           selected_model_info: selectedModelInfo,
           models: [],
-          default_reasoning_effort: data.default_reasoning_effort || 'none',
+          default_reasoning_effort: row.default_reasoning_effort || 'none',
         }
       } catch {
         return { configured: false, provider: null, selected_model: null, selected_model_info: null, models: [], default_reasoning_effort: 'none' }

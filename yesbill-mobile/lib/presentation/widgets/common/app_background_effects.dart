@@ -62,7 +62,15 @@ class AppBackgroundEffects extends StatelessWidget {
   }
 }
 
-class _GlowOrb extends StatelessWidget {
+/// [_GlowOrb] is a [StatefulWidget] so it owns its [AnimationController].
+/// Using a [StatelessWidget] with `flutter_animate`'s `onPlay` here caused
+/// the controller to restart on every parent rebuild (e.g. theme change),
+/// because each `build()` created a new `onPlay` closure that
+/// `Animate.didUpdateWidget` treated as "changed".  Restarting the controller
+/// mid-frame while the render tree was also being updated triggered the
+/// `removeRenderObjectChild: renderObject.child == child` assertion in
+/// Flutter's `SingleChildRenderObjectElement`.
+class _GlowOrb extends StatefulWidget {
   const _GlowOrb({
     required this.size,
     required this.color,
@@ -78,37 +86,57 @@ class _GlowOrb extends StatelessWidget {
   final Duration duration;
 
   @override
+  State<_GlowOrb> createState() => _GlowOrbState();
+}
+
+class _GlowOrbState extends State<_GlowOrb>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final orb = Container(
-      width: size,
-      height: size,
+      width: widget.size,
+      height: widget.size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
-            color,
-            color.withOpacity(0.45),
-            color.withOpacity(0.0),
+            widget.color,
+            widget.color.withOpacity(0.45),
+            widget.color.withOpacity(0.0),
           ],
           stops: const [0.0, 0.5, 1.0],
         ),
       ),
     );
 
+    // Pass the stable controller — no onPlay callback, so didUpdateWidget
+    // will never restart the animation when the parent rebuilds.
     return orb
-        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .animate(controller: _controller)
         .move(
-            begin: begin, end: end, duration: duration, curve: Curves.easeInOut)
+            begin: widget.begin,
+            end: widget.end,
+            curve: Curves.easeInOut)
         .scale(
           begin: const Offset(0.96, 0.96),
           end: const Offset(1.07, 1.07),
-          duration: duration,
           curve: Curves.easeInOut,
         )
-        .fade(
-            begin: 0.72,
-            end: 0.94,
-            duration: duration,
-            curve: Curves.easeInOut);
+        .fade(begin: 0.72, end: 0.94, curve: Curves.easeInOut);
   }
 }

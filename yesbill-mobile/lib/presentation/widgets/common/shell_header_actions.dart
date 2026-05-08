@@ -46,9 +46,19 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
   // InheritedWidget subtree is still mounted.
   final router = GoRouter.of(context);
 
-  final destPath = await showModalBottomSheet<String>(
+  // Navigate-first pattern: router.go() is called inside each onTap WHILE the
+  // sheet is still fully open (all widgets mounted). GoRouter.go() only calls
+  // notifyListeners() synchronously — the actual widget rebuild is deferred to
+  // the next frame. By that time the sheet is already in its dismiss animation
+  // which runs completely independently of GoRouter's InheritedWidget tree.
+  // This permanently eliminates the '_dependents.isEmpty' assertion that fired
+  // when Future.delayed(300ms)+router.go() ran after the sheet's dismiss
+  // animation: that path triggered GoRouter to tear down route-level
+  // _GoRouterStateRegistryScope InheritedWidgets for the new route while the
+  // old route's widgets were still mid-disposal and registered as dependents.
+  await showModalBottomSheet<void>(
     context: context,
-    useRootNavigator: true, // Push onto root Navigator — above GoRouter's ShellRoute
+    useRootNavigator: true,
     // inner Navigator. Without this, calling router.go() while the sheet's
     // reverse animation is still running deactivates InheritedWidgets from
     // GoRouter's inner tree that the sheet's subtree still depends on,
@@ -156,9 +166,10 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
                                     leading: Icon(dest.icon, size: 18),
                                     title: Text(dest.label),
                                     trailing: const Icon(LucideIcons.chevronRight, size: 16),
-                                    onTap: () => Navigator.of(ctx).pop(
-                                      isCurrent ? null : dest.path,
-                                    ),
+                                    onTap: () {
+                                      if (!isCurrent) router.go(dest.path);
+                                      Navigator.of(ctx).pop();
+                                    },
                                   ),
                                 );
                               },
@@ -180,7 +191,10 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
-                            onTap: () => Navigator.of(ctx).pop('/chat'),
+                            onTap: () {
+                              router.go('/chat');
+                              Navigator.of(ctx).pop();
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               child: Row(
@@ -216,19 +230,7 @@ Future<void> showShellSearchSheet(BuildContext context, {String currentLocation 
   );
 
   searchCtrl.dispose();
-
-  if (destPath != null) {
-    // The modal's reverse animation takes ~200 ms. showModalBottomSheet uses
-    // InheritedTheme.capture(from: context, ...) which wraps GoRouter's
-    // InheritedWidgets around the sheet content. When router.go() fires, GoRouter
-    // rebuilds those InheritedElements on the next frame (~16 ms) while the sheet
-    // widgets are still alive and registered as dependents → _dependents.isEmpty
-    // assertion. Waiting 300 ms guarantees the animation is fully complete and
-    // all sheet widgets have been deactivated before the GoRouter rebuild runs.
-    Future.delayed(const Duration(milliseconds: 300), () {
-      router.go(destPath);
-    });
-  }
+  // Navigation was already triggered inside onTap — nothing more to do here.
 }
 
 // ── Notification sheet helper ─────────────────────────────────────────────────

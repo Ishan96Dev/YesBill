@@ -237,9 +237,10 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     // '_dependents.isEmpty' InheritedElement assertion.
     final router = GoRouter.of(context);
 
-    final destPath = await showModalBottomSheet<String>(
+    // Navigate-first pattern — see showShellSearchSheet for full explanation.
+    await showModalBottomSheet<void>(
       context: context,
-      useRootNavigator: true, // Push above GoRouter's ShellRoute inner Navigator
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
@@ -384,9 +385,10 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                                         LucideIcons.chevronRight,
                                         size: 16,
                                       ),
-                                      onTap: () => Navigator.of(sheetContext).pop(
-                                        isCurrent ? null : destination.path,
-                                      ),
+                                      onTap: () {
+                                        if (!isCurrent) router.go(destination.path);
+                                        Navigator.of(sheetContext).pop();
+                                      },
                                     ),
                                   );
                                 },
@@ -413,7 +415,10 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () => Navigator.of(sheetContext).pop('/chat'),
+                              onTap: () {
+                                router.go('/chat');
+                                Navigator.of(sheetContext).pop();
+                              },
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: 14,
@@ -460,20 +465,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     );
 
     searchCtrl.dispose();
-
-    if (destPath != null) {
-      // The modal's reverse (close) animation takes ~200 ms. Navigating
-      // immediately after pop starts causes the '_dependents.isEmpty'
-      // InheritedWidget assertion because showModalBottomSheet captures
-      // InheritedWidgets from context via InheritedTheme.capture — those
-      // wrapped widgets are still alive during the animation and GoRouter
-      // would rebuild their originals on the very next frame (~16 ms).
-      // Waiting 300 ms guarantees the animation is fully complete and all
-      // sheet widgets have been deactivated before the GoRouter rebuild.
-      Future.delayed(const Duration(milliseconds: 300), () {
-        router.go(destPath);
-      });
-    }
+    // Navigation was already triggered inside onTap — nothing more to do here.
   }
 
   Future<void> _handleRootBack() async {

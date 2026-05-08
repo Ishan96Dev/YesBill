@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../data/models/ai_analytics_data.dart';
@@ -68,6 +69,7 @@ class AnalyticsScreen extends ConsumerStatefulWidget {
 class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   late String _selectedMonth;
   int _selectedTab = 0;
+  bool _hasAutoSwitched = false;
 
   @override
   void initState() {
@@ -110,8 +112,25 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     final dataAsync = ref.watch(aiAnalyticsProvider(_selectedMonth));
     final cs = Theme.of(context).colorScheme;
 
+    // Auto-backtrack: when the AI Usage tab is open and the current month
+    // has no data, switch to the previous month automatically.
+    // ref.listen fires OUTSIDE the build phase, so calling setState here is
+    // safe and avoids mutating state during build (which can trigger
+    // downstream render-object assertions in flutter_animate widgets).
+    ref.listen<AsyncValue<AiAnalyticsData>>(
+      aiAnalyticsProvider(_selectedMonth),
+      (_, next) {
+        next.whenData((data) {
+          if (data.messageCount == 0 && _isCurrentMonth && !_hasAutoSwitched) {
+            _hasAutoSwitched = true;
+            _prevMonth();
+          }
+        });
+      },
+    );
+
     return ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,9 +211,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         return Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
+            color: AppSurfaces.subtle(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: cs.outline),
+            border: AppSurfaces.cardBorder(context),
           ),
           child: Row(
             children: List.generate(tabs.length, (index) {
@@ -312,7 +331,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               crossAxisCount: 2,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              childAspectRatio: 1.25,
+              childAspectRatio: 1.3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
@@ -514,13 +533,13 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: _analyticsCardColor(context),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: _analyticsCardBorder(context),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x0A2D3337),
-                blurRadius: 16,
-                offset: Offset(0, 4),
+                color: Color(0x0F2D3337),
+                blurRadius: 12,
+                offset: Offset(0, 3),
               ),
             ],
           ),
@@ -579,18 +598,12 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       Widget build(BuildContext context) {
         final cs = Theme.of(context).colorScheme;
         return Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _analyticsCardColor(context),
             borderRadius: BorderRadius.circular(16),
             border: _analyticsCardBorder(context),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0F2D3337),
-                blurRadius: 24,
-                offset: Offset(0, 8),
-              ),
-            ],
+            boxShadow: AppSurfaces.softShadow(context),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -677,16 +690,9 @@ class _MonthPicker extends StatelessWidget {
     return Container(
       height: 30,
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
+        color: AppSurfaces.subtle(context),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: cs.outline),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2D3337),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        border: AppSurfaces.cardBorder(context),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -775,7 +781,7 @@ class _StatsGrid extends StatelessWidget {
       crossAxisCount: 2,
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
@@ -825,13 +831,13 @@ class _StatTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: _analyticsCardColor(context),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: _analyticsCardBorder(context),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A2D3337),
-            blurRadius: 16,
-            offset: Offset(0, 4),
+            color: Color(0x0F2D3337),
+            blurRadius: 12,
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -1071,18 +1077,12 @@ class _ChartCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _analyticsCardColor(context),
         borderRadius: BorderRadius.circular(16),
         border: _analyticsCardBorder(context),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F2D3337),
-            blurRadius: 24,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppSurfaces.softShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1122,11 +1122,7 @@ class _EmptyChart extends StatelessWidget {
 }
 
 Color _analyticsCardColor(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? AppColors.cardDark
-        : Colors.white;
+    AppSurfaces.panel(context);
 
-BoxBorder? _analyticsCardBorder(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-        ? Border.all(color: AppColors.cardDarkBorder)
-        : null;
+BoxBorder _analyticsCardBorder(BuildContext context) =>
+    AppSurfaces.cardBorder(context);
