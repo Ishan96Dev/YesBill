@@ -30,7 +30,7 @@ Payment services track recurring financial obligations — like loan EMIs or cre
 On the **Calendar**, the payment appears only on its billing day showing a **Paid** or **Unpaid** status.
 
 When you pay:
-1. Click **Mark Paid** on the calendar or in the Bills section
+1. Tap **Mark Paid** on the calendar or in the Bills section
 2. Select your **payment method** (Bank Transfer, UPI, Cash, etc.)
 3. Optionally add a **payment note** (e.g. transaction reference)
 

@@ -12,13 +12,11 @@ After completing onboarding, add your first household service to start tracking.
 
 ### Step 1 — Open the Add Service Form
 
-![Add service — step 1: open the form](/img/screenshots/Add-New-Service-01.png)
-
-Go to **Services** in the sidebar and click **+ Add Service** (top right) to open the service creation form.
+Tap **Services** in the bottom navigation bar, then tap the **+** button (bottom-right) to open the service creation form.
 
 ### Step 2 — Enter Service Details
 
-![Add service — step 2: fill in details](/img/screenshots/Add-New-Service-02.png)
+![Add service screen](/img/screenshots/mobile/Create-Service-Screen-01.jpeg)
 
 Fill in the service details:
 - **Service Name** — e.g. "Morning Milk", "Tiffin Service", "Maid"
@@ -28,15 +26,13 @@ Fill in the service details:
 
 ### Step 3 — Configure Billing Options
 
-![Add service — step 3: billing options](/img/screenshots/Add-New-Service-03.png)
-
-Depending on the service type, additional fields may appear such as start date, billing cycle day, or tracking method. Fill these in as appropriate.
+Depending on the service type, additional fields may appear such as start date, billing cycle day, or schedule. Fill these in as appropriate.
 
 ### Step 4 — Save and Confirm
 
-![Add service — step 4: service created](/img/screenshots/Add-New-Service-04.png)
+![Services list](/img/screenshots/mobile/Service-Screen-Manage-Service-Screen-01.jpeg)
 
-Click **Save**. Your service is now active and will appear on the Calendar immediately.
+Tap **Save**. Your service is now active and will appear on the Calendar immediately.
 
 ## Choosing the Right Service Type
 

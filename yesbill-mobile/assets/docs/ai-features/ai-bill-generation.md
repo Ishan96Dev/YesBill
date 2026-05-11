@@ -20,11 +20,11 @@ A typical AI bill summary includes:
 ## Generating a Summary
 
 1. Go to **Bills**
-2. Click on a bill to open it
-3. Click **Generate AI Summary**
+2. Tap on a bill to open it
+3. Tap **Generate AI Summary**
 4. Wait 3–5 seconds for the summary to appear
 
-![AI bill summary card](/img/screenshots/AI-Bill-Summary-01.png)
+![Generate bill screen](/img/screenshots/mobile/Generate-Bill-Screen-01.jpeg)
 
 The summary appears as a card inside the bill, written in plain English. It covers the total charged, notable patterns (e.g. missed days), and a comparison to the previous month where data is available.
 
@@ -38,7 +38,7 @@ The summary appears as a card inside the bill, written in plain English. It cove
 
 AI summaries are stored with the bill. To refresh:
 1. Open the bill
-2. Click **Regenerate Summary**
+2. Tap **Regenerate Summary**
 3. A new summary is generated using the latest tracking data
 
 ## Cost

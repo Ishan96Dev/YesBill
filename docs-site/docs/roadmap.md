@@ -65,9 +65,9 @@ Download any bill or a month's summary as a PDF or CSV file — available now fr
 ## General
 
 ### Mobile App
-> **Status:** Under Consideration
+> **Status:** ✅ Shipped
 
-A native mobile app (iOS / Android) or a progressive web app (PWA) for easier on-the-go tracking. Currently YesBill works best on desktop browsers.
+YesBill Mobile is available as a native Android app. Download the latest APK from the [GitHub Releases](https://github.com/ishan96dev/YesBill/releases) page.
 
 ---
 

@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../widgets/common/app_background_effects.dart';
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -191,125 +192,132 @@ class _DocsDrawerState extends State<_DocsDrawer> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Drawer(
-      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Branded header ──────────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.cardDark
-                    : AppColors.primary.withAlpha(12),
-                border: Border(
-                  bottom: BorderSide(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Ambient glow background to match app shell
+          const AppBackgroundEffects(),
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Branded header ──────────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+                  decoration: BoxDecoration(
                     color: isDark
-                        ? AppColors.primary.withAlpha(45)
-                        : AppColors.primary.withAlpha(28),
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary,
-                          AppColors.primaryDark,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                        ? AppColors.cardDark.withOpacity(0.78)
+                        : Colors.white.withOpacity(0.65),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDark
+                            ? AppColors.primary.withAlpha(45)
+                            : AppColors.primary.withAlpha(28),
+                        width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(9),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withAlpha(60),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
-                    child: const Icon(LucideIcons.bookOpen,
-                        size: 16, color: Colors.white),
                   ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                  child: Row(
                     children: [
-                      Text(
-                        'YesBill Docs',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary,
+                              AppColors.primaryDark,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(9),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withAlpha(60),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
+                        child: const Icon(LucideIcons.bookOpen,
+                            size: 16, color: Colors.white),
                       ),
-                      Text(
-                        'Documentation',
-                        style: TextStyle(
-                          color: isDark
-                              ? Colors.white38
-                              : Colors.black38,
-                          fontSize: 11,
-                          height: 1.4,
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'YesBill Docs',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          Text(
+                            'Documentation',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white38
+                                  : Colors.black38,
+                              fontSize: 11,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      // Close drawer button
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withAlpha(14)
+                                : Colors.black.withAlpha(8),
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                          child: Icon(
+                            LucideIcons.x,
+                            size: 14,
+                            color: isDark ? Colors.white54 : Colors.black38,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const Spacer(),
-                  // Close drawer button
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withAlpha(14)
-                            : Colors.black.withAlpha(8),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: Icon(
-                        LucideIcons.x,
-                        size: 14,
-                        color: isDark ? Colors.white54 : Colors.black38,
-                      ),
+                ),
+                // ── Navigation list ─────────────────────────────────────────────
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
+                    itemCount: _sections.length,
+                    itemBuilder: (_, i) => _SectionTile(
+                      section: _sections[i],
+                      expanded: _expanded.contains(_sections[i].title),
+                      selectedAsset: widget.selectedAsset,
+                      onToggle: () => setState(() {
+                        final t = _sections[i].title;
+                        if (_expanded.contains(t)) {
+                          _expanded.remove(t);
+                        } else {
+                          _expanded.add(t);
+                        }
+                      }),
+                      onSelect: widget.onSelect,
                     ),
                   ),
-                ],
-              ),
-            ),
-            // ── Navigation list ─────────────────────────────────────────────
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
-                itemCount: _sections.length,
-                itemBuilder: (_, i) => _SectionTile(
-                  section: _sections[i],
-                  expanded: _expanded.contains(_sections[i].title),
-                  selectedAsset: widget.selectedAsset,
-                  onToggle: () => setState(() {
-                    final t = _sections[i].title;
-                    if (_expanded.contains(t)) {
-                      _expanded.remove(t);
-                    } else {
-                      _expanded.add(t);
-                    }
-                  }),
-                  onSelect: widget.onSelect,
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -567,6 +575,17 @@ class _DocsBodyState extends State<_DocsBody> {
     return trimmed.substring(afterNewline + 1).trimLeft();
   }
 
+  /// Converts root-relative image paths (e.g. `/img/...`) in markdown to
+  /// absolute URLs pointing at the Docusaurus docs site.  This ensures
+  /// flutter_markdown receives fully-qualified http URLs regardless of the
+  /// internal imageBuilder resolution path.
+  static String _resolveRelativeImages(String content) {
+    return content.replaceAllMapped(
+      RegExp(r'!\[([^\]]*)\]\((/[^)]+)\)'),
+      (m) => '![${m.group(1)}]($_docsBaseUrl${m.group(2)})',
+    );
+  }
+
   /// Converts Docusaurus admonition blocks (:::type ... :::) into styled
   /// markdown blockquotes that flutter_markdown can render.
   static String _convertAdmonitions(String content) {
@@ -615,7 +634,9 @@ class _DocsBodyState extends State<_DocsBody> {
       if (!mounted) return;
       if (_loadedAsset != widget.asset) return; // stale response
       setState(() {
-        _content = _convertAdmonitions(_stripFrontmatter(raw));
+        _content = _resolveRelativeImages(
+          _convertAdmonitions(_stripFrontmatter(raw)),
+        );
         _loading = false;
       });
     } catch (e) {
@@ -678,51 +699,62 @@ class _DocsBodyState extends State<_DocsBody> {
             imageBuilder: (uri, title, alt) {
               final resolved = _resolveImageUri(uri);
               if (resolved == null) return const SizedBox.shrink();
+              // Mobile screenshots are portrait — constrain to a phone-card
+              // width so they don't overwhelm the document layout.
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: resolved.toString(),
-                    fit: BoxFit.contain,
-                    placeholder: (_, __) => Container(
-                      height: 160,
-                      decoration: BoxDecoration(
-                        color: codeBackground,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.primary.withAlpha(150),
-                          ),
-                        ),
-                      ),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 220,
+                      maxHeight: 420,
                     ),
-                    errorWidget: (_, __, ___) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: codeBackground,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withAlpha(18)
-                              : Colors.black.withAlpha(12),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.imageOff, size: 16, color: subColor),
-                          const SizedBox(width: 6),
-                          Text(
-                            alt?.isNotEmpty == true ? alt! : 'Image unavailable',
-                            style: TextStyle(color: subColor, fontSize: 12),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: CachedNetworkImage(
+                        imageUrl: resolved.toString(),
+                        fit: BoxFit.contain,
+                        placeholder: (_, __) => Container(
+                          height: 140,
+                          width: 220,
+                          decoration: BoxDecoration(
+                            color: codeBackground,
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                        ],
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary.withAlpha(150),
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: codeBackground,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withAlpha(18)
+                                  : Colors.black.withAlpha(12),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.imageOff, size: 16, color: subColor),
+                              const SizedBox(width: 6),
+                              Text(
+                                alt?.isNotEmpty == true ? alt! : 'Image unavailable',
+                                style: TextStyle(color: subColor, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),

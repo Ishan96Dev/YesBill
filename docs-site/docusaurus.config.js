@@ -71,11 +71,13 @@ const config = {
             href: 'https://yesbill.vercel.app',
             label: 'Launch App',
             position: 'right',
+            className: 'navbar-launch-btn',
           },
           {
             href: 'https://github.com/ishan96dev/YesBill',
             label: 'GitHub',
             position: 'right',
+            className: 'navbar-github-btn',
           },
         ],
       },

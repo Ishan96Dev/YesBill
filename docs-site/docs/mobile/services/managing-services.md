@@ -39,7 +39,7 @@ The **Services** tab shows all your active services. Each card displays:
 | **Visit-based** | Per visit marked in the calendar |
 | **Utility** | Fixed monthly amount (e.g. internet, DTH) |
 | **Subscription** | Fixed recurring charge (e.g. streaming) |
-| **Payment** | One-time or irregular payment |
+| **Payment** | Fixed recurring amount (e.g. loan EMI, credit card due) |
 
 ## Editing a Service
 

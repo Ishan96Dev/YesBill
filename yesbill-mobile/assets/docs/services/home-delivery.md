@@ -29,8 +29,8 @@ Home Delivery is for daily services delivered to your doorstep. Each day is trac
 
 On the **Calendar** view, you'll see each day of the month. For each day:
 
-- Click **Delivered** (✅) if the service was delivered
-- Click **Skipped** (❌) if it was not delivered that day
+- Tap **Delivered** (✅) if the service was delivered
+- Tap **Skipped** (❌) if it was not delivered that day
 
 Days default to **Pending** until you mark them.
 

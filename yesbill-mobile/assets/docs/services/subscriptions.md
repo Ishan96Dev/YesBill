@@ -30,7 +30,7 @@ Subscriptions are fixed charges billed on a specific day each month. They appear
 
 On the **Calendar**, the subscription appears only on its billing day as a **Paid** or **Unpaid** status badge.
 
-- Click **Mark Paid** when you've paid for the month
+- Tap **Mark Paid** when you've paid for the month
 - The payment is recorded with your chosen payment method
 
 ## Billing

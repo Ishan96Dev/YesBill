@@ -10,15 +10,15 @@ YesBill supports 5 types of household services, each with its own billing model 
 
 ## Services Page
 
-![YesBill services page](/img/screenshots/Service-page-01.png)
+![YesBill services page](/img/screenshots/mobile/Service-Screen-Manage-Service-Screen-01.jpeg)
 
-The **Services** page shows all your configured services at a glance. From here you can add new services, view any service's calendar, or manage and edit existing ones.
+The **Services** tab shows all your configured services at a glance. From here you can add new services, view any service's details, or manage and edit existing ones.
 
 ## Service Cards
 
-![YesBill service card](/img/screenshots/Service-Card-01.png)
+![YesBill service detail](/img/screenshots/mobile/Service-Details-Screen-01.jpeg)
 
-Each service is displayed as a card showing its name, type, rate, and current month's status. Click a card to open that service's calendar view, or use the menu (⋮) to edit or delete it.
+Each service is displayed as a card showing its name, type, rate, and current month's status. Tap a card to open that service's detail view, or use the menu (⋮) to edit or delete it.
 
 ## The 5 Types
 

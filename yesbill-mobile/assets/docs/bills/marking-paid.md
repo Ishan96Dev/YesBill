@@ -12,27 +12,22 @@ Once you've paid a service for the month, record it in YesBill to keep your reco
 
 ### From the Bills Page
 
-1. Go to **Bills** in the sidebar
-2. Find the bill you've paid
-3. Click **Mark as Paid**
-4. A modal opens:
-
-![Mark as paid modal](/img/screenshots/Mark-as-paid-modal-01.png)
-
+1. Tap **Bills** in the bottom navigation bar.
+2. Find the bill you've paid.
+3. Tap **Mark as Paid**.
+4. In the modal:
    - Select your **payment method**
    - Optionally add a **payment note** (e.g. UPI transaction ID)
-5. Click **Confirm**
+5. Tap **Confirm**.
 
 ### Paid Bill Status
-
-![Bill marked as paid status](/img/screenshots/Bill-Paid-status-(Mark-as-paid)-01.png)
 
 Once confirmed, the bill card updates to show a green **Paid** badge along with the payment method and the date you recorded the payment.
 
 ### From the Calendar
-1. Open the Service Calendar for a subscription/payment service
-2. Click the billing day cell
-3. Click **Mark Paid** in the popup
+1. Open the Service Calendar for a subscription/payment service.
+2. Tap the billing day cell.
+3. Tap **Mark Paid** in the popup.
 
 ## Payment Methods
 
@@ -50,9 +45,9 @@ You can record how you paid:
 ## Undoing a Payment
 
 To unmark a bill as paid:
-1. Open the bill
-2. Click **Undo Payment** (shown when bill is marked Paid)
-3. Confirm the action
+1. Open the bill.
+2. Tap **Undo Payment** (shown when bill is marked Paid).
+3. Confirm the action.
 
 ## Payment History
 

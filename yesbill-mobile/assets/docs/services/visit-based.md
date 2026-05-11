@@ -30,8 +30,8 @@ Visit-based is for services where someone comes to your home on specific days. E
 
 On the **Calendar** view, for each day:
 
-- Click **Visited** (✅) if the person came that day
-- Click **Missed** (❌) if they did not come
+- Tap **Visited** (✅) if the person came that day
+- Tap **Missed** (❌) if they did not come
 
 :::note
 **Visit-based** uses "Visited/Missed" language — not "Delivered/Skipped" — because a person visits rather than a product being delivered.

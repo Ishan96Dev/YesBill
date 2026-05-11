@@ -10,12 +10,10 @@ The Yearly View gives you a 12-month snapshot of your bill payment history for a
 
 ## Accessing the Yearly View
 
-1. Click any service name in the sidebar or Calendar view
-2. On the Service Calendar page, click the **Yearly** tab at the top
+1. Tap the **year icon** (top-right of the Calendar screen).
+2. Or tap any service card to open its detail view, then tap the **Yearly** tab.
 
 ## What You See
-
-![Yearly service calendar view](/img/screenshots/Yearly-Service-Calender-01.png)
 
 A grid of all 12 months with colour-coded payment status:
 
@@ -34,5 +32,5 @@ A grid of all 12 months with colour-coded payment status:
 
 ## Tips
 
-- Click any month cell to jump to that month's bill detail
+- Tap any month cell to jump to that month's bill detail
 - The yearly view is especially useful for **Payment** and **Subscription** types where you want to verify payment continuity

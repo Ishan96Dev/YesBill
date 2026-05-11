@@ -37,25 +37,25 @@ YesBill supports three AI providers. You need an API key from at least one provi
 
 ## Adding Your Key to YesBill
 
-![AI Configuration overview in Settings](/img/screenshots/Settings-AI-Configuration-01.png)
+![AI settings screen](/img/screenshots/mobile/AI-Settings-Screen-01.jpeg)
 
-Go to **Settings → AI Configuration** to see the full configuration panel. From here you can manage providers, models, reasoning settings, and AI insights.
+Tap **Settings → AI Configuration** to open the AI configuration panel.
 
 ### Step 1 — Choose a Provider
 
-![Choose AI provider](/img/screenshots/AI-Configuration-Choose-Provider-01.png)
+![Provider settings screen](/img/screenshots/mobile/Provider-Settings-Screen-01.jpeg)
 
-Select your preferred AI provider by clicking its tab (OpenAI, Anthropic, or Google). Then paste your API key into the field provided and click **Validate** to verify it works.
+Tap the provider tab (OpenAI, Anthropic, or Google). Paste your API key into the field and tap **Validate** to test it.
 
-1. Go to **Settings → AI Configuration**
+1. Tap **Settings → AI Configuration**
 2. Select your provider tab
 3. Paste your API key
-4. Click **Validate** to test the key
-5. Click **Save**
+4. Tap **Validate** to test the key
+5. Tap **Save**
+
+A green checkmark appears next to a validated provider.
 
 ### Step 2 — Select a Default Model
-
-![Model selection in AI Configuration](/img/screenshots/AI-Configuration-Model-Selection-01.png)
 
 After adding your API key, choose the **default model** you want YesBill to use for all AI features. The available models update automatically based on your validated provider.
 
@@ -64,8 +64,6 @@ Start with **OpenAI GPT-4o Mini** or **Google Gemini 2.0 Flash** for low-cost us
 :::
 
 ### Step 3 — Set Default Reasoning Effort
-
-![Default reasoning effort setting](/img/screenshots/AI-Configuration-Default-Reasoning-efforts-01.png)
 
 For models that support extended thinking (like Claude 3.7 Sonnet or o3-mini), you can set the **default reasoning effort**:
 
@@ -77,11 +75,11 @@ For models that support extended thinking (like Claude 3.7 Sonnet or o3-mini), y
 
 Choose **Medium** as a sensible default for most households.
 
-### Step 4 — Enable or Disable AI Insights
+### Step 4 — Appearance Settings
 
-![Enable/disable AI insights toggle](/img/screenshots/AI-Configuration-Enable-Disable-AI-Insight-01.png)
+![Appearance settings screen](/img/screenshots/mobile/Appearance-Settings-Screen-01.jpeg)
 
-The **AI Insights** toggle controls whether YesBill automatically surfaces AI-generated insights on your Dashboard and Bills pages (e.g. "Your milk spend increased 12% this month"). Toggle it off if you prefer a cleaner interface or want to reduce AI API usage.
+You can also configure the app theme (Light / Dark / System) from the **Appearance** section within Settings. Toggle it off if you prefer a cleaner interface or want to reduce AI API usage.
 
 ## Multiple Providers
 
@@ -93,8 +91,8 @@ Your API keys are stored only in your browser session and sent directly to the A
 
 ## Removing a Key
 
-1. Go to **Settings → AI Configuration**
-2. Click **Remove** next to the provider
+1. Tap **Settings → AI Configuration**
+2. Tap **Remove** next to the provider
 3. Confirm the removal
 
 After removing all keys, AI features will be disabled until you add a new key.
