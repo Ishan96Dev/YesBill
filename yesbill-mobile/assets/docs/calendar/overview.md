@@ -6,59 +6,40 @@ sidebar_position: 1
 
 # Calendar
 
-The Calendar is YesBill's primary tracking interface. It shows all your active services in a monthly grid and lets you mark each day's status.
+The Calendar is YesBill's primary tracking interface. Use it to mark daily deliveries and visits for all your services.
 
-![YesBill monthly calendar](/img/screenshots/Calender-01.png)
+![Calendar screen](/img/screenshots/mobile/Calender-Screen-01.jpeg)
 
-## Views
+## How to Use the Calendar
 
-### Monthly Calendar View
+1. Tap **Calendar** in the bottom navigation bar.
+2. Tap on a **date** to open the day view.
+3. For each service listed, tap the checkmark to mark it as delivered/visited.
+4. Tap again to unmark if you made a mistake.
 
-The default view shows all services in a grid of days. Each service has a row, and each day has a status indicator:
+## Day Status Indicators
 
-- 🟢 **Delivered / Visited** — Service was received/provided
-- 🔴 **Skipped / Missed** — Service did not happen
-- ⬜ **Pending** — Not yet marked (default)
-- 🔵 **Paid** — Bill is paid (for subscription/payment types)
+- **Green** — Delivery or visit marked
+- **Red** — Marked as absent/missed
+- **Grey** — Not marked (no record)
 
-![Monthly service calendar overview](/img/screenshots/Montly-Service-Calender-01.png)
+## Switching Between Services
 
-### Weekly Calendar View
+If you have multiple services, use the service selector at the top of the calendar to switch between them.
 
-Switch to the **Weekly** tab to see a condensed 7-day view. This is useful for a quick check of the current week without the visual noise of the full month.
+## Retroactive Marking
 
-![Weekly service calendar view](/img/screenshots/Weekly-Service-Calender-01.png)
+Tap any previous day in the calendar to update its record. This is useful if you forgot to mark deliveries for a few days.
 
-### Service Calendar (Per-Service View)
+## Moving Between Months
 
-![Per-service calendar view](/img/screenshots/Service-Calender-01.png)
+Use the **← →** arrows at the top of the calendar to navigate to previous months.
 
-Click on any service name to open its dedicated calendar page with:
-
-- Day-by-day attendance grid (for delivery/visit types)
-- Monthly active toggle (for utility types)
-- Billing day card with payment status (for subscription/payment types)
-- **Yearly view** — 12-month paid grid overview
-
-### Service Details Panel
-
-![Calendar service details panel](/img/screenshots/Calender-Service-Details-01.png)
-
-Within the service calendar, clicking a specific day or the service details section opens a **Service Details** panel that shows:
-
-- Service name, type, and daily/monthly rate
-- Current month's tracking summary (days delivered, days skipped, pending days)
-- Total bill amount accrued so far this month
-- A direct link to the full bill for this service
-
-## Navigation
-
-- Use the **← →** arrows to move between months
-- Click **Today** to jump to the current month
-- Use the **service filter** to show/hide specific services
+:::info
+Calendar marks feed directly into bill generation. Make sure all marks for the month are complete before generating your monthly bill.
+:::
 
 ## Tips
 
-- Mark yesterday's status first thing in the morning — it takes 5 seconds
-- Use the keyboard shortcut `D` for Delivered and `S` for Skipped (when a day is focused)
-- The calendar remembers your scroll position when you navigate between months
+- Mark yesterday's deliveries each morning — it takes under 30 seconds.
+- The calendar remembers your last viewed month when you navigate away and return.

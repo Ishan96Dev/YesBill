@@ -4,51 +4,37 @@ title: AI Configuration
 sidebar_position: 4
 ---
 
-# AI Configuration in Settings
+# AI Configuration
 
-The AI Configuration tab is where you manage your AI provider API keys and default model selection.
+Connect your AI provider API key to enable Ask AI, the AI Agent, and AI bill summaries.
 
-## Accessing AI Settings
+## AI Settings Screen
 
-Go to **Settings** → **AI Configuration** tab.
+![AI settings screen](/img/screenshots/mobile/AI-Settings-Screen-01.jpeg)
 
-## Provider Tabs
+Tap **Settings** → **AI Configuration** to open AI settings.
 
-Click the provider name (OpenAI, Anthropic, Google) to switch between them.
+## Adding a Provider Key
 
-## Adding a Key
+![Provider settings screen](/img/screenshots/mobile/Provider-Settings-Screen-01.jpeg)
 
-1. Select the provider tab
-2. Paste your API key in the input field
-3. Choose your preferred model from the dropdown
-4. Click **Validate** — YesBill sends a test request to verify the key works
-5. Click **Save**
+1. Tap the provider tab (OpenAI, Anthropic, or Google).
+2. Paste your **API key** in the field.
+3. Tap **Validate** — YesBill tests the key with a quick request.
+4. Tap **Save** once validated.
 
-A green checkmark (✅) appears next to a validated provider.
+A green checkmark appears next to a validated provider.
 
-## Removing a Key
+## Appearance Settings
 
-1. Open the provider tab
-2. Click **Remove Key** or clear the field
-3. Save
+![Appearance settings screen](/img/screenshots/mobile/Appearance-Settings-Screen-01.jpeg)
+
+You can also configure the app theme (Light / Dark / System) from the Appearance section within Settings.
 
 ## Default Model
 
-The model you select here becomes the default in Ask AI and the Agent. You can always change it per-conversation using the model selector in the chat interface.
-
-## Model Capabilities
-
-Some models support **Extended Thinking** (reasoning) — these show a 🧠 icon in the model selector. Reasoning models think through problems step by step before responding, which can improve accuracy for complex queries.
-
-## Usage Monitoring
-
-Go to **Analytics → AI Usage** to see:
-- Tokens used per conversation
-- Cost per message
-- Total monthly AI spend
-
-This helps you estimate your AI provider bill.
+The model you select here becomes the default for Ask AI and the AI Agent. You can change it per-conversation in the chat interface.
 
 :::tip
-For everyday use, **GPT-4o Mini** (OpenAI) or **Gemini 2.0 Flash** (Google) are excellent budget-friendly choices. Switch to a more powerful model for complex analysis tasks.
+For everyday use, **GPT-4o Mini** (OpenAI) or **Gemini 2.0 Flash** (Google) are excellent budget-friendly choices.
 :::

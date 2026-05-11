@@ -1269,6 +1269,7 @@ class _AppBottomNav extends StatelessWidget {
     final router = GoRouter.of(context);
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return SafeArea(
@@ -1323,13 +1324,8 @@ class _AppBottomNav extends StatelessWidget {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
                             onTap: () {
+                              router.go(tab.path);
                               Navigator.of(sheetContext).pop();
-                              // Delay navigation until after the sheet's
-                              // 200 ms close animation finishes.
-                              Future.delayed(
-                                const Duration(milliseconds: 300),
-                                () => router.go(tab.path),
-                              );
                             },
                             child: Ink(
                               padding: const EdgeInsets.symmetric(

@@ -6,56 +6,48 @@ sidebar_position: 4
 
 # Your Dashboard
 
-After onboarding, the Dashboard is the first screen you see every time you log in. It gives you a high-level summary of your household spending and upcoming bills.
+The Dashboard is your command centre — it shows key metrics, quick actions, and a snapshot of recent activity every time you open the app.
 
 ## Dashboard Overview
 
-![YesBill dashboard](/img/screenshots/Dashboard-01.png)
+![Dashboard screen](/img/screenshots/mobile/Dashboard-screen-01.jpeg)
 
-The Dashboard is your command centre for everything in YesBill. It surfaces the most important information at a glance so you always know where things stand.
+The Dashboard is organized into three sections:
 
-## Updated Dashboard
+- **KPI Cards** — Total active services, bills due, amount owed, AI queries used
+- **Quick Actions** — Add Service, Open Calendar, Generate Bill, Ask AI
+- **Recent Activity** — Latest bill generations, payments, and service changes
 
-![Updated YesBill dashboard](/img/screenshots/Updated-Dashboard-01.png)
+## Dark Mode
 
-As you add more services and track more months, the Dashboard becomes richer — showing trends, recent activity across multiple services, and smarter AI-powered insights.
+![Dashboard in dark mode](/img/screenshots/mobile/Dark-Mode-Dashboard-Screen-01.jpeg)
 
-## What's on the Dashboard
+YesBill follows your device's system theme. Toggle dark mode in **Settings → Appearance**.
 
-### Key Metrics (KPI Cards)
-The top row of cards shows your most important numbers for the current month:
+## Search
 
-- **Total This Month** — Sum of all generated bills for the current month
-- **Unpaid Bills** — Number of bills that haven't been marked as paid
-- **Services Active** — Count of live services being tracked
-- **Days Tracked** — Total number of days marked across all services this month
+![Search screen](/img/screenshots/mobile/Search-with-Navigation-Screen-01.jpeg)
 
-### Recent Bills
-A list of the most recently generated bills. Click any bill to open its full detail view.
+Tap the **search icon** at the top-right of the Home screen to search your services and bills by name or amount.
 
-### Services Summary
-A quick summary of all your active services with their current month status — useful for a quick sanity check without navigating to the full Services or Calendar page.
+## Notifications
 
-### Quick Actions
-Common shortcuts available directly from the Dashboard:
-- **Mark Today's Services** — Jump to the Calendar for today's date
-- **Generate Bills** — Trigger bill generation for the current month
-- **Ask AI** — Open the Ask AI chat from the Dashboard
+![Notifications screen](/img/screenshots/mobile/Notification-Screen-01.jpeg)
+
+Tap the **bell icon** to open your notification center. Notifications include bill reminders, overdue alerts, and AI usage milestones.
 
 ## Navigation
 
-Use the **sidebar** on the left to navigate to all sections of the app:
+Use the **bottom navigation bar** to navigate between sections:
 
-| Section | What It Does |
-|---------|-------------|
-| **Dashboard** | This overview screen |
+| Tab | What It Does |
+|-----|-------------|
+| **Home** | This dashboard screen |
 | **Calendar** | Day-by-day service tracking |
 | **Services** | Manage your service list |
 | **Bills** | View and pay your bills |
-| **Analytics** | Charts and spending trends |
-| **Ask AI** | Natural language queries |
-| **Settings** | Profile, notifications, security |
+| **Ask AI** | Natural language AI chat |
 
 :::tip
-Bookmark the YesBill app URL so you can open it quickly each morning and mark yesterday's services in under 30 seconds.
+Open the app each morning and mark the previous day's deliveries in the Calendar — it takes under 30 seconds.
 :::

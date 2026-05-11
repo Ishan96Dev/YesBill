@@ -1,0 +1,34 @@
+.toggle {
+  display: flex;
+  align-items: center;
+  background: var(--ifm-color-emphasis-200);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.option {
+  padding: 4px 14px;
+  border-radius: 18px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-700);
+  text-decoration: none !important;
+  transition: background 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+
+.option:hover {
+  color: var(--ifm-color-primary);
+  text-decoration: none !important;
+}
+
+.active {
+  background: var(--ifm-color-primary);
+  color: #fff !important;
+}
+
+.active:hover {
+  background: var(--ifm-color-primary-dark);
+  color: #fff !important;
+}

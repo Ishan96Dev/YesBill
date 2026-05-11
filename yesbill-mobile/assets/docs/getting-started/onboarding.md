@@ -6,31 +6,13 @@ sidebar_position: 2
 
 # Onboarding
 
-When you log in for the first time, YesBill walks you through two quick setup steps.
+When you sign in for the first time, YesBill guides you through a quick setup to configure your AI assistant.
 
-## Step 1 — Profile Setup
+## AI Provider Setup
 
-![Onboarding profile setup step](/img/screenshots/Onboard-Profile-01.png)
+![AI Settings screen](/img/screenshots/mobile/AI-Settings-Screen-01.jpeg)
 
-Fill in your basic profile information:
-
-- **Full Name** — Your name as it appears in the app
-- **Display Name** — Short name used in greetings (optional)
-- **Phone Number** — For WhatsApp bill notifications (optional)
-- **Country & Timezone** — Used to display dates correctly
-- **Profile Photo** — Upload an avatar image (optional)
-
-Click **Save & Continue** when done.
-
-:::info
-You can update all of this later from **Settings → Profile**.
-:::
-
-## Step 2 — AI Provider Setup
-
-![AI provider configuration during onboarding](/img/screenshots/Onboard-AI-Config-01.png)
-
-YesBill's AI features (bill summaries, Ask AI chat, Agent assistant) require an API key from an AI provider.
+YesBill's AI features require an API key from an AI provider. During onboarding, you'll be prompted to configure one.
 
 ### Supported Providers
 
@@ -42,20 +24,26 @@ YesBill's AI features (bill summaries, Ask AI chat, Agent assistant) require an 
 
 ### How to Set Up
 
-1. Select your preferred provider (e.g. OpenAI)
-2. Enter your API key from the provider's developer console
-3. Choose a default model
-4. Click **Validate** to verify the key works
-5. Click **Save & Go to Dashboard**
+1. Select your preferred **AI Provider** from the dropdown.
+2. Enter your **API Key** from the provider's developer console.
+3. Select a **default model**.
+4. Tap **Save**.
 
 ### Skip for Now
 
-![Onboarding skip modal](/img/screenshots/Onboard-skip-modal-01.png)
+If you're not ready to set up AI, you can skip this step. AI features (Ask AI, Agent Chatbot, Analytics summaries) will be unavailable until you add a key.
 
-If you're not ready to set up AI, click **Skip for now**. A confirmation modal appears reminding you that AI features will be unavailable until you add a key. Click **Skip Anyway** to go directly to the Dashboard.
-
-You can configure AI any time later from **Settings → AI Configuration**.
+You can configure AI at any time from **Settings → AI Configuration**.
 
 :::note
-AI features won't work until you add an API key. Bill tracking, calendar, and manual billing work without AI.
+Bill tracking, calendar marking, and manual billing all work without an AI provider. AI is optional but highly recommended.
 :::
+
+## What's Next?
+
+Once setup is done:
+
+1. Add your first service in the **Services** tab
+2. Mark deliveries using the **Calendar**
+3. Generate your first **Bill** at month-end
+4. Ask questions using **Ask AI**

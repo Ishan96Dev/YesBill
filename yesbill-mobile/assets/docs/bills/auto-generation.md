@@ -6,56 +6,51 @@ sidebar_position: 2
 
 # Auto Bill Generation
 
-YesBill automatically generates bills at the end of each month so you don't have to calculate anything manually.
+YesBill can generate bills automatically at month-end, or you can trigger generation manually whenever you need.
 
-## When Are Bills Generated?
+## Generating a Bill
 
-Bills are generated automatically:
-- **On the 1st of each month** — for all services from the previous month
-- **Via the backend cron job** — runs daily at midnight and checks for any missing bills
+![Generate bill screen](/img/screenshots/mobile/Generate-Bill-Screen-01.jpeg)
 
-You can also manually trigger generation from the Bills page.
+1. Tap **Bills** in the bottom navigation bar.
+2. Tap the **Generate Bill** button (or the **+** icon).
+3. Select the **service** and **billing month**.
+4. Review the preview showing the calculated total.
+5. Tap **Generate** to confirm.
 
-## Bill Generation Email
+The bill is added to your Bills list instantly.
 
-![Auto-generated bill notification email](/img/screenshots/Auto-Generated-Bill-Mail-01.png)
+## Automatic Monthly Generation
 
-When YesBill generates a new bill, it sends you an email notification summarising the bill amount, the service it applies to, and the billing period. Click the link in the email to open the full bill directly. Make sure **Bill Generated** notifications are enabled in **Settings → Notifications**.
+YesBill schedules automatic bill generation at the end of each month. You'll receive a push notification when bills are ready.
+
+:::tip
+Make sure all calendar marks for the month are complete before the auto-generation runs, or trigger it manually after you've finished marking.
+:::
 
 ## How Generation Works
 
-1. YesBill looks at your tracking data for the month
-2. For day-tracked services: counts Delivered/Visited days
-3. For utility services: checks if Active or Inactive
-4. For fixed services: uses the configured monthly price
-5. Creates a bill record with the calculated amount
-6. If AI is configured, the AI generates a summary (optional)
-
-## Manual Generation
-
-![Generate Bill button and form](/img/screenshots/Generate-bill-button-001.png)
-
-To generate a bill immediately:
-1. Go to **Bills**
-2. Select the **month** from the month picker at the top
-3. Choose one or more **services** from the service selector
-4. Optionally add **Bill Notes** (e.g. "Vacation week excluded")
-5. Click **Generate Bill** — the AI creates an itemised bill with an optional summary
+1. YesBill looks at your tracking data for the month.
+2. For delivery/visit services: counts marked days.
+3. For utility/subscription services: uses the configured monthly rate.
+4. Creates a bill record with the calculated total.
 
 ## What If Data Is Missing?
 
 If you forgot to mark some days:
-- Those days remain **Pending** and are excluded from the bill
-- You can still go back and mark them — then regenerate the bill
-- Use **Ask AI** to ask "Did I miss any days in January?" to find gaps
+
+- Go back to the Calendar and mark the missing days.
+- Then generate (or regenerate) the bill.
+- Use **Ask AI** to ask *"Did I miss any days this month?"* to find gaps.
 
 ## Regenerating Bills
 
-If you mark more days after a bill is generated, you can regenerate:
-1. Open the bill
-2. Click **Regenerate**
-3. The bill total is recalculated with updated data
+If you mark more days after a bill is generated, you can regenerate it:
+
+1. Open the bill by tapping its card.
+2. Tap **Regenerate**.
+3. The bill total is recalculated with updated data.
 
 :::warning
-Regenerating a bill will overwrite the existing total. If you've already marked the bill as Paid, be careful before regenerating.
+Regenerating a bill overwrites the existing total. If you've already marked the bill as Paid, be careful before regenerating.
 :::

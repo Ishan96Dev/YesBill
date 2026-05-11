@@ -64,6 +64,10 @@ const config = {
         },
         items: [
           {
+            type: 'custom-webMobileToggle',
+            position: 'right',
+          },
+          {
             href: 'https://yesbill.vercel.app',
             label: 'Launch App',
             position: 'right',
@@ -80,11 +84,19 @@ const config = {
         style: 'light',
         links: [
           {
-            title: 'Docs',
+            title: 'Web Docs',
             items: [
               { label: 'Getting Started', to: '/getting-started/creating-account' },
               { label: 'Services', to: '/services/overview' },
               { label: 'AI Features', to: '/ai-features/overview' },
+            ],
+          },
+          {
+            title: 'Mobile Docs',
+            items: [
+              { label: 'Introduction', to: '/mobile/intro' },
+              { label: 'Getting Started', to: '/mobile/getting-started/creating-account' },
+              { label: 'AI Features', to: '/mobile/ai-features/ask-ai' },
             ],
           },
           {

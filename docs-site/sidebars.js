@@ -75,6 +75,63 @@ const sidebars = {
     },
     'roadmap',
   ],
+
+  mobileSidebar: [
+    'mobile/intro',
+    {
+      type: 'category',
+      label: 'Getting Started',
+      collapsed: false,
+      items: [
+        'mobile/getting-started/creating-account',
+        'mobile/getting-started/onboarding',
+        'mobile/getting-started/dashboard',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Services',
+      items: [
+        'mobile/services/managing-services',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Calendar',
+      items: [
+        'mobile/calendar/overview',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Bills',
+      items: [
+        'mobile/bills/understanding-bills',
+        'mobile/bills/auto-generation',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'AI Features',
+      items: [
+        'mobile/ai-features/ask-ai',
+        'mobile/ai-features/agent-chatbot',
+        'mobile/ai-features/analytics',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Settings',
+      items: [
+        'mobile/settings/overview',
+        'mobile/settings/profile',
+        'mobile/settings/notifications',
+        'mobile/settings/security',
+        'mobile/settings/ai-configuration',
+        'mobile/settings/support',
+      ],
+    },
+  ],
 };
 
 module.exports = sidebars;
