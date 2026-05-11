@@ -49,7 +49,7 @@ class AddServiceScreen extends ConsumerWidget {
                   Expanded(
                     child: Center(
                       child: Text(
-                        'YesBill',
+                        'Create Service',
                         style: AppTextStyles.body.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w700,

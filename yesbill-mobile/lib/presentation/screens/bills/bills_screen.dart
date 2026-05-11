@@ -38,7 +38,7 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    'Previous Bills',
+                    'Bills',
                     style: AppTextStyles.h1.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w700,

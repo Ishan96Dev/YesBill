@@ -53,13 +53,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           displayName: _nameCtrl.text.trim(),
         );
     if (mounted) {
-      final error = ref.read(authProvider).error;
-      if (error != null) {
+      final authState = ref.read(authProvider);
+      if (authState.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: AppColors.error),
+          SnackBar(content: Text(authState.error!), backgroundColor: AppColors.error),
         );
-      } else {
+      } else if (authState.user != null) {
+        // Immediately authenticated (email confirmation disabled) — go to setup.
         context.go('/setup');
+      } else {
+        // Email confirmation required — tell the user to check their inbox.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created! Please check your email and confirm your address, then sign in.',
+            ),
+            duration: Duration(seconds: 6),
+          ),
+        );
+        context.go('/login');
       }
     }
   }

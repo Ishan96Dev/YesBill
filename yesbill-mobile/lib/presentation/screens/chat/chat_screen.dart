@@ -336,7 +336,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
                         return ListView.builder(
                           controller: _scrollCtrl,
-                          reverse: true,
                           padding: const EdgeInsets.fromLTRB(
                             AppSpacing.base,
                             AppSpacing.base,
@@ -345,8 +344,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                           itemCount: messages.length,
                           itemBuilder: (_, index) {
-                            final message =
-                                messages[messages.length - 1 - index];
+                            final message = messages[index];
                             return _ChatBubble(
                               key: ValueKey(message.id),
                               message: message,
@@ -593,13 +591,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ref.read(userProfileProvider).valueOrNull?.timezone ?? 'UTC',
         );
 
-    if (_scrollCtrl.hasClients) {
-      _scrollCtrl.animateTo(
-        0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+  }
+
+  void _scrollToBottom() {
+    if (!_scrollCtrl.hasClients) return;
+    _scrollCtrl.animateTo(
+      _scrollCtrl.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
   }
 
   Future<void> _renameConversation(ChatConversation conversation) async {

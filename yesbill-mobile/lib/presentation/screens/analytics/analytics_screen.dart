@@ -141,14 +141,14 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'AI Analytics',
+                      'Analytics',
                       style: AppTextStyles.h1.copyWith(
                         color: cs.onSurface,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      'Overview of your AI assistant usage.',
+                      'Spending insights and AI usage overview.',
                       style: AppTextStyles.bodySm.copyWith(
                         color: cs.onSurfaceVariant,
                       ),

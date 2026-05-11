@@ -107,7 +107,9 @@ class AuthNotifier extends Notifier<AuthState> {
       await _supabase.auth.signUp(
         email: email,
         password: password,
-        data: displayName != null ? {'display_name': displayName} : {},
+        data: displayName != null
+            ? {'full_name': displayName, 'display_name': displayName}
+            : {},
       );
       state = state.copyWith(isLoading: false);
     } on AuthException catch (e) {

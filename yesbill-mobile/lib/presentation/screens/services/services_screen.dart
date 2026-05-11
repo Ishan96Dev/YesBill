@@ -39,14 +39,14 @@ class ServicesScreen extends ConsumerWidget {
             ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
             const SizedBox(height: 4),
             Text(
-              'Manage Services',
+              'Services',
               style: AppTextStyles.h1.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ).animate(delay: 60.ms).fadeIn(duration: 280.ms).slideY(begin: 0.05, end: 0),
             Text(
-              'Review and manage your active digital and physical subscriptions.',
+              'Manage and track all your active services.',
               style: AppTextStyles.bodySm.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

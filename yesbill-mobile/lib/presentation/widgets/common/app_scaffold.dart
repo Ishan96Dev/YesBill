@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../data/models/user_profile.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/core_providers.dart';
 import '../../../providers/notifications_provider.dart';
@@ -126,17 +127,26 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   Future<void> _checkSetupStatus() async {
     if (!mounted) return;
     try {
-      final profile = await ref.read(userProfileProvider.future);
+      UserProfile? profile = await ref.read(userProfileProvider.future);
+
+      // For brand-new SSO users the Supabase trigger that creates the profile
+      // row may not have completed yet. Retry once after a short delay.
+      if (profile == null) {
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (!mounted) return;
+        ref.invalidate(userProfileProvider);
+        profile = await ref.read(userProfileProvider.future);
+      }
+
       if (!mounted) return;
-      if (profile != null && !profile.onboardingCompleted) {
+      if (profile == null || !profile.onboardingCompleted) {
         context.go('/setup');
+        return;
       }
       // Seed the Chat widget greeting once profile is available
-      if (profile != null) {
-        unawaited(WidgetService.pushChatData(
-          displayName: profile.displayName ?? '',
-        ));
-      }
+      unawaited(WidgetService.pushChatData(
+        displayName: profile.displayName ?? '',
+      ));
     } catch (_) {
       // Profile fetch failed — allow user through to dashboard
     }

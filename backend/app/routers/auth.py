@@ -141,8 +141,8 @@ async def notify_password_change(user_id: str = Depends(get_current_user_id)):
     or /auth/reset-password page).
     """
     try:
-        profile = await supabase_service.get_user_profile(user_id)
-        to_email = profile.get("email") if profile else None
+        profile = await supabase_service.get_user_profile(user_id) or {}
+        to_email = profile.get("email")
         if not to_email:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -176,8 +176,8 @@ async def delete_account(user_id: str = Depends(get_current_user_id)):
     3. Hard-delete user from Supabase Auth (cascades DB rows via FK / RLS).
     """
     try:
-        profile = await supabase_service.get_user_profile(user_id)
-        to_email = profile.get("email") if profile else None
+        profile = await supabase_service.get_user_profile(user_id) or {}
+        to_email = profile.get("email")
         to_name = (
             profile.get("full_name") or profile.get("display_name") or "there"
         )
