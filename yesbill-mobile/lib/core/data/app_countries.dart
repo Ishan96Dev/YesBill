@@ -22,7 +22,7 @@ class AppCountry {
 String _flag(String iso2) {
   final upper = iso2.toUpperCase();
   return upper.codeUnits
-      .map((c) => String.fromCharCode(0x1F1E0 - 0x41 + c))
+      .map((c) => String.fromCharCode(0x1F1E6 - 0x41 + c))
       .join();
 }
 

@@ -209,6 +209,15 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: AppColors.primary, width: 2),
+                  ),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
@@ -666,7 +675,8 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   }
 }
 
-// ── Onboarding Cover & Avatar widget (dark-theme styled) ─────────────────────
+// ── Onboarding Cover & Avatar widget ─────────────────────────────────────────
+// Layout matches _CoverAndAvatar in profile_settings_screen.dart
 
 class _OnboardCoverAndAvatar extends StatelessWidget {
   const _OnboardCoverAndAvatar({
@@ -690,22 +700,22 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.white.withAlpha(30)),
       ),
       child: Column(
         children: [
-          // Cover photo
-          GestureDetector(
-            onTap: uploadingCover ? null : onUploadCover,
-            child: Stack(
-              children: [
-                Container(
-                  height: 120,
+          // ── Cover photo ────────────────────────────────────────────────
+          Stack(
+            children: [
+              GestureDetector(
+                onTap: uploadingCover ? null : onUploadCover,
+                child: Container(
+                  height: 140,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
+                      top: Radius.circular(18),
                     ),
                     image: coverUrl != null && coverUrl!.isNotEmpty
                         ? DecorationImage(
@@ -749,10 +759,42 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                         )
                       : null,
                 ),
-                if (coverUrl != null && coverUrl!.isNotEmpty)
-                  Positioned(
-                    right: 10,
-                    bottom: 10,
+              ),
+              // Text overlay (always visible, matches settings screen)
+              Positioned(
+                left: 16,
+                bottom: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      coverUrl == null || coverUrl!.isEmpty
+                          ? 'Add a cover photo'
+                          : 'Update your cover photo',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Gap(2),
+                    Text(
+                      'Give your profile a richer first impression.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.84),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Change button when cover is set
+              if (coverUrl != null && coverUrl!.isNotEmpty)
+                Positioned(
+                  right: 10,
+                  bottom: 10,
+                  child: GestureDetector(
+                    onTap: uploadingCover ? null : onUploadCover,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
@@ -777,105 +819,66 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
 
-          // Avatar + upload buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
+          // ── Avatar + upload buttons (overlaps cover by 28 px) ─────────
+          Transform.translate(
+            offset: const Offset(0, -28),
+            child: Column(
               children: [
-                // Avatar circle
                 GestureDetector(
                   onTap: uploadingAvatar ? null : onUploadAvatar,
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 34,
-                        backgroundColor: AppColors.primary.withOpacity(0.3),
-                        backgroundImage:
-                            avatarUrl != null && avatarUrl!.isNotEmpty
-                                ? NetworkImage(avatarUrl!)
-                                : null,
-                        child: avatarUrl == null || avatarUrl!.isEmpty
-                            ? uploadingAvatar
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white),
-                                  )
-                                : const Icon(LucideIcons.user,
-                                    color: Colors.white, size: 26)
-                            : null,
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: AppColors.surfaceDark, width: 2),
-                          ),
-                          child: const Icon(LucideIcons.camera,
-                              size: 11, color: Colors.white),
-                        ),
-                      ),
-                    ],
+                  child: CircleAvatar(
+                    radius: 38,
+                    backgroundColor: Colors.white.withAlpha(50),
+                    child: CircleAvatar(
+                      radius: 34,
+                      backgroundColor: AppColors.primary.withOpacity(0.3),
+                      backgroundImage:
+                          avatarUrl != null && avatarUrl!.isNotEmpty
+                              ? NetworkImage(avatarUrl!)
+                              : null,
+                      child: avatarUrl == null || avatarUrl!.isEmpty
+                          ? uploadingAvatar
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Icon(LucideIcons.user,
+                                  color: Colors.white, size: 26)
+                          : null,
+                    ),
                   ),
                 ),
-                const Gap(14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Profile Photo',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Gap(2),
-                      Text(
-                        avatarUrl != null && avatarUrl!.isNotEmpty
-                            ? 'Tap the circle to change'
-                            : 'Tap the circle to add a photo',
-                        style: const TextStyle(
-                            color: Colors.white54, fontSize: 11),
-                      ),
-                      const Gap(8),
-                      Row(
-                        children: [
-                          _SmallUploadBtn(
-                            label: coverUrl == null || coverUrl!.isEmpty
-                                ? 'Add Cover'
-                                : 'Change Cover',
-                            icon: LucideIcons.imagePlus,
-                            loading: uploadingCover,
-                            onTap: onUploadCover,
-                          ),
-                          const Gap(8),
-                          _SmallUploadBtn(
-                            label: avatarUrl == null || avatarUrl!.isEmpty
-                                ? 'Add Avatar'
-                                : 'Change Avatar',
-                            icon: LucideIcons.camera,
-                            loading: uploadingAvatar,
-                            onTap: onUploadAvatar,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                const Gap(8),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _SmallUploadBtn(
+                      label: coverUrl == null || coverUrl!.isEmpty
+                          ? 'Add Cover'
+                          : 'Change Cover',
+                      icon: LucideIcons.imagePlus,
+                      loading: uploadingCover,
+                      onTap: onUploadCover,
+                    ),
+                    _SmallUploadBtn(
+                      label: avatarUrl == null || avatarUrl!.isEmpty
+                          ? 'Add Avatar'
+                          : 'Change Avatar',
+                      icon: LucideIcons.camera,
+                      loading: uploadingAvatar,
+                      onTap: onUploadAvatar,
+                    ),
+                  ],
                 ),
+                const Gap(8),
               ],
             ),
           ),
@@ -1858,7 +1861,14 @@ class _InputField extends StatelessWidget {
                   ? Icon(icon, color: Colors.white54, size: 18)
                   : null,
               suffixIcon: suffixIcon,
+              filled: true,
+              fillColor: Colors.transparent,
               border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14, vertical: 14),
             ),
@@ -1904,7 +1914,12 @@ class _TextAreaField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
+          filled: true,
+          fillColor: Colors.transparent,
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           counterStyle: const TextStyle(color: Colors.white38),
