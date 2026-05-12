@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/core_providers.dart';
+import '../../widgets/auth_widgets.dart';
 import '../../widgets/common/app_background_effects.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -64,6 +65,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           SafeArea(
             child: Column(
           children: [
+            // YesBill brand logo — mirrors the login screen
+            Padding(
+              padding: const EdgeInsets.only(top: 20, bottom: 8),
+              child: const AuthBrandLogo(size: 56)
+                  .animate()
+                  .fadeIn(duration: 400.ms)
+                  .scale(
+                    begin: const Offset(0.88, 0.88),
+                    end: const Offset(1, 1),
+                    duration: 400.ms,
+                    curve: Curves.easeOut,
+                  ),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _controller,

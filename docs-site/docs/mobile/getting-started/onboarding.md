@@ -7,40 +7,69 @@ displayed_sidebar: mobileSidebar
 
 # Setting Up Your Account
 
-After creating your account, YesBill guides you through a quick setup to configure your AI assistant and preferences.
+After signing in for the first time, YesBill guides you through a **two-step onboarding** flow to configure your profile and (optionally) an AI provider.
 
-## AI Configuration
+## Step 1 — Profile Setup
 
-<PhoneFrame src="/img/screenshots/mobile/AI-Settings-Screen-01.jpeg" alt="AI Settings screen" />
+<PhoneFrame src="/img/screenshots/mobile/Profile-Edit-Profile-Screen-01.jpeg" alt="Profile setup during onboarding" />
 
-During onboarding — and any time from **Settings → AI Configuration** — you can set up your preferred AI provider.
+![Onboarding — Profile Setup](/img/screenshots/Onboard-Profile-01.png)
 
-YesBill supports three AI providers:
+Fill in your profile information:
 
-| Provider | Models |
-|----------|--------|
-| **OpenAI** | GPT-4o, GPT-4o Mini |
-| **Anthropic** | Claude Sonnet, Claude Haiku |
-| **Google** | Gemini 1.5 Pro, Gemini 1.5 Flash |
+| Field | Required | Notes |
+|-------|----------|-------|
+| **Full Name** | ✅ | Displayed in the app |
+| **Display Name** | Optional | Short name used in greetings |
+| **Phone Number** | Optional | For WhatsApp bill notifications |
+| **Country & Timezone** | ✅ | Dates and billing months are based on this |
+| **Profile Photo** | Optional | Upload an avatar from your gallery |
+
+Tap **Save & Continue** when done. You can update all of this later from **Settings → Profile**.
+
+## Step 2 — AI Provider Setup
+
+<PhoneFrame src="/img/screenshots/mobile/AI-Settings-Screen-01.jpeg" alt="AI provider setup during onboarding" />
+
+![AI Configuration during onboarding](/img/screenshots/Onboard-AI-Config-01.png)
+
+YesBill's AI features — bill summaries, Ask AI chat, and the AI Agent — require an API key from an AI provider.
+
+### Supported Providers
+
+| Provider | Best For | Get a Key |
+|----------|---------|-----------|
+| **OpenAI** | Most capable models (GPT-5 series) | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **Anthropic** | Balanced speed + intelligence (Claude) | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+| **Google AI** | Budget-friendly (Gemini Flash) | [aistudio.google.com](https://aistudio.google.com/apikey) |
+| **Ollama** | Local models — no API key needed | [ollama.com](https://ollama.com) |
 
 ### How to Configure
 
-1. Open **Settings** from the bottom navigation bar (tap the profile icon, then Settings).
-2. Tap **AI Configuration**.
-3. Select your preferred **AI Provider** from the dropdown.
-4. Enter your **API key** for that provider.
-5. Select a **model** from the available options.
-6. Tap **Save**.
+1. Select your preferred **AI Provider** from the list.
+2. Enter your **API Key** (not required for Ollama).
+3. Select a **default model** from the available options.
+4. Tap **Save & Go to Dashboard**.
 
-:::tip
-You can use the **AI Features** even with a free-tier API key from OpenAI or Google. Anthropic requires a paid account.
+### Skip for Now
+
+![Skip AI config modal](/img/screenshots/Onboard-skip-modal-01.png)
+
+If you're not ready to set up AI, tap **Skip for now**. A confirmation modal appears reminding you that AI features will be unavailable until you add a key.
+
+:::warning AI features locked until configured
+Skipping AI config disables **Bill Summaries**, **Ask AI Chat**, and the **AI Agent**. You'll see a reminder notification in the bell icon.
+Manual bill tracking, calendar, and payments work without AI.
 :::
+
+Tap **Skip Anyway** to go directly to the Dashboard. You can configure AI any time later from **Settings → AI Configuration**.
 
 ## What's Next?
 
-Once your AI is configured:
+After completing onboarding:
 
-- Add your first service in **Services**
-- Mark deliveries using the **Calendar**
-- Let YesBill generate your first **Bill** at month-end
-- Ask questions about your spending via **Ask AI**
+1. [Explore your dashboard](/mobile/getting-started/dashboard)
+2. [Add your first service](/mobile/services/managing-services)
+3. Mark deliveries in the **Calendar**
+4. Let YesBill generate your first **Bill** at month-end
+5. [Chat with Ask AI](/mobile/ai-features/ask-ai) about your expenses

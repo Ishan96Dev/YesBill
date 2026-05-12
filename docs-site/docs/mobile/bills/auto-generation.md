@@ -13,11 +13,15 @@ YesBill can generate bills automatically at month-end, or you can trigger genera
 
 <PhoneFrame src="/img/screenshots/mobile/Generate-Bill-Screen-01.jpeg" alt="Generate bill screen" />
 
+![Generate bill button](/img/screenshots/Generate-bill-button-001.png)
+
 1. Tap **Bills** in the bottom navigation bar.
 2. Tap the **Generate Bill** button (or the **+** icon).
 3. Select the **service** and **billing month**.
 4. Review the preview showing the calculated total.
 5. Tap **Generate** to confirm.
+
+![Generated bill](/img/screenshots/Generated-bill-01.png)
 
 The bill is added to your Bills list instantly.
 
@@ -42,3 +46,5 @@ See [AI Agent Chatbot](/mobile/ai-features/agent-chatbot) for more on what the A
 ## Email Notification
 
 After bills are generated, YesBill sends an email summary to your registered address with a PDF-style breakdown of all services for the month.
+
+![Auto-generated bill email](/img/screenshots/Auto-Generated-Bill-Mail-01.png)

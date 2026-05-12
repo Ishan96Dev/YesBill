@@ -1,88 +1,199 @@
-/* Phone frame mockup wrapper */
+/* =========================================================
+   Google Pixel 9 Pro phone frame — light & dark auto-switch
+   ========================================================= */
+
+/* Outer wrapper — centres the frame and constrains width */
 .phoneOuter {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 28px auto;
-  max-width: 300px;
+  margin: 32px auto;
+  max-width: 320px;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
+/* Top-level device container (no background — body shell handles that) */
 .phoneDevice {
   position: relative;
   width: 280px;
-  background: #0d0d1a;
-  border-radius: 44px;
-  border: 2px solid #2e2e50;
+}
+
+/* ── Body shell ──────────────────────────────────────────── */
+.phoneBody {
+  position: relative;
+  width: 280px;
+  border-radius: 46px;
+
+  /* Light mode: Pixel 9 Pro Porcelain */
+  background: linear-gradient(175deg, #efefee 0%, #e5e5e3 100%);
+  border: 1.5px solid #d0d0ce;
   box-shadow:
-    0 0 0 6px #1a1a2e,
-    0 0 0 8px #2a2a40,
-    0 28px 60px rgba(0, 0, 0, 0.5),
-    0 8px 20px rgba(0, 0, 0, 0.3);
-  padding: 12px 6px 16px;
-  overflow: hidden;
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+    inset 3px 0 6px rgba(0, 0, 0, 0.04),
+    inset -3px 0 6px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 36px 80px rgba(0, 0, 0, 0.08);
+
+  padding: 14px 6px 14px;
 }
 
-/* Dynamic Island / speaker pill */
-.phoneSpeaker {
-  width: 90px;
-  height: 22px;
-  background: #0d0d1a;
-  border-radius: 12px;
-  margin: 0 auto 8px;
-  border: 1.5px solid #2a2a40;
+:global([data-theme='dark']) .phoneBody {
+  /* Dark mode: Pixel 9 Pro Obsidian */
+  background: linear-gradient(175deg, #1e1e26 0%, #17171e 100%);
+  border-color: #2a2a34;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    inset 3px 0 6px rgba(0, 0, 0, 0.2),
+    inset -3px 0 6px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 16px 48px rgba(0, 0, 0, 0.6),
+    0 36px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Side hardware buttons (right edge) ─────────────────── */
+.phoneSideButtons {
+  position: absolute;
+  right: -3px;
+  top: 90px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
 }
 
-.phoneSpeakerDot {
-  width: 8px;
-  height: 8px;
-  background: #1e1e36;
-  border-radius: 50%;
-  border: 1px solid #2e2e50;
+/* Volume Up */
+.phoneVolumeUp {
+  width: 3px;
+  height: 32px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, #d8d8d6 0%, #c8c8c6 100%);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.15);
 }
 
-.phoneSpeakerBar {
-  width: 36px;
-  height: 5px;
-  background: #1a1a32;
-  border-radius: 3px;
-  border: 1px solid #2a2a44;
+/* Volume Down */
+.phoneVolumeDown {
+  width: 3px;
+  height: 32px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, #d8d8d6 0%, #c8c8c6 100%);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.15);
 }
 
-/* Screen area */
+/* Power button — slightly taller, offset lower */
+.phonePowerButton {
+  width: 3px;
+  height: 40px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, #d8d8d6 0%, #c8c8c6 100%);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.15);
+  margin-top: 12px;
+}
+
+:global([data-theme='dark']) .phoneVolumeUp,
+:global([data-theme='dark']) .phoneVolumeDown,
+:global([data-theme='dark']) .phonePowerButton {
+  background: linear-gradient(180deg, #252530 0%, #1e1e28 100%);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Screen area ─────────────────────────────────────────── */
 .phoneScreen {
-  border-radius: 34px;
+  position: relative;
+  border-radius: 36px;
   overflow: hidden;
   background: #000;
-  display: block;
   width: 100%;
   line-height: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
 .phoneScreen img {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 34px;
+  border-radius: 36px;
 }
 
-/* Bottom home indicator */
-.phoneHome {
-  width: 80px;
+/* ── Punch-hole selfie camera ────────────────────────────── */
+.phonePunchHole {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 11px;
+  height: 11px;
+  background: radial-gradient(circle at 35% 35%, #1a1a1a, #000);
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
+    0 0 0 1.5px rgba(255, 255, 255, 0.04),
+    inset 0 1px 2px rgba(255, 255, 255, 0.08);
+}
+
+/* ── Bottom bar: speaker grilles + USB-C port ───────────── */
+.phoneBottomBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 0 20px;
+}
+
+.phoneSpeakerLeft,
+.phoneSpeakerRight {
+  flex: 1;
   height: 4px;
-  background: #2a2a44;
-  border-radius: 3px;
-  margin: 8px auto 0;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #c0c0be 0px,
+    #c0c0be 2px,
+    transparent 2px,
+    transparent 5px
+  );
+  opacity: 0.7;
 }
 
-/* Optional caption below frame */
+.phoneUSBC {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #b8b8b6 0%, #a8a8a6 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+:global([data-theme='dark']) .phoneSpeakerLeft,
+:global([data-theme='dark']) .phoneSpeakerRight {
+  background: repeating-linear-gradient(
+    90deg,
+    #252528 0px,
+    #252528 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+:global([data-theme='dark']) .phoneUSBC {
+  background: linear-gradient(180deg, #1e1e26 0%, #16161e 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── Optional caption below the frame ──────────────────── */
 .phoneCaption {
   font-size: 0.75rem;
   color: var(--ifm-color-secondary);
-  margin-top: 10px;
+  margin-top: 12px;
   text-align: center;
   font-style: italic;
 }

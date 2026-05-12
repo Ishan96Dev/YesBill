@@ -117,6 +117,7 @@ const sidebars = {
         'mobile/ai-features/ask-ai',
         'mobile/ai-features/agent-chatbot',
         'mobile/ai-features/analytics',
+        'mobile/ai-features/ai-insights',
       ],
     },
     {
@@ -126,8 +127,10 @@ const sidebars = {
         'mobile/settings/overview',
         'mobile/settings/profile',
         'mobile/settings/notifications',
+        'mobile/settings/appearance',
         'mobile/settings/security',
         'mobile/settings/ai-configuration',
+        'mobile/settings/ollama-setup',
         'mobile/settings/support',
       ],
     },

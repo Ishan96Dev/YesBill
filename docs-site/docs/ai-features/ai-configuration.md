@@ -90,7 +90,7 @@ You can add keys for all three providers and switch between them in **Ask AI** u
 
 ## Security
 
-Your API keys are stored only in your browser session and sent directly to the AI provider. YesBill never stores, logs, or shares your API keys on any server or database. Your keys remain private and under your control at all times.
+Your API keys are stored only in your browser session and sent directly to the AI provider. YesBill never stores, logs, or shares your API keys. Your keys remain private and under your control at all times.
 
 ## Removing a Key
 

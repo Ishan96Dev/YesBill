@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -14,7 +16,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../data/models/ai_provider_info.dart';
 import '../../../providers/ai_settings_provider.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/core_providers.dart';
+import '../../../providers/notifications_provider.dart';
 import '../../widgets/common/app_background_effects.dart';
 import '../../widgets/auth_widgets.dart';
 
@@ -1972,6 +1976,24 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
         } catch (e) {
           if (attempt == 1) rethrow;
           await Future<void>.delayed(const Duration(milliseconds: 800));
+        }
+      }
+
+      // Mirror web frontend: push an in-app notification when AI config is
+      // skipped so the user sees a reminder in the notification bell.
+      if (skippedAi) {
+        final userId = ref.read(authProvider).user?.id;
+        if (userId != null) {
+          unawaited(
+            ref.read(notificationsProvider.notifier).createIfAbsent(
+              userId: userId,
+              type: 'ai_config_incomplete',
+              title: 'AI not configured',
+              message:
+                  'Add an API key in Settings → AI Configuration to unlock '
+                  'Bill Generation, Ask AI Chat, and AI Insights.',
+            ),
+          );
         }
       }
     } catch (_) {

@@ -7,7 +7,7 @@ displayed_sidebar: mobileSidebar
 
 # Creating an Account
 
-YesBill uses secure email-based authentication. You can sign up with your email and password, or use Google Sign-In for a faster setup.
+YesBill uses secure, encrypted authentication. You can sign up with your email and password, or use Google Sign-In for a faster setup.
 
 ## Sign Up
 
@@ -15,14 +15,23 @@ YesBill uses secure email-based authentication. You can sign up with your email 
 
 1. Open the YesBill app and tap **Create Account** on the login screen.
 2. Enter your **full name**, **email address**, and a strong **password**.
+   - Password must be at least 8 characters with uppercase, lowercase, and a number.
 3. Tap **Sign Up**.
-4. Check your inbox for a confirmation email and tap the verification link.
+4. Check your inbox for a **confirmation email** from YesBill.
 
-<PhoneFrame src="/img/screenshots/mobile/login-screen-01.jpeg" alt="Login screen" />
+### Confirmation Email
 
-After verifying your email, return to the app and sign in with your credentials.
+![Confirmation email from YesBill](/img/screenshots/Confirm-Signup-Mail-01.png)
+
+After signing up, YesBill sends a confirmation email like the one above. Tap **Confirm your email** to activate your account. Check your spam folder if it doesn't arrive within a few minutes.
+
+:::info
+You must verify your email before you can sign in.
+:::
 
 ## Sign In
+
+<PhoneFrame src="/img/screenshots/mobile/login-screen-01.jpeg" alt="Login screen" />
 
 1. Open YesBill and enter your registered **email** and **password**.
 2. Tap **Sign In**.
@@ -32,17 +41,25 @@ After verifying your email, return to the app and sign in with your credentials.
 
 <PhoneFrame src="/img/screenshots/mobile/Forget-Password-screen-01.jpeg" alt="Forgot password screen" />
 
-1. On the login screen, tap **Forgot Password?**
-2. Enter your registered email address and tap **Send Reset Link**.
-3. Open the password reset email in your inbox and follow the link.
-4. Set a new password, then return to the app and sign in.
+### Step 1 — Enter Your Email
 
-:::info
-Password reset links expire after 1 hour for security reasons.
-:::
+On the login screen, tap **Forgot Password?** Enter your registered email address and tap **Send Reset Link**.
+
+### Step 2 — Check Your Inbox
+
+![Forgot password reset email](/img/screenshots/Forget-Password-email-01.png)
+
+Open the password reset email and tap **Reset Password**. The link is valid for **1 hour** — check your spam folder if it doesn't arrive within a few minutes.
+
+### Step 3 — Set a New Password
+
+![Set new password screen](/img/screenshots/Forget-Password-Set-New-password-01.png)
+
+Enter your new password (minimum 8 characters) and confirm it, then tap **Update Password**. Return to the app and sign in with your new credentials.
 
 ## Security Notes
 
-- YesBill never stores your password in plain text.
+- YesBill never stores your password in plain text — passwords are hashed with bcrypt.
 - All data is encrypted in transit using HTTPS.
 - Your session stays active until you explicitly sign out from Settings.
+- API keys are stored securely on-device using Flutter Secure Storage and are never sent to YesBill's servers.

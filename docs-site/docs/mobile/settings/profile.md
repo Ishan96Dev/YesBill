@@ -7,7 +7,7 @@ displayed_sidebar: mobileSidebar
 
 # Profile Settings
 
-Manage your name, email address, and profile photo from the Profile screen.
+Manage your name, email address, phone number, timezone, and profile photo.
 
 ## Editing Your Profile
 
@@ -17,20 +17,40 @@ Manage your name, email address, and profile photo from the Profile screen.
 2. Tap **Edit Profile**.
 3. Update any of the following:
    - **Display Name** — how your name appears in the app
-   - **Email Address** — your login email (requires verification)
-   - **Profile Photo** — tap the avatar to upload a new photo
+   - **Full Name** — used in emails and bill headers
+   - **Phone Number** — optional, for WhatsApp notifications
+   - **Country & Timezone** — affects billing dates and calendar display
+   - **Profile Photo** — tap the avatar to upload a new photo from your gallery
 4. Tap **Save Changes**.
+
+:::info
+Your country and timezone settings affect how billing months and due dates are displayed. Set this correctly to avoid off-by-one-day issues.
+:::
 
 ## Changing Your Email
 
 If you update your email address:
 
-1. A verification email is sent to the **new** address.
-2. Click the verification link in the email.
-3. Your login email is updated once verified.
+![Change Email from Settings](/img/screenshots/Change-Email-from-Settings-01.png)
+
+1. Tap **Edit Profile** → change the **Email Address** field.
+2. Tap **Save Changes**.
+3. A verification email is sent to the **new** address.
+
+### Email Verification
+
+![Email change confirmation email](/img/screenshots/Confirm-Email-Change-Mail-01.png)
+
+Tap the verification link in the email to confirm your new address.
+
+### Email Change Notification
+
+![Email changed notification email](/img/screenshots/Email-is-Changed-mail-01.png)
+
+Once verified, a notification is also sent to your **old** email address confirming the change. If you didn't request this, contact support immediately.
 
 :::info
-Your old email continues to work until you verify the new one.
+Your old email continues to work for sign-in until you verify the new one.
 :::
 
 ## Changing Your Password

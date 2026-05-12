@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # Creating Your Account
 
-YesBill uses Supabase Auth for secure sign-up and login. You can register with your email and password or sign in with Google.
+YesBill uses secure, encrypted authentication. You can register with your email and password or sign in with Google.
 
 ## The Login Screen
 

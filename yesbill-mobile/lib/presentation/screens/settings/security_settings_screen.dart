@@ -193,8 +193,16 @@ class _SecuritySettingsScreenState
                     onPressed: canDelete ? () => Navigator.pop(ctx, true) : null,
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.error,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                     ),
-                    child: const Text('Delete account'),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Delete account',
+                        maxLines: 1,
+                        overflow: TextOverflow.clip,
+                      ),
+                    ),
                   ),
                 ),
               ],

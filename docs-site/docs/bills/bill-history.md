@@ -62,4 +62,4 @@ Use PDF exports to settle disputes with vendors — it includes a timestamped br
 
 ## Data Retention
 
-All bill data is stored indefinitely in your Supabase account. Your history is available as long as your account exists.
+All bill data is retained as long as your account exists. Your history is always available when you sign in.

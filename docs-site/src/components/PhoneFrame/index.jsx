@@ -1,31 +1,45 @@
 import React from 'react';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
 
 /**
- * PhoneFrame — renders a screenshot inside a mobile phone mockup.
+ * PhoneFrame — renders a screenshot inside a Google Pixel 9 Pro-style mockup.
+ *
+ * Automatically resolves image paths via useBaseUrl (works on GitHub Pages
+ * and any custom baseUrl deployment).
  *
  * Usage in any MDX/Markdown doc:
  *   <PhoneFrame src="/img/screenshots/mobile/screen.jpeg" alt="Screen description" />
  *   <PhoneFrame src="..." alt="..." caption="Optional caption" />
  */
 export default function PhoneFrame({ src, alt, caption }) {
+  const resolvedSrc = useBaseUrl(src);
   return (
     <div className={styles.phoneOuter}>
       <div className={styles.phoneDevice}>
-        {/* Speaker / Dynamic Island pill */}
-        <div className={styles.phoneSpeaker}>
-          <div className={styles.phoneSpeakerDot} />
-          <div className={styles.phoneSpeakerBar} />
-          <div className={styles.phoneSpeakerDot} />
-        </div>
+        {/* Phone body shell */}
+        <div className={styles.phoneBody}>
+          {/* Side hardware buttons (right side) */}
+          <div className={styles.phoneSideButtons}>
+            <div className={styles.phoneVolumeUp} />
+            <div className={styles.phoneVolumeDown} />
+            <div className={styles.phonePowerButton} />
+          </div>
 
-        {/* Screen */}
-        <div className={styles.phoneScreen}>
-          <img src={src} alt={alt || ''} />
-        </div>
+          {/* Screen with punch-hole camera overlay */}
+          <div className={styles.phoneScreen}>
+            {/* Punch-hole selfie camera */}
+            <div className={styles.phonePunchHole} />
+            <img src={resolvedSrc} alt={alt || ''} />
+          </div>
 
-        {/* Home indicator */}
-        <div className={styles.phoneHome} />
+          {/* Bottom: USB-C port */}
+          <div className={styles.phoneBottomBar}>
+            <div className={styles.phoneSpeakerLeft} />
+            <div className={styles.phoneUSBC} />
+            <div className={styles.phoneSpeakerRight} />
+          </div>
+        </div>
       </div>
 
       {caption && (

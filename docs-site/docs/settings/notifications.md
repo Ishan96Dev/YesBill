@@ -42,4 +42,4 @@ Click the **bell icon** (🔔) in the top navbar to open the notification panel:
 
 - Disable notification types you don't find useful — only keep the ones that matter to you
 - **Bill Generated** notifications are the most useful — they remind you to review and pay
-- The notification panel shows the last 50 notifications. Older ones are not shown but are still in the database.
+- The notification panel shows the last 50 notifications. Older ones are not shown but are retained in your account history.

@@ -144,6 +144,50 @@ class NotificationsNotifier
       client.from('notifications').update({'read': true}),
     );
   }
+
+  /// Inserts an in-app notification of the given [type] for [userId] only if
+  /// no unread notification of the same type already exists (idempotent).
+  /// Mirrors the web frontend's `notificationService.createIfAbsent`.
+  Future<void> createIfAbsent({
+    required String userId,
+    required String type,
+    required String title,
+    String? message,
+  }) async {
+    final client = ref.read(supabaseClientProvider);
+    try {
+      // Guard: skip if an unread notification of this type already exists.
+      final existing = await client
+          .from('notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('type', type)
+          .eq('read', false)
+          .limit(1);
+      if ((existing as List).isNotEmpty) return;
+
+      final data = await client
+          .from('notifications')
+          .insert({
+            'user_id': userId,
+            'type': type,
+            'title': title,
+            if (message != null) 'message': message,
+            'read': false,
+          })
+          .select()
+          .single();
+
+      // Prepend to local in-memory state so the bell updates immediately.
+      final current = state.valueOrNull ?? const <AppNotification>[];
+      state = AsyncData([
+        AppNotification.fromMap(data as Map<String, dynamic>),
+        ...current,
+      ]);
+    } catch (e) {
+      debugPrint('NotificationsNotifier.createIfAbsent error: $e');
+    }
+  }
 }
 
 final notificationsProvider =

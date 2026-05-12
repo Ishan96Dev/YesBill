@@ -41,7 +41,7 @@ YesBill Mobile is built for:
 | **Service Type** | Billing model: Home Delivery, Visit-based, Utility, Subscription, or Payment |
 | **Calendar** | Day-by-day view to mark deliveries or visits |
 | **Bill** | Auto-generated monthly summary |
-| **AI Features** | Chat assistant and analytics powered by OpenAI, Anthropic, or Google |
+| **AI Features** | Chat assistant and analytics powered by OpenAI, Anthropic, Google AI, or Ollama (local models) |
 
 ## Navigation
 
