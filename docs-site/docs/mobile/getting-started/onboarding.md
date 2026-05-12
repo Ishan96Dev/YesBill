@@ -1,4 +1,4 @@
----
+﻿---
 id: onboarding
 title: Setting Up Your Account
 sidebar_position: 2
@@ -11,7 +11,7 @@ After creating your account, YesBill guides you through a quick setup to configu
 
 ## AI Configuration
 
-![AI Settings screen](/img/screenshots/mobile/AI-Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/AI-Settings-Screen-01.jpeg" alt="AI Settings screen" />
 
 During onboarding — and any time from **Settings → AI Configuration** — you can set up your preferred AI provider.
 

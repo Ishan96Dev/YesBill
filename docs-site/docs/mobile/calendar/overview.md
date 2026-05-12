@@ -1,4 +1,4 @@
----
+﻿---
 id: overview
 title: Calendar Overview
 sidebar_position: 1
@@ -11,7 +11,7 @@ The **Calendar** tab is where you mark daily deliveries and visits. YesBill uses
 
 ## Calendar View
 
-![Calendar screen](/img/screenshots/mobile/Calender-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Calender-Screen-01.jpeg" alt="Calendar screen" />
 
 The calendar shows the current month with a grid of days. For each service, you can mark days as delivered, missed, or not applicable.
 

@@ -1,4 +1,4 @@
----
+﻿---
 id: auto-generation
 title: Auto Bill Generation
 sidebar_position: 2
@@ -11,7 +11,7 @@ YesBill can generate bills automatically at month-end, or you can trigger genera
 
 ## Generating a Bill
 
-![Generate bill screen](/img/screenshots/mobile/Generate-Bill-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Generate-Bill-Screen-01.jpeg" alt="Generate bill screen" />
 
 1. Tap **Bills** in the bottom navigation bar.
 2. Tap the **Generate Bill** button (or the **+** icon).

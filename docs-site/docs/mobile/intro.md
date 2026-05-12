@@ -1,4 +1,4 @@
----
+﻿---
 id: intro
 title: Welcome to YesBill Mobile
 sidebar_label: Introduction
@@ -8,11 +8,11 @@ displayed_sidebar: mobileSidebar
 
 # Welcome to YesBill Mobile
 
-![YesBill Mobile — Introduction](/img/screenshots/mobile/Intro-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Intro-screen-01.jpeg" alt="YesBill Mobile — Introduction" />
 
 YesBill is a smart household billing tracker for Android. It helps you record daily service deliveries, generate monthly bills automatically, and chat with AI about your expenses — all from your phone.
 
-![YesBill Mobile app overview](/img/screenshots/mobile/Intro-screen-02.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Intro-screen-02.jpeg" alt="YesBill Mobile app overview" />
 
 ## What Is YesBill?
 

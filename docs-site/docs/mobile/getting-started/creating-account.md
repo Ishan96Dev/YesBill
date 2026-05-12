@@ -1,4 +1,4 @@
----
+﻿---
 id: creating-account
 title: Creating an Account
 sidebar_position: 1
@@ -11,14 +11,14 @@ YesBill uses secure email-based authentication. You can sign up with your email 
 
 ## Sign Up
 
-![Create account screen](/img/screenshots/mobile/Create-account-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Create-account-screen-01.jpeg" alt="Create account screen" />
 
 1. Open the YesBill app and tap **Create Account** on the login screen.
 2. Enter your **full name**, **email address**, and a strong **password**.
 3. Tap **Sign Up**.
 4. Check your inbox for a confirmation email and tap the verification link.
 
-![Login screen](/img/screenshots/mobile/login-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/login-screen-01.jpeg" alt="Login screen" />
 
 After verifying your email, return to the app and sign in with your credentials.
 
@@ -30,7 +30,7 @@ After verifying your email, return to the app and sign in with your credentials.
 
 ## Forgot Password
 
-![Forgot password screen](/img/screenshots/mobile/Forget-Password-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Forget-Password-screen-01.jpeg" alt="Forgot password screen" />
 
 1. On the login screen, tap **Forgot Password?**
 2. Enter your registered email address and tap **Send Reset Link**.

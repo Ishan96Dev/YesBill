@@ -1,4 +1,4 @@
----
+﻿---
 id: support
 title: Help & Support
 sidebar_position: 6
@@ -11,7 +11,7 @@ Get help with YesBill, report issues, or send feedback.
 
 ## Support Screen
 
-![Support screen](/img/screenshots/mobile/Support-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Support-Screen-01.jpeg" alt="Support screen" />
 
 Open **Settings → Support** to access help resources.
 

@@ -1,4 +1,4 @@
----
+﻿---
 id: notifications
 title: Notification Settings
 sidebar_position: 3
@@ -11,7 +11,7 @@ Control which notifications YesBill sends you and how they appear.
 
 ## Notification Settings Screen
 
-![Notification settings screen](/img/screenshots/mobile/Notifications-Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Notifications-Settings-Screen-01.jpeg" alt="Notification settings screen" />
 
 Open **Settings → Notifications** to manage your preferences.
 
@@ -27,7 +27,7 @@ Open **Settings → Notifications** to manage your preferences.
 
 ## Notification Center
 
-![Notification center screen](/img/screenshots/mobile/Notification-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Notification-Screen-01.jpeg" alt="Notification center screen" />
 
 Tap the **bell icon** on the Home screen to open your notification center. You can:
 

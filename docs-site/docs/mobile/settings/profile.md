@@ -1,4 +1,4 @@
----
+﻿---
 id: profile
 title: Profile Settings
 sidebar_position: 2
@@ -11,7 +11,7 @@ Manage your name, email address, and profile photo from the Profile screen.
 
 ## Editing Your Profile
 
-![Edit profile screen](/img/screenshots/mobile/Profile-Edit-Profile-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Profile-Edit-Profile-Screen-01.jpeg" alt="Edit profile screen" />
 
 1. Open **Settings** and tap **Profile**.
 2. Tap **Edit Profile**.

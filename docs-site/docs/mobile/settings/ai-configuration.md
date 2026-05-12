@@ -1,4 +1,4 @@
----
+﻿---
 id: ai-configuration
 title: AI Configuration
 sidebar_position: 5
@@ -11,7 +11,7 @@ Configure your AI provider, API key, and preferred model for Ask AI and the AI A
 
 ## AI Settings Screen
 
-![AI settings screen](/img/screenshots/mobile/AI-Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/AI-Settings-Screen-01.jpeg" alt="AI settings screen" />
 
 Open **Settings → AI Configuration** to set up your AI provider.
 
@@ -27,7 +27,7 @@ YesBill supports three AI providers. You need to bring your own API key.
 
 ## Provider Settings
 
-![Provider settings screen](/img/screenshots/mobile/Provider-Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Provider-Settings-Screen-01.jpeg" alt="Provider settings screen" />
 
 1. Select your **AI Provider** from the dropdown.
 2. Enter your **API Key** for that provider.
@@ -42,7 +42,7 @@ YesBill supports three AI providers. You need to bring your own API key.
 
 ## Appearance Settings
 
-![Appearance settings screen](/img/screenshots/mobile/Appearance-Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Appearance-Settings-Screen-01.jpeg" alt="Appearance settings screen" />
 
 In **Settings → Appearance**, you can configure:
 

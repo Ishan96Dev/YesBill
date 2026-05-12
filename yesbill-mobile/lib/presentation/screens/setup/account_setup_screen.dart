@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:image_picker/image_picker.dart';
+
 import '../../../core/data/app_countries.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -14,6 +16,7 @@ import '../../../data/models/ai_provider_info.dart';
 import '../../../providers/ai_settings_provider.dart';
 import '../../../providers/core_providers.dart';
 import '../../widgets/common/app_background_effects.dart';
+import '../../widgets/auth_widgets.dart';
 
 // ── Step indicators ───────────────────────────────────────────────────────────
 
@@ -268,6 +271,10 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   final _displayNameCtrl = TextEditingController();
   final _fullNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _companyCtrl = TextEditingController();
+  final _websiteCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _languageCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
 
   AppCountry? _country;
@@ -276,11 +283,21 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   String? _fullNameError;
   String? _countryError;
 
+  // Photo upload state
+  String? _avatarUrl;
+  String? _coverUrl;
+  bool _uploadingAvatar = false;
+  bool _uploadingCover = false;
+
   @override
   void dispose() {
     _displayNameCtrl.dispose();
     _fullNameCtrl.dispose();
     _phoneCtrl.dispose();
+    _companyCtrl.dispose();
+    _websiteCtrl.dispose();
+    _locationCtrl.dispose();
+    _languageCtrl.dispose();
     _bioCtrl.dispose();
     super.dispose();
   }
@@ -318,6 +335,52 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
     return ok;
   }
 
+  Future<void> _uploadAvatar() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1200,
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingAvatar = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final repo = ref.read(profileRepositoryProvider);
+      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final url = await repo.uploadAvatar(bytes, fileName);
+      if (mounted) setState(() => _avatarUrl = url);
+    } catch (_) {
+      // Non-blocking — can retry in settings
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
+
+  Future<void> _uploadCover() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 2400,
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingCover = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final repo = ref.read(profileRepositoryProvider);
+      final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final url = await repo.uploadCoverImage(bytes, fileName);
+      if (mounted) setState(() => _coverUrl = url);
+    } catch (_) {
+      // Non-blocking
+    } finally {
+      if (mounted) setState(() => _uploadingCover = false);
+    }
+  }
+
   Future<void> _next() async {
     if (!_validate()) return;
     setState(() => _saving = true);
@@ -332,6 +395,10 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
         'currency_code': c.currencySymbol,
         'timezone': c.timezone,
         if (_phoneCtrl.text.trim().isNotEmpty) 'phone': _phoneCtrl.text.trim(),
+        if (_companyCtrl.text.trim().isNotEmpty) 'company': _companyCtrl.text.trim(),
+        if (_websiteCtrl.text.trim().isNotEmpty) 'website': _websiteCtrl.text.trim(),
+        if (_locationCtrl.text.trim().isNotEmpty) 'location': _locationCtrl.text.trim(),
+        if (_languageCtrl.text.trim().isNotEmpty) 'language': _languageCtrl.text.trim(),
         if (_bioCtrl.text.trim().isNotEmpty) 'bio': _bioCtrl.text.trim(),
       });
     } catch (_) {
@@ -358,7 +425,18 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
           'Tell us a bit about yourself to personalize YesBill.',
           style: AppTextStyles.body.copyWith(color: Colors.white70),
         ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.1),
-        const Gap(28),
+        const Gap(24),
+
+        // ── Cover & Avatar upload ──────────────────────────────────────────
+        _OnboardCoverAndAvatar(
+          coverUrl: _coverUrl,
+          avatarUrl: _avatarUrl,
+          uploadingAvatar: _uploadingAvatar,
+          uploadingCover: _uploadingCover,
+          onUploadAvatar: _uploadAvatar,
+          onUploadCover: _uploadCover,
+        ),
+        const Gap(24),
 
         // Display name
         _FieldLabel(text: 'Display Name', required: true),
@@ -452,7 +530,7 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
           ),
         ],
 
-        // Currency + Timezone (auto-filled)
+        // Currency + Timezone (auto-filled from country)
         if (c != null) ...[
           const Gap(12),
           Row(
@@ -484,6 +562,47 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
           icon: LucideIcons.phone,
           keyboardType: TextInputType.phone,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+        const Gap(16),
+
+        // Company (optional)
+        _FieldLabel(text: 'Company', optional: true),
+        const Gap(8),
+        _InputField(
+          controller: _companyCtrl,
+          hint: 'e.g. Acme Corp',
+          icon: LucideIcons.briefcase,
+        ),
+        const Gap(16),
+
+        // Website (optional)
+        _FieldLabel(text: 'Website', optional: true),
+        const Gap(8),
+        _InputField(
+          controller: _websiteCtrl,
+          hint: 'e.g. https://example.com',
+          icon: LucideIcons.link,
+          keyboardType: TextInputType.url,
+        ),
+        const Gap(16),
+
+        // Location (optional)
+        _FieldLabel(text: 'Location', optional: true),
+        const Gap(8),
+        _InputField(
+          controller: _locationCtrl,
+          hint: 'e.g. Mumbai, India',
+          icon: LucideIcons.mapPin,
+        ),
+        const Gap(16),
+
+        // Language (optional)
+        _FieldLabel(text: 'Language', optional: true),
+        const Gap(8),
+        _InputField(
+          controller: _languageCtrl,
+          hint: 'e.g. English',
+          icon: LucideIcons.languages,
         ),
         const Gap(16),
 
@@ -543,7 +662,286 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   }
 }
 
+// ── Onboarding Cover & Avatar widget (dark-theme styled) ─────────────────────
+
+class _OnboardCoverAndAvatar extends StatelessWidget {
+  const _OnboardCoverAndAvatar({
+    required this.coverUrl,
+    required this.avatarUrl,
+    required this.uploadingAvatar,
+    required this.uploadingCover,
+    required this.onUploadAvatar,
+    required this.onUploadCover,
+  });
+
+  final String? coverUrl;
+  final String? avatarUrl;
+  final bool uploadingAvatar;
+  final bool uploadingCover;
+  final VoidCallback onUploadAvatar;
+  final VoidCallback onUploadCover;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(30)),
+      ),
+      child: Column(
+        children: [
+          // Cover photo
+          GestureDetector(
+            onTap: uploadingCover ? null : onUploadCover,
+            child: Stack(
+              children: [
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    image: coverUrl != null && coverUrl!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(coverUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    gradient: coverUrl == null || coverUrl!.isEmpty
+                        ? const LinearGradient(
+                            colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                  ),
+                  child: coverUrl == null || coverUrl!.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                uploadingCover
+                                    ? LucideIcons.loader
+                                    : LucideIcons.imagePlus,
+                                color: Colors.white54,
+                                size: 28,
+                              ),
+                              const Gap(6),
+                              Text(
+                                uploadingCover
+                                    ? 'Uploading…'
+                                    : 'Tap to add cover photo',
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : null,
+                ),
+                if (coverUrl != null && coverUrl!.isNotEmpty)
+                  Positioned(
+                    right: 10,
+                    bottom: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.camera,
+                              size: 12, color: Colors.white),
+                          Gap(4),
+                          Text(
+                            'Change',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Avatar + upload buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                // Avatar circle
+                GestureDetector(
+                  onTap: uploadingAvatar ? null : onUploadAvatar,
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 34,
+                        backgroundColor: AppColors.primary.withOpacity(0.3),
+                        backgroundImage:
+                            avatarUrl != null && avatarUrl!.isNotEmpty
+                                ? NetworkImage(avatarUrl!)
+                                : null,
+                        child: avatarUrl == null || avatarUrl!.isEmpty
+                            ? uploadingAvatar
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white),
+                                  )
+                                : const Icon(LucideIcons.user,
+                                    color: Colors.white, size: 26)
+                            : null,
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppColors.surfaceDark, width: 2),
+                          ),
+                          child: const Icon(LucideIcons.camera,
+                              size: 11, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Gap(14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Profile Photo',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Gap(2),
+                      Text(
+                        avatarUrl != null && avatarUrl!.isNotEmpty
+                            ? 'Tap the circle to change'
+                            : 'Tap the circle to add a photo',
+                        style: const TextStyle(
+                            color: Colors.white54, fontSize: 11),
+                      ),
+                      const Gap(8),
+                      Row(
+                        children: [
+                          _SmallUploadBtn(
+                            label: coverUrl == null || coverUrl!.isEmpty
+                                ? 'Add Cover'
+                                : 'Change Cover',
+                            icon: LucideIcons.imagePlus,
+                            loading: uploadingCover,
+                            onTap: onUploadCover,
+                          ),
+                          const Gap(8),
+                          _SmallUploadBtn(
+                            label: avatarUrl == null || avatarUrl!.isEmpty
+                                ? 'Add Avatar'
+                                : 'Change Avatar',
+                            icon: LucideIcons.camera,
+                            loading: uploadingAvatar,
+                            onTap: onUploadAvatar,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallUploadBtn extends StatelessWidget {
+  const _SmallUploadBtn({
+    required this.label,
+    required this.icon,
+    required this.loading,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final bool loading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withAlpha(30),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.primary.withAlpha(80)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            loading
+                ? const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child:
+                        CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryLight),
+                  )
+                : Icon(icon, size: 12, color: AppColors.primaryLight),
+            const Gap(4),
+            Text(
+              label,
+              style: const TextStyle(
+                  color: AppColors.primaryLight,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
 // ── AI setup step ─────────────────────────────────────────────────────────────
+
+String? _aiProviderLocalAsset(String providerId) {
+  return switch (providerId) {
+    'openai' => 'assets/images/openai.png',
+    'anthropic' => 'assets/images/anthropic.png',
+    'google' => 'assets/images/google-ai.png',
+    'ollama' => 'assets/images/ollama.png',
+    _ => null,
+  };
+}
 
 class _AiStep extends ConsumerStatefulWidget {
   const _AiStep({required this.userName, required this.onComplete});
@@ -563,6 +961,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
   String? _selectedModel;
   bool _saving = false;
   bool _showSkipWarning = false;
+  bool _aiInsightsEnabled = true;
   // 'idle' | 'checking' | 'valid' | 'invalid'
   String _keyStatus = 'idle';
 
@@ -611,6 +1010,20 @@ class _AiStepState extends ConsumerState<_AiStep> {
       await widget.onComplete(skippedAi: false);
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _validateKey() async {
+    final key = _apiKeyCtrl.text.trim();
+    if (key.isEmpty) return;
+    setState(() => _keyStatus = 'checking');
+    try {
+      final valid = await ref
+          .read(aiSettingsMutationProvider.notifier)
+          .validateKey(provider: _selectedProviderId, apiKey: key);
+      if (mounted) setState(() => _keyStatus = valid ? 'valid' : 'invalid');
+    } catch (_) {
+      if (mounted) setState(() => _keyStatus = 'invalid');
     }
   }
 
@@ -757,11 +1170,26 @@ class _AiStepState extends ConsumerState<_AiStep> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            _providerIcon(id),
-                            size: 26,
-                            color: isSelected ? color : Colors.white54,
-                          ),
+                          Builder(builder: (_) {
+                            final asset = _aiProviderLocalAsset(id);
+                            if (asset != null) {
+                              return Container(
+                                width: 36,
+                                height: 36,
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withAlpha(isSelected ? 30 : 18),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Image.asset(asset, fit: BoxFit.contain),
+                              );
+                            }
+                            return Icon(
+                              _providerIcon(id),
+                              size: 26,
+                              color: isSelected ? color : Colors.white54,
+                            );
+                          }),
                           const Gap(6),
                           Text(
                             _providerLabel(id),
@@ -791,6 +1219,92 @@ class _AiStepState extends ConsumerState<_AiStep> {
               ),
             ),
             const Gap(24),
+
+            // Provider info banner
+            if (selectedProviderInfo.description.isNotEmpty)
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: Container(
+                  key: ValueKey(_selectedProviderId),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: _providerColor(_selectedProviderId).withAlpha(20),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: _providerColor(_selectedProviderId).withAlpha(60)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(18),
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        child: () {
+                          final asset = _aiProviderLocalAsset(_selectedProviderId);
+                          if (asset != null) {
+                            return Image.asset(asset, fit: BoxFit.contain);
+                          }
+                          return Icon(_providerIcon(_selectedProviderId),
+                              size: 16, color: Colors.white70);
+                        }(),
+                      ),
+                      const Gap(10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              selectedProviderInfo.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Gap(3),
+                            Text(
+                              selectedProviderInfo.description,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12, height: 1.4),
+                            ),
+                            if (selectedProviderInfo.docsUrl.isNotEmpty) ...[
+                              const Gap(8),
+                              GestureDetector(
+                                onTap: () => launchUrl(
+                                  Uri.parse(selectedProviderInfo.docsUrl),
+                                  mode: LaunchMode.externalApplication,
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'View Docs',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.primaryLight,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    Gap(3),
+                                    Icon(LucideIcons.externalLink,
+                                        size: 11, color: AppColors.primaryLight),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // API Key or Ollama URL
             if (!isOllama) ...[
@@ -871,6 +1385,39 @@ class _AiStepState extends ConsumerState<_AiStep> {
                   ],
                 ),
               ],
+              const Gap(10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: (_keyStatus == 'checking' ||
+                          _apiKeyCtrl.text.trim().isEmpty)
+                      ? null
+                      : _validateKey,
+                  icon: _keyStatus == 'checking'
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.primary),
+                        )
+                      : const Icon(LucideIcons.shieldCheck,
+                          size: 16, color: AppColors.primary),
+                  label: Text(
+                    _keyStatus == 'checking' ? 'Validating…' : 'Validate Key',
+                    style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(
+                        color: AppColors.primary.withAlpha(80), width: 1),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
             ] else ...[
               _FieldLabel(text: 'Ollama Base URL', required: true),
               const Gap(8),
@@ -976,6 +1523,52 @@ class _AiStepState extends ConsumerState<_AiStep> {
               }),
               const Gap(12),
             ],
+
+            // AI Insights toggle
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(8),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withAlpha(25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.brainCircuit,
+                      size: 18, color: AppColors.primaryLight),
+                  const Gap(12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AI Insights',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Gap(2),
+                        Text(
+                          'Smart summaries and bill analysis',
+                          style:
+                              TextStyle(color: Colors.white54, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _aiInsightsEnabled,
+                    onChanged: (v) => setState(() => _aiInsightsEnabled = v),
+                    activeColor: AppColors.primary,
+                    inactiveThumbColor: Colors.white38,
+                    inactiveTrackColor: Colors.white.withAlpha(20),
+                  ),
+                ],
+              ),
+            ),
+            const Gap(20),
 
             // Buttons
             SizedBox(
@@ -1393,11 +1986,9 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     if (_completing) {
       return Scaffold(
-        backgroundColor: cs.surface,
+        backgroundColor: AppColors.surfaceDark,
         body: const Stack(
           children: [
             AppBackgroundEffects(),
@@ -1420,7 +2011,7 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
     }
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: AppColors.surfaceDark,
       body: Stack(
         children: [
           const AppBackgroundEffects(),
@@ -1435,27 +2026,28 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
                       // Logo row
                       Row(
                         children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.primaryDark,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(LucideIcons.zap,
-                                size: 18, color: Colors.white),
-                          ),
+                          const AuthBrandLogo(size: 40),
                           const Gap(10),
-                          Text(
-                            'YesBill',
-                            style: AppTextStyles.h2.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'YesBill',
+                                style: AppTextStyles.h2.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800),
+                              ),
+                              const Text(
+                                'OnBoard Profile',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                           const Spacer(),
                           Text(

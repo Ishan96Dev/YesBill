@@ -1,4 +1,4 @@
----
+﻿---
 id: analytics
 title: AI Analytics
 sidebar_position: 3
@@ -11,7 +11,7 @@ YesBill Analytics gives you visual insights into your spending patterns and AI u
 
 ## YesBill Analytics
 
-![YesBill Analytics screen](/img/screenshots/mobile/YesBill-Analytics-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/YesBill-Analytics-Screen-01.jpeg" alt="YesBill Analytics screen" />
 
 The **YesBill Analytics** tab shows your household spending data:
 
@@ -21,7 +21,7 @@ The **YesBill Analytics** tab shows your household spending data:
 
 ## AI Usage Analytics
 
-![AI Usage Analytics screen](/img/screenshots/mobile/AI-Usage-Analytics-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/AI-Usage-Analytics-Screen-01.jpeg" alt="AI Usage Analytics screen" />
 
 The **AI Usage** tab tracks how you're using the AI features:
 

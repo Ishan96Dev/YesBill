@@ -1,4 +1,4 @@
----
+﻿---
 id: understanding-bills
 title: Understanding Bills
 sidebar_position: 1
@@ -11,7 +11,7 @@ The **Bills** tab shows your auto-generated monthly bills for every service you 
 
 ## Bills List
 
-![Bills screen](/img/screenshots/mobile/Bills-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Bills-screen-01.jpeg" alt="Bills screen" />
 
 Each bill card shows:
 - Service name and billing period (month/year)

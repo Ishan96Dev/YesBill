@@ -1,4 +1,4 @@
----
+﻿---
 id: managing-services
 title: Managing Services
 sidebar_position: 1
@@ -11,7 +11,7 @@ Services are the core of YesBill. Each service represents a recurring household 
 
 ## Services List
 
-![Services list screen](/img/screenshots/mobile/Service-Screen-Manage-Service-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Service-Screen-Manage-Service-Screen-01.jpeg" alt="Services list screen" />
 
 The **Services** tab shows all your active services. Each card displays:
 - Service name and type
@@ -20,7 +20,7 @@ The **Services** tab shows all your active services. Each card displays:
 
 ## Adding a Service
 
-![Create service screen](/img/screenshots/mobile/Create-Service-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Create-Service-Screen-01.jpeg" alt="Create service screen" />
 
 1. Tap **Services** in the bottom navigation bar.
 2. Tap the **+** button (bottom-right).
@@ -43,7 +43,7 @@ The **Services** tab shows all your active services. Each card displays:
 
 ## Editing a Service
 
-![Edit service screen](/img/screenshots/mobile/Edit-Service-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Edit-Service-Screen-01.jpeg" alt="Edit service screen" />
 
 1. Tap the **edit icon** on any service card, or tap the service to open its details then tap **Edit**.
 2. Update the fields you want to change.
@@ -55,7 +55,7 @@ Changing a service's rate takes effect from the current billing cycle. Previous 
 
 ## Service Details
 
-![Service details screen](/img/screenshots/mobile/Service-Details-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Service-Details-Screen-01.jpeg" alt="Service details screen" />
 
 Tap any service to see its full details:
 - Delivery/visit history

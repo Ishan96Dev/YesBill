@@ -1,4 +1,4 @@
----
+﻿---
 id: ask-ai
 title: Ask AI
 sidebar_position: 1
@@ -11,13 +11,13 @@ The **Ask AI** tab gives you a conversational interface to query your billing da
 
 ## Opening Ask AI
 
-![Ask AI screen](/img/screenshots/mobile/Ask-AI-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Ask-AI-Screen-01.jpeg" alt="Ask AI screen" />
 
 Tap **Ask AI** (the robot icon) in the bottom navigation bar. The screen shows your recent conversation history and a text input at the bottom.
 
 ## Asking a Question
 
-![Ask AI chat screen](/img/screenshots/mobile/Ask-AI-Chat-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Ask-AI-Chat-Screen-01.jpeg" alt="Ask AI chat screen" />
 
 Type your question in the text field at the bottom and tap **Send**. Examples:
 
@@ -30,7 +30,7 @@ The AI reads your actual billing data and responds with accurate, personalized a
 
 ## Conversation History
 
-![Chat conversation drawer](/img/screenshots/mobile/Chat-Connversation-Drawer-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Chat-Connversation-Drawer-screen-01.jpeg" alt="Chat conversation drawer" />
 
 Tap the **history icon** (top-right) to open the conversation drawer. Here you can:
 

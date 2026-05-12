@@ -1,4 +1,4 @@
----
+﻿---
 id: agent-chatbot
 title: AI Agent Chatbot
 sidebar_position: 2
@@ -11,13 +11,13 @@ The **AI Agent** goes beyond answering questions — it can take actions in your
 
 ## Opening the Agent
 
-![Agentic AI screen](/img/screenshots/mobile/Agentic-AI-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Agentic-AI-Screen-01.jpeg" alt="Agentic AI screen" />
 
 Tap **Ask AI** in the bottom navigation bar, then tap the **Agent** tab (or the robot icon with a wrench). This switches from Q&A mode to the agent mode.
 
 ## Chatting with the Agent
 
-![Agentic AI chat screen](/img/screenshots/mobile/Agentic-AI-Chat-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Agentic-AI-Chat-Screen-01.jpeg" alt="Agentic AI chat screen" />
 
 Type what you want the agent to do. Examples:
 
@@ -30,7 +30,7 @@ The agent understands natural language and figures out the right actions to take
 
 ## Confirmation Before Action
 
-![Agent confirmation screen](/img/screenshots/mobile/Agentic-AI-Agent-Confirmation-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Agentic-AI-Agent-Confirmation-Screen-01.jpeg" alt="Agent confirmation screen" />
 
 Before the agent makes any change to your data, it shows a **confirmation dialog** listing exactly what it will do. You can:
 

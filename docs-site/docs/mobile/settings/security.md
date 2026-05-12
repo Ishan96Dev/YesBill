@@ -1,4 +1,4 @@
----
+﻿---
 id: security
 title: Security Settings
 sidebar_position: 4
@@ -11,7 +11,7 @@ Manage your account security, including password changes, sign-out, and account 
 
 ## Security Screen
 
-![Security settings screen](/img/screenshots/mobile/Security-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Security-Screen-01.jpeg" alt="Security settings screen" />
 
 Open **Settings → Security** to access security options.
 
@@ -30,12 +30,12 @@ A confirmation email is sent to your registered address.
 Account deletion is permanent and cannot be undone. All your data — services, bills, calendar records, and AI conversations — will be erased immediately.
 :::
 
-![Delete account screen](/img/screenshots/mobile/Delete-Acoount-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Delete-Acoount-Screen-01.jpeg" alt="Delete account screen" />
 
 1. Tap **Delete Account** at the bottom of the Security screen.
 2. Read the warning about what will be deleted.
 
-![Delete account confirmation](/img/screenshots/mobile/Delete-Account-Confirmation-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Delete-Account-Confirmation-Screen-01.jpeg" alt="Delete account confirmation" />
 
 3. Type your **email address** to confirm you understand the action.
 4. Tap **Permanently Delete Account**.

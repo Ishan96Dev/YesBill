@@ -1,4 +1,4 @@
----
+﻿---
 id: overview
 title: Settings Overview
 sidebar_position: 1
@@ -11,7 +11,7 @@ The **Settings** screen gives you control over your account, notifications, appe
 
 ## Accessing Settings
 
-![Settings screen](/img/screenshots/mobile/Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Settings-Screen-01.jpeg" alt="Settings screen" />
 
 Tap the **profile icon** (top-right of the Home screen) or navigate to Settings via the menu. The Settings screen is organized into sections:
 
@@ -24,7 +24,7 @@ Tap the **profile icon** (top-right of the Home screen) or navigate to Settings 
 
 ## Sign Out
 
-![Sign out confirmation screen](/img/screenshots/mobile/Sign-out-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Sign-out-Screen-01.jpeg" alt="Sign out confirmation screen" />
 
 To sign out:
 

@@ -1,4 +1,4 @@
----
+﻿---
 id: dashboard
 title: Dashboard Overview
 sidebar_position: 3
@@ -11,7 +11,7 @@ The **Home** tab is your central hub. It shows key metrics, quick actions, and a
 
 ## Dashboard Layout
 
-![Dashboard screen](/img/screenshots/mobile/Dashboard-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Dashboard-screen-01.jpeg" alt="Dashboard screen" />
 
 The dashboard is organized into three sections:
 
@@ -32,19 +32,19 @@ The dashboard is organized into three sections:
 
 ## Dark Mode
 
-![Dashboard in dark mode](/img/screenshots/mobile/Dark-Mode-Dashboard-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Dark-Mode-Dashboard-Screen-01.jpeg" alt="Dashboard in dark mode" />
 
 YesBill automatically follows your device's dark/light mode setting. You can also override it in **Settings → Appearance**.
 
 ## Search & Navigation
 
-![Search and navigation screen](/img/screenshots/mobile/Search-with-Navigation-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Search-with-Navigation-Screen-01.jpeg" alt="Search and navigation screen" />
 
 Tap the **search icon** (top-right of the Home screen) to search across your services and bills by name or amount.
 
 ## Notifications
 
-![Notifications screen](/img/screenshots/mobile/Notification-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Notification-Screen-01.jpeg" alt="Notifications screen" />
 
 Tap the **bell icon** (top-right) to view your notification center. Notifications include:
 
