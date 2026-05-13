@@ -24,7 +24,7 @@ Tap the **profile icon** (top-right of the Home screen) or navigate to Settings 
 
 ## Sign Out
 
-<PhoneFrame src="/img/screenshots/mobile/Sign-out-Screen-01.jpeg" alt="Sign out confirmation screen" />
+<PhoneFrame src="/img/screenshots/mobile/Sign-out-Screen-01.jpeg" alt="Sign out confirmation screen" fit="contain" bg="#1a1a2e" />
 
 To sign out:
 

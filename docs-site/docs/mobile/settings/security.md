@@ -49,7 +49,7 @@ This helps you verify that no unauthorised access has occurred.
 Account deletion is permanent and cannot be undone. All your data — services, bills, calendar records, and AI conversations — will be erased immediately.
 :::
 
-<PhoneFrame src="/img/screenshots/mobile/Delete-Acoount-Screen-01.jpeg" alt="Delete account screen" />
+<PhoneFrame src="/img/screenshots/mobile/Delete-Acoount-Screen-01.jpeg" alt="Delete account screen" fit="contain" bg="#f8f9ff" />
 
 ![Delete Account from Settings](/img/screenshots/Delete-Account-From-Settings-01.png)
 

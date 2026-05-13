@@ -132,6 +132,15 @@
   box-shadow: none;
 }
 
+/* ── Contain variant — for non-portrait / dialog screenshots ────────────────
+   Scales the image to fit entirely inside the screen so nothing is cropped.
+   Apply by passing fit="contain" to <PhoneFrame>. The background colour of
+   .phoneScreen is set inline by the component to suit each image. */
+.phoneBody .phoneScreenContain img {
+  object-fit: contain;
+  object-position: center;
+}
+
 /* ── Punch-hole selfie camera ────────────────────────────── */
 .phonePunchHole {
   position: absolute;
