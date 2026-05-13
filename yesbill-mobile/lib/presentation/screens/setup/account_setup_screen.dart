@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/data/app_countries.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../data/models/ai_provider_info.dart';
 import '../../../providers/ai_settings_provider.dart';
 import '../../../providers/auth_provider.dart';
@@ -40,7 +41,7 @@ class _StepIndicator extends StatelessWidget {
           return Expanded(
             child: Container(
               height: 2,
-              color: done ? AppColors.primary : Colors.white.withAlpha(50),
+              color: done ? AppColors.primary : Colors.grey.shade300,
             ),
           );
         }
@@ -86,11 +87,11 @@ class _StepDot extends StatelessWidget {
                 ? AppColors.primary
                 : isCurrent
                     ? AppColors.primary
-                    : Colors.white.withAlpha(30),
+                    : Colors.grey.shade200,
             border: Border.all(
               color: isDone || isCurrent
                   ? AppColors.primary
-                  : Colors.white.withAlpha(80),
+                  : Colors.grey.shade400,
               width: 2,
             ),
           ),
@@ -102,7 +103,7 @@ class _StepDot extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: isCurrent ? Colors.white : Colors.white54,
+                      color: isCurrent ? Colors.white : Colors.black54,
                     ),
                   ),
           ),
@@ -113,7 +114,7 @@ class _StepDot extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: isDone || isCurrent ? Colors.white : Colors.white54,
+            color: isDone || isCurrent ? AppColors.primary : Colors.black54,
           ),
         ),
       ],
@@ -168,7 +169,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       expand: false,
       builder: (_, controller) => Container(
         decoration: const BoxDecoration(
-          color: AppColors.cardDark,
+          color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -178,7 +179,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Colors.black12,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -187,7 +188,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Select Country',
-                style: AppTextStyles.h3.copyWith(color: Colors.white),
+                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimaryLight),
               ),
             ),
             const Gap(12),
@@ -197,14 +198,14 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 controller: _searchCtrl,
                 onChanged: _filter,
                 autofocus: true,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.textPrimaryLight),
                 decoration: InputDecoration(
                   hintText: 'Search country…',
-                  hintStyle: const TextStyle(color: Colors.white54),
+                  hintStyle: const TextStyle(color: Colors.black38),
                   prefixIcon:
-                      const Icon(LucideIcons.search, color: Colors.white54, size: 18),
+                      const Icon(LucideIcons.search, color: Colors.black38, size: 18),
                   filled: true,
-                  fillColor: Colors.white.withAlpha(15),
+                  fillColor: Colors.grey.shade100,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -243,7 +244,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                             child: Text(
                               c.name,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.textPrimaryLight,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -252,7 +253,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                           Text(
                             '${c.dialCode}  ${c.currency}',
                             style: const TextStyle(
-                              color: Colors.white54,
+                              color: Colors.black38,
                               fontSize: 13,
                             ),
                           ),
@@ -431,12 +432,12 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
         // Header
         Text(
           'Set up your profile',
-          style: AppTextStyles.h1.copyWith(color: Colors.white),
+          style: AppTextStyles.h1.copyWith(color: AppColors.textPrimaryLight),
         ).animate().fadeIn().slideY(begin: 0.1),
         const Gap(6),
         Text(
           'Tell us a bit about yourself to personalize YesBill.',
-          style: AppTextStyles.body.copyWith(color: Colors.white70),
+          style: AppTextStyles.body.copyWith(color: Colors.black54),
         ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.1),
         const Gap(24),
 
@@ -492,12 +493,12 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(12),
+              color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _countryError != null
                     ? AppColors.error
-                    : Colors.white.withAlpha(40),
+                    : Colors.grey.shade300,
               ),
             ),
             child: Row(
@@ -508,29 +509,28 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
                   Expanded(
                     child: Text(
                       c.name,
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 15),
+                      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
                     ),
                   ),
                   Text(
                     c.dialCode,
                     style: const TextStyle(
-                        color: Colors.white54, fontSize: 13),
+                        color: Colors.black38, fontSize: 13),
                   ),
                 ] else ...[
                   const Icon(LucideIcons.mapPin,
-                      color: Colors.white54, size: 18),
+                      color: Colors.black38, size: 18),
                   const Gap(10),
                   const Expanded(
                     child: Text(
                       'Select your country',
                       style:
-                          TextStyle(color: Colors.white54, fontSize: 15),
+                          TextStyle(color: Colors.black38, fontSize: 15),
                     ),
                   ),
                 ],
                 const Icon(LucideIcons.chevronsUpDown,
-                    color: Colors.white38, size: 16),
+                    color: Colors.black26, size: 16),
               ],
             ),
           ),
@@ -667,7 +667,7 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
         Center(
           child: Text(
             'You can update all of this later in Settings.',
-            style: AppTextStyles.caption.copyWith(color: Colors.white38),
+            style: AppTextStyles.caption.copyWith(color: Colors.black38),
           ),
         ),
       ],
@@ -675,7 +675,6 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   }
 }
 
-// ── Onboarding Cover & Avatar widget ─────────────────────────────────────────
 // Layout matches _CoverAndAvatar in profile_settings_screen.dart
 
 class _OnboardCoverAndAvatar extends StatelessWidget {
@@ -699,9 +698,9 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
+        color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withAlpha(30)),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         children: [
@@ -725,7 +724,7 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                         : null,
                     gradient: coverUrl == null || coverUrl!.isEmpty
                         ? const LinearGradient(
-                            colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+                            colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           )
@@ -740,7 +739,7 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                                 uploadingCover
                                     ? LucideIcons.loader
                                     : LucideIcons.imagePlus,
-                                color: Colors.white54,
+                                color: AppColors.primary.withOpacity(0.6),
                                 size: 28,
                               ),
                               const Gap(6),
@@ -748,8 +747,8 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                                 uploadingCover
                                     ? 'Uploading…'
                                     : 'Tap to add cover photo',
-                                style: const TextStyle(
-                                  color: Colors.white54,
+                                style: TextStyle(
+                                  color: AppColors.primary.withOpacity(0.7),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -772,7 +771,7 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                           ? 'Add a cover photo'
                           : 'Update your cover photo',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.primary,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -781,7 +780,7 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                     Text(
                       'Give your profile a richer first impression.',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.84),
+                        color: AppColors.primary.withOpacity(0.75),
                         fontSize: 11,
                       ),
                     ),
@@ -832,10 +831,11 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                   onTap: uploadingAvatar ? null : onUploadAvatar,
                   child: CircleAvatar(
                     radius: 38,
-                    backgroundColor: Colors.white.withAlpha(50),
+                    backgroundColor: Colors.white,
                     child: CircleAvatar(
+                      key: ValueKey(avatarUrl ?? ''),
                       radius: 34,
-                      backgroundColor: AppColors.primary.withOpacity(0.3),
+                      backgroundColor: AppColors.primary.withOpacity(0.15),
                       backgroundImage:
                           avatarUrl != null && avatarUrl!.isNotEmpty
                               ? NetworkImage(avatarUrl!)
@@ -846,10 +846,10 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
+                                      strokeWidth: 2, color: AppColors.primary),
                                 )
-                              : const Icon(LucideIcons.user,
-                                  color: Colors.white, size: 26)
+                              : Icon(LucideIcons.user,
+                                  color: AppColors.primary, size: 26)
                           : null,
                     ),
                   ),
@@ -1128,12 +1128,12 @@ class _AiStepState extends ConsumerState<_AiStep> {
           children: [
             Text(
               'Configure AI',
-              style: AppTextStyles.h1.copyWith(color: Colors.white),
+              style: AppTextStyles.h1.copyWith(color: AppColors.textPrimaryLight),
             ).animate().fadeIn().slideY(begin: 0.1),
             const Gap(6),
             Text(
               'Connect an AI provider to enable bill generation, chat & insights.',
-              style: AppTextStyles.body.copyWith(color: Colors.white70),
+              style: AppTextStyles.body.copyWith(color: Colors.black54),
             ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.1),
             const Gap(24),
 
@@ -1141,7 +1141,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
             Text(
               'CHOOSE PROVIDER',
               style: AppTextStyles.labelSm.copyWith(
-                  color: Colors.white54, letterSpacing: 1.2),
+                  color: Colors.black54, letterSpacing: 1.2),
             ),
             const Gap(12),
             SizedBox(
@@ -1168,9 +1168,9 @@ class _AiStepState extends ConsumerState<_AiStep> {
                         borderRadius: BorderRadius.circular(16),
                         color: isSelected
                             ? color.withAlpha(40)
-                            : Colors.white.withAlpha(10),
+                            : Colors.grey.shade100,
                         border: Border.all(
-                          color: isSelected ? color : Colors.white.withAlpha(30),
+                          color: isSelected ? color : Colors.grey.shade300,
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -1185,7 +1185,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                                 height: 36,
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withAlpha(isSelected ? 30 : 18),
+                                  color: Colors.white.withAlpha(isSelected ? 200 : 160),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Image.asset(asset, fit: BoxFit.contain),
@@ -1194,7 +1194,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                             return Icon(
                               _providerIcon(id),
                               size: 26,
-                              color: isSelected ? color : Colors.white54,
+                              color: isSelected ? color : Colors.black38,
                             );
                           }),
                           const Gap(6),
@@ -1204,7 +1204,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color:
-                                  isSelected ? Colors.white : Colors.white54,
+                                  isSelected ? color : Colors.black54,
                             ),
                           ),
                           if (isSelected) ...[
@@ -1250,7 +1250,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                         height: 32,
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(18),
+                          color: Colors.white.withAlpha(200),
                           borderRadius: BorderRadius.circular(7),
                         ),
                         child: () {
@@ -1259,7 +1259,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                             return Image.asset(asset, fit: BoxFit.contain);
                           }
                           return Icon(_providerIcon(_selectedProviderId),
-                              size: 16, color: Colors.white70);
+                              size: 16, color: _providerColor(_selectedProviderId));
                         }(),
                       ),
                       const Gap(10),
@@ -1269,8 +1269,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                           children: [
                             Text(
                               selectedProviderInfo.name,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: AppColors.textPrimaryLight,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1279,7 +1279,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                             Text(
                               selectedProviderInfo.description,
                               style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12, height: 1.4),
+                                  color: Colors.black54, fontSize: 12, height: 1.4),
                             ),
                             if (selectedProviderInfo.docsUrl.isNotEmpty) ...[
                               const Gap(8),
@@ -1358,7 +1358,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                               ? LucideIcons.eye
                               : LucideIcons.eyeOff,
                           size: 18,
-                          color: Colors.white54,
+                          color: Colors.black38,
                         ),
                         onPressed: () =>
                             setState(() => _obscureKey = !_obscureKey),
@@ -1442,7 +1442,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
               Text(
                 'MODEL',
                 style: AppTextStyles.labelSm.copyWith(
-                    color: Colors.white54, letterSpacing: 1.2),
+                    color: Colors.black54, letterSpacing: 1.2),
               ),
               const Gap(10),
               ...models.map((m) {
@@ -1458,11 +1458,11 @@ class _AiStepState extends ConsumerState<_AiStep> {
                       borderRadius: BorderRadius.circular(12),
                       color: isSelected
                           ? AppColors.primary.withAlpha(30)
-                          : Colors.white.withAlpha(8),
+                          : Colors.grey.shade100,
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primary
-                            : Colors.white.withAlpha(25),
+                            : Colors.grey.shade300,
                       ),
                     ),
                     child: Row(
@@ -1476,7 +1476,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                                   Text(
                                     m.name,
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.textPrimaryLight,
                                       fontSize: 14,
                                       fontWeight: isSelected
                                           ? FontWeight.w700
@@ -1512,7 +1512,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                                 Text(
                                   m.description,
                                   style: const TextStyle(
-                                      color: Colors.white54, fontSize: 12),
+                                      color: Colors.black45, fontSize: 12),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1535,9 +1535,9 @@ class _AiStepState extends ConsumerState<_AiStep> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(8),
+                color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withAlpha(25)),
+                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Row(
                 children: [
@@ -1551,7 +1551,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                         Text(
                           'AI Insights',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimaryLight,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1560,7 +1560,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                         Text(
                           'Smart summaries and bill analysis',
                           style:
-                              TextStyle(color: Colors.white54, fontSize: 11),
+                              TextStyle(color: Colors.black45, fontSize: 11),
                         ),
                       ],
                     ),
@@ -1569,8 +1569,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                     value: _aiInsightsEnabled,
                     onChanged: (v) => setState(() => _aiInsightsEnabled = v),
                     activeColor: AppColors.primary,
-                    inactiveThumbColor: Colors.white38,
-                    inactiveTrackColor: Colors.white.withAlpha(20),
+                    inactiveThumbColor: Colors.grey.shade400,
+                    inactiveTrackColor: Colors.grey.shade300,
                   ),
                 ],
               ),
@@ -1621,11 +1621,11 @@ class _AiStepState extends ConsumerState<_AiStep> {
                 onPressed:
                     _saving ? null : () => setState(() => _showSkipWarning = true),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white54,
+                  foregroundColor: Colors.black54,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
-                    side: BorderSide(color: Colors.white.withAlpha(30)),
+                    side: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
                 child: const Text(
@@ -1638,7 +1638,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
             Center(
               child: Text(
                 'You can configure AI anytime in Settings → AI Configuration.',
-                style: AppTextStyles.caption.copyWith(color: Colors.white38),
+                style: AppTextStyles.caption.copyWith(color: Colors.black38),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -1686,10 +1686,10 @@ class _SkipAiModal extends StatelessWidget {
               margin: const EdgeInsets.all(24),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: Colors.white.withAlpha(30)),
+                    color: Colors.grey.shade200),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1707,7 +1707,7 @@ class _SkipAiModal extends StatelessWidget {
                   const Gap(16),
                   Text(
                     'AI features will be limited',
-                    style: AppTextStyles.h3.copyWith(color: Colors.white),
+                    style: AppTextStyles.h3.copyWith(color: AppColors.textPrimaryLight),
                     textAlign: TextAlign.center,
                   ),
                   const Gap(10),
@@ -1715,7 +1715,7 @@ class _SkipAiModal extends StatelessWidget {
                     textAlign: TextAlign.center,
                     text: TextSpan(
                       style: const TextStyle(
-                          color: Colors.white70, fontSize: 14, height: 1.5),
+                          color: Colors.black54, fontSize: 14, height: 1.5),
                       children: [
                         TextSpan(
                             text:
@@ -1749,9 +1749,9 @@ class _SkipAiModal extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: onSkip,
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white70,
+                            foregroundColor: Colors.black54,
                             side: BorderSide(
-                                color: Colors.white.withAlpha(50)),
+                                color: Colors.grey.shade300),
                             padding:
                                 const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -1788,7 +1788,7 @@ class _FieldLabel extends StatelessWidget {
         Text(
           text,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimaryLight,
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -1801,7 +1801,7 @@ class _FieldLabel extends StatelessWidget {
           const Gap(4),
           const Text(
             '(optional)',
-            style: TextStyle(color: Colors.white38, fontSize: 12),
+            style: TextStyle(color: Colors.black38, fontSize: 12),
           ),
         ],
       ],
@@ -1839,12 +1839,12 @@ class _InputField extends StatelessWidget {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(12),
+            color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: errorText != null
                   ? AppColors.error
-                  : Colors.white.withAlpha(40),
+                  : Colors.grey.shade300,
             ),
           ),
           child: TextField(
@@ -1853,12 +1853,12 @@ class _InputField extends StatelessWidget {
             obscureText: obscureText,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
+            style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: Colors.white38, fontSize: 15),
+              hintStyle: const TextStyle(color: Colors.black38, fontSize: 15),
               prefixIcon: icon != null
-                  ? Icon(icon, color: Colors.white54, size: 18)
+                  ? Icon(icon, color: Colors.black38, size: 18)
                   : null,
               suffixIcon: suffixIcon,
               filled: true,
@@ -1902,18 +1902,18 @@ class _TextAreaField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(12),
+        color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(40)),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: TextField(
         controller: controller,
         maxLines: 4,
         maxLength: maxLength,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
+          hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
           filled: true,
           fillColor: Colors.transparent,
           border: InputBorder.none,
@@ -1922,7 +1922,7 @@ class _TextAreaField extends StatelessWidget {
           disabledBorder: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          counterStyle: const TextStyle(color: Colors.white38),
+          counterStyle: const TextStyle(color: Colors.black38),
         ),
       ),
     );
@@ -2024,35 +2024,32 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
   @override
   Widget build(BuildContext context) {
     if (_completing) {
-      return Scaffold(
-        backgroundColor: AppColors.surfaceDark,
-        body: const Stack(
-          children: [
-            AppBackgroundEffects(),
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: AppColors.primary),
-                  Gap(20),
-                  Text(
-                    'Setting up your account…',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                ],
-              ),
+      return Theme(
+        data: AppTheme.light,
+        child: Scaffold(
+          backgroundColor: AppColors.surfaceLight,
+          body: const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppColors.primary),
+                Gap(20),
+                Text(
+                  'Setting up your account…',
+                  style: TextStyle(color: Colors.black54, fontSize: 16),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.surfaceDark,
-      body: Stack(
-        children: [
-          const AppBackgroundEffects(),
-          SafeArea(
+    return Theme(
+      data: AppTheme.light,
+      child: Scaffold(
+        backgroundColor: AppColors.surfaceLight,
+        body: SafeArea(
             child: Column(
               children: [
                 // Header
@@ -2072,13 +2069,13 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
                               Text(
                                 'YesBill',
                                 style: AppTextStyles.h2.copyWith(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimaryLight,
                                     fontWeight: FontWeight.w800),
                               ),
                               const Text(
                                 'OnBoard Profile',
                                 style: TextStyle(
-                                  color: Colors.white54,
+                                  color: Colors.black45,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                   letterSpacing: 0.5,
@@ -2090,7 +2087,7 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
                           Text(
                             'Step ${_step + 1} of 2',
                             style: const TextStyle(
-                                color: Colors.white54, fontSize: 13),
+                                color: Colors.black54, fontSize: 13),
                           ),
                         ],
                       ),
@@ -2137,8 +2134,7 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
               ],
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      );
   }
 }

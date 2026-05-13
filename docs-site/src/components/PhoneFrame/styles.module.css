@@ -113,7 +113,11 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
-.phoneScreen img {
+/* Use two-class selector (.phoneBody .phoneScreen) so specificity = (0,2,1), which beats both
+   .markdown img (0,1,1) and .markdown img[src*="..."] (0,1,2) from custom.css, preventing
+   the global doc-image styles (margin, max-width, border-radius, box-shadow) from leaking in
+   and creating a black gap at the top of the screen area. */
+.phoneBody .phoneScreen img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -121,7 +125,11 @@
   object-fit: cover;
   object-position: top;
   display: block;
-  /* No border-radius here — the container's overflow:hidden + border-radius handles all clipping */
+  /* Reset everything that .markdown img / .markdown img[src*="..."] would inject */
+  margin: 0;
+  max-width: none;
+  border-radius: 0; /* container's overflow:hidden + border-radius handles clipping */
+  box-shadow: none;
 }
 
 /* ── Punch-hole selfie camera ────────────────────────────── */
