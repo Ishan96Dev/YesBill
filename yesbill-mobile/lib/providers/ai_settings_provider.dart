@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/errors/error_handler.dart';
 import '../data/models/ai_provider_info.dart';
 import '../data/repositories/ai_settings_repository.dart';
 import '../data/models/ai_settings.dart';
@@ -6,7 +7,10 @@ import 'auth_provider.dart';
 import 'core_providers.dart';
 
 final aiSettingsRepositoryProvider = Provider<AiSettingsRepository>((ref) =>
-    AiSettingsRepository(remoteDs: ref.watch(aiSettingsRemoteDsProvider)));
+    AiSettingsRepository(
+      remoteDs: ref.watch(aiSettingsRemoteDsProvider),
+      supabase: ref.watch(supabaseClientProvider),
+    ));
 
 final aiSettingsListProvider = FutureProvider<List<AiSettings>>((ref) {
   final authState = ref.watch(authProvider);
@@ -35,12 +39,15 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
   AiSettingsMutationState build() => const AiSettingsMutationIdle();
 
   Future<void> save({required String provider, required String apiKey,
-      String? selectedModel, String reasoningEffort = 'none', String? ollamaBaseUrl}) async {
+      String? selectedModel, String reasoningEffort = 'none',
+      bool enableInsights = true, bool isKeyValid = false,
+      String? ollamaBaseUrl}) async {
     state = const AiSettingsMutationLoading();
     try {
       final result = await ref.read(aiSettingsRepositoryProvider).saveSettings(
         provider: provider, apiKey: apiKey,
         selectedModel: selectedModel, reasoningEffort: reasoningEffort,
+        enableInsights: enableInsights, isKeyValid: isKeyValid,
         ollamaBaseUrl: ollamaBaseUrl,
       );
       ref.invalidate(aiSettingsListProvider);
@@ -78,15 +85,26 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
     } catch (e) { state = AiSettingsMutationError(e.toString()); }
   }
 
-  Future<bool> validateKey({required String provider, required String apiKey}) async {
-    state = const AiSettingsMutationLoading();
+  Future<KeyValidationResult> validateKey({
+    required String provider,
+    required String apiKey,
+  }) async {
     try {
       final result = await ref.read(aiSettingsRepositoryProvider).validateKey(
-        provider: provider, apiKey: apiKey,
+        provider: provider,
+        apiKey: apiKey,
       );
-      state = const AiSettingsMutationIdle();
-      return result.valid;
-    } catch (e) { state = AiSettingsMutationError(e.toString()); return false; }
+      if (result.valid) {
+        await ref.read(aiSettingsRepositoryProvider).updateKeyValidation(
+          provider: provider,
+          isValid: true,
+        );
+        ref.invalidate(aiSettingsListProvider);
+      }
+      return result;
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
   }
 
   /// Called when an existing saved key fails validation.

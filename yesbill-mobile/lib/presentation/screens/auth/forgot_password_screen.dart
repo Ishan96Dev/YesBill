@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/auth_widgets.dart';
@@ -33,11 +34,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = AppTheme.light.colorScheme;
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      body: Stack(
+    return Theme(
+      data: AppTheme.light,
+      child: Scaffold(
+        backgroundColor: cs.surface,
+        body: Stack(
         children: [
           const AppBackgroundEffects(),
           SafeArea(
@@ -150,6 +153,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
           ),
         ],
+      ),
       ),
     );
   }

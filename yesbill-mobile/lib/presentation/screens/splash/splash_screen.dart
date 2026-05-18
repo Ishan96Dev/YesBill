@@ -116,6 +116,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
       }
 
+      // Check if account setup (onboarding) is complete before routing home
+      try {
+        final userId = supabase.auth.currentUser?.id;
+        if (userId != null) {
+          final data = await supabase
+              .from('user_profiles')
+              .select('onboarding_completed')
+              .eq('id', userId)
+              .maybeSingle()
+              .timeout(const Duration(seconds: 4));
+          final completed = (data?['onboarding_completed'] as bool?) ?? false;
+          if (!completed && mounted) {
+            _go('/setup');
+            return;
+          }
+        }
+      } catch (_) {
+        // Network error — fall through to dashboard
+      }
+
       _go('/dashboard');
     } catch (_) {
       await storage.clearAll();

@@ -13,6 +13,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/data/app_countries.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/ai_provider_info.dart';
@@ -21,6 +23,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/core_providers.dart';
 import '../../../providers/notifications_provider.dart';
 import '../../widgets/common/app_background_effects.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/auth_widgets.dart';
 
 // ── Step indicators ───────────────────────────────────────────────────────────
@@ -282,19 +285,19 @@ class _ProfileStep extends ConsumerStatefulWidget {
 }
 
 class _ProfileStepState extends ConsumerState<_ProfileStep> {
+  final _formKey = GlobalKey<FormState>();
   final _displayNameCtrl = TextEditingController();
   final _fullNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _companyCtrl = TextEditingController();
   final _websiteCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
+  final _countryDisplayCtrl = TextEditingController();
   final _languageCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
 
   AppCountry? _country;
   bool _saving = false;
-  String? _displayNameError;
-  String? _fullNameError;
   String? _countryError;
 
   // Photo upload state
@@ -311,42 +314,10 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
     _companyCtrl.dispose();
     _websiteCtrl.dispose();
     _locationCtrl.dispose();
+    _countryDisplayCtrl.dispose();
     _languageCtrl.dispose();
     _bioCtrl.dispose();
     super.dispose();
-  }
-
-  bool _validate() {
-    bool ok = true;
-    setState(() {
-      _displayNameError = null;
-      _fullNameError = null;
-      _countryError = null;
-
-      final dn = _displayNameCtrl.text.trim();
-      if (dn.isEmpty) {
-        _displayNameError = 'Display name is required';
-        ok = false;
-      } else if (dn.length < 2) {
-        _displayNameError = 'At least 2 characters required';
-        ok = false;
-      }
-
-      final fn = _fullNameCtrl.text.trim();
-      if (fn.isEmpty) {
-        _fullNameError = 'Full name is required';
-        ok = false;
-      } else if (fn.length < 2) {
-        _fullNameError = 'At least 2 characters required';
-        ok = false;
-      }
-
-      if (_country == null) {
-        _countryError = 'Country is required';
-        ok = false;
-      }
-    });
-    return ok;
   }
 
   Future<void> _uploadAvatar() async {
@@ -362,11 +333,17 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
     try {
       final bytes = await picked.readAsBytes();
       final repo = ref.read(profileRepositoryProvider);
-      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ext = picked.path.split('.').last.toLowerCase();
+      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final url = await repo.uploadAvatar(bytes, fileName);
       if (mounted) setState(() => _avatarUrl = url);
-    } catch (_) {
-      // Non-blocking — can retry in settings
+    } catch (e) {
+      debugPrint('Avatar upload error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Avatar upload failed: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _uploadingAvatar = false);
     }
@@ -385,18 +362,26 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
     try {
       final bytes = await picked.readAsBytes();
       final repo = ref.read(profileRepositoryProvider);
-      final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ext = picked.path.split('.').last.toLowerCase();
+      final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final url = await repo.uploadCoverImage(bytes, fileName);
       if (mounted) setState(() => _coverUrl = url);
-    } catch (_) {
-      // Non-blocking
+    } catch (e) {
+      debugPrint('Cover upload error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cover upload failed: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _uploadingCover = false);
     }
   }
 
   Future<void> _next() async {
-    if (!_validate()) return;
+    final formOk = _formKey.currentState?.validate() ?? false;
+    if (_country == null) setState(() => _countryError = 'Country is required');
+    if (!formOk || _country == null) return;
     setState(() => _saving = true);
     try {
       final c = _country!;
@@ -408,6 +393,8 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
         'currency': c.currency,
         'currency_code': c.currencySymbol,
         'timezone': c.timezone,
+        if (_avatarUrl != null) 'avatar_url': _avatarUrl,
+        if (_coverUrl != null) 'cover_image_url': _coverUrl,
         if (_phoneCtrl.text.trim().isNotEmpty) 'phone': _phoneCtrl.text.trim(),
         if (_companyCtrl.text.trim().isNotEmpty) 'company': _companyCtrl.text.trim(),
         if (_websiteCtrl.text.trim().isNotEmpty) 'website': _websiteCtrl.text.trim(),
@@ -426,251 +413,174 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   @override
   Widget build(BuildContext context) {
     final c = _country;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Text(
-          'Set up your profile',
-          style: AppTextStyles.h1.copyWith(color: AppColors.textPrimaryLight),
-        ).animate().fadeIn().slideY(begin: 0.1),
-        const Gap(6),
-        Text(
-          'Tell us a bit about yourself to personalize YesBill.',
-          style: AppTextStyles.body.copyWith(color: Colors.black54),
-        ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.1),
-        const Gap(24),
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            'Set up your profile',
+            style: AppTextStyles.h1.copyWith(color: AppColors.textPrimaryLight),
+          ).animate().fadeIn().slideY(begin: 0.1),
+          const SizedBox(height: 6),
+          Text(
+            'Tell us a bit about yourself to personalize YesBill.',
+            style: AppTextStyles.body.copyWith(color: Colors.black54),
+          ).animate().fadeIn(delay: 60.ms).slideY(begin: 0.1),
+          const SizedBox(height: AppSpacing.base),
 
-        // ── Cover & Avatar upload ──────────────────────────────────────────
-        _OnboardCoverAndAvatar(
-          coverUrl: _coverUrl,
-          avatarUrl: _avatarUrl,
-          uploadingAvatar: _uploadingAvatar,
-          uploadingCover: _uploadingCover,
-          onUploadAvatar: _uploadAvatar,
-          onUploadCover: _uploadCover,
-        ),
-        const Gap(24),
+          // ── Cover & Avatar upload ──────────────────────────────────────────
+          _OnboardCoverAndAvatar(
+            coverUrl: _coverUrl,
+            avatarUrl: _avatarUrl,
+            uploadingAvatar: _uploadingAvatar,
+            uploadingCover: _uploadingCover,
+            onUploadAvatar: _uploadAvatar,
+            onUploadCover: _uploadCover,
+          ),
+          const SizedBox(height: AppSpacing.base),
 
-        // Display name
-        _FieldLabel(text: 'Display Name', required: true),
-        const Gap(8),
-        _InputField(
-          controller: _displayNameCtrl,
-          hint: 'e.g. Ishan',
-          icon: LucideIcons.user,
-          errorText: _displayNameError,
-          onChanged: (_) => setState(() => _displayNameError = null),
-        ),
-        const Gap(16),
+          // Display name
+          TextFormField(
+            controller: _displayNameCtrl,
+            decoration: const InputDecoration(labelText: 'Display name'),
+            validator: (v) {
+              final val = v?.trim() ?? '';
+              if (val.isEmpty) return 'Display name is required';
+              if (val.length < 2) return 'At least 2 characters required';
+              return null;
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-        // Full name
-        _FieldLabel(text: 'Full Name', required: true),
-        const Gap(8),
-        _InputField(
-          controller: _fullNameCtrl,
-          hint: 'e.g. Ishan Chakraborty',
-          icon: LucideIcons.userCheck,
-          errorText: _fullNameError,
-          onChanged: (_) => setState(() => _fullNameError = null),
-        ),
-        const Gap(16),
+          // Full name
+          TextFormField(
+            controller: _fullNameCtrl,
+            decoration: const InputDecoration(labelText: 'Full name'),
+            validator: (v) {
+              final val = v?.trim() ?? '';
+              if (val.isEmpty) return 'Full name is required';
+              if (val.length < 2) return 'At least 2 characters required';
+              return null;
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-        // Country
-        _FieldLabel(text: 'Country', required: true),
-        const Gap(8),
-        GestureDetector(
-          onTap: () async {
-            final picked = await _showCountryPicker(context);
-            if (picked != null) {
-              setState(() {
-                _country = picked;
-                _countryError = null;
-              });
-            }
-          },
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: _countryError != null
-                    ? AppColors.error
-                    : Colors.grey.shade300,
-              ),
+          // Country picker
+          TextFormField(
+            controller: _countryDisplayCtrl,
+            readOnly: true,
+            onTap: () async {
+              final picked = await _showCountryPicker(context);
+              if (picked != null && mounted) {
+                setState(() {
+                  _country = picked;
+                  _countryError = null;
+                  _countryDisplayCtrl.text = '${picked.flag}  ${picked.name}';
+                });
+              }
+            },
+            decoration: InputDecoration(
+              labelText: 'Country',
+              errorText: _countryError,
+              suffixIcon: const Icon(LucideIcons.chevronsUpDown, size: 18),
             ),
-            child: Row(
+          ),
+          // Currency + Timezone (auto-filled from country)
+          if (c != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
               children: [
-                if (c != null) ...[
-                  Text(c.flag, style: const TextStyle(fontSize: 20)),
-                  const Gap(10),
-                  Expanded(
-                    child: Text(
-                      c.name,
-                      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
-                    ),
+                Expanded(
+                  child: _ReadOnlyChip(
+                    icon: LucideIcons.wallet,
+                    label: '${c.currencySymbol}  ${c.currency}',
                   ),
-                  Text(
-                    c.dialCode,
-                    style: const TextStyle(
-                        color: Colors.black38, fontSize: 13),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ReadOnlyChip(
+                    icon: LucideIcons.clock,
+                    label: c.timezone.split('/').last.replaceAll('_', ' '),
                   ),
-                ] else ...[
-                  const Icon(LucideIcons.mapPin,
-                      color: Colors.black38, size: 18),
-                  const Gap(10),
-                  const Expanded(
-                    child: Text(
-                      'Select your country',
-                      style:
-                          TextStyle(color: Colors.black38, fontSize: 15),
-                    ),
-                  ),
-                ],
-                const Icon(LucideIcons.chevronsUpDown,
-                    color: Colors.black26, size: 16),
+                ),
               ],
             ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+
+          // Phone (optional)
+          TextFormField(
+            controller: _phoneCtrl,
+            decoration: const InputDecoration(labelText: 'Phone number'),
+            keyboardType: TextInputType.phone,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
-        ),
-        if (_countryError != null) ...[
-          const Gap(6),
-          Text(
-            _countryError!,
-            style: const TextStyle(color: AppColors.error, fontSize: 12),
+          const SizedBox(height: AppSpacing.md),
+
+          // Company (optional)
+          TextFormField(
+            controller: _companyCtrl,
+            decoration: const InputDecoration(labelText: 'Company'),
           ),
-        ],
+          const SizedBox(height: AppSpacing.md),
 
-        // Currency + Timezone (auto-filled from country)
-        if (c != null) ...[
-          const Gap(12),
-          Row(
-            children: [
-              Expanded(
-                child: _ReadOnlyChip(
-                  icon: LucideIcons.wallet,
-                  label: '${c.currencySymbol}  ${c.currency}',
-                ),
-              ),
-              const Gap(8),
-              Expanded(
-                child: _ReadOnlyChip(
-                  icon: LucideIcons.clock,
-                  label: c.timezone.split('/').last.replaceAll('_', ' '),
-                ),
-              ),
-            ],
+          // Website (optional)
+          TextFormField(
+            controller: _websiteCtrl,
+            decoration: const InputDecoration(labelText: 'Website'),
+            keyboardType: TextInputType.url,
           ),
-        ],
-        const Gap(16),
+          const SizedBox(height: AppSpacing.md),
 
-        // Phone (optional)
-        _FieldLabel(text: 'Phone Number', optional: true),
-        const Gap(8),
-        _InputField(
-          controller: _phoneCtrl,
-          hint: 'e.g. 9876543210',
-          icon: LucideIcons.phone,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        ),
-        const Gap(16),
+          // Location (optional)
+          TextFormField(
+            controller: _locationCtrl,
+            decoration: const InputDecoration(labelText: 'Location'),
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-        // Company (optional)
-        _FieldLabel(text: 'Company', optional: true),
-        const Gap(8),
-        _InputField(
-          controller: _companyCtrl,
-          hint: 'e.g. Acme Corp',
-          icon: LucideIcons.briefcase,
-        ),
-        const Gap(16),
+          // Language (optional)
+          TextFormField(
+            controller: _languageCtrl,
+            decoration: const InputDecoration(labelText: 'Language'),
+          ),
+          const SizedBox(height: AppSpacing.md),
 
-        // Website (optional)
-        _FieldLabel(text: 'Website', optional: true),
-        const Gap(8),
-        _InputField(
-          controller: _websiteCtrl,
-          hint: 'e.g. https://example.com',
-          icon: LucideIcons.link,
-          keyboardType: TextInputType.url,
-        ),
-        const Gap(16),
+          // Bio (optional)
+          TextFormField(
+            controller: _bioCtrl,
+            maxLines: 3,
+            maxLength: 500,
+            decoration: const InputDecoration(labelText: 'Bio'),
+          ),
+          const SizedBox(height: AppSpacing.xl),
 
-        // Location (optional)
-        _FieldLabel(text: 'Location', optional: true),
-        const Gap(8),
-        _InputField(
-          controller: _locationCtrl,
-          hint: 'e.g. Mumbai, India',
-          icon: LucideIcons.mapPin,
-        ),
-        const Gap(16),
-
-        // Language (optional)
-        _FieldLabel(text: 'Language', optional: true),
-        const Gap(8),
-        _InputField(
-          controller: _languageCtrl,
-          hint: 'e.g. English',
-          icon: LucideIcons.languages,
-        ),
-        const Gap(16),
-
-        // Bio (optional)
-        _FieldLabel(text: 'Bio', optional: true),
-        const Gap(8),
-        _TextAreaField(
-          controller: _bioCtrl,
-          hint: 'Tell us a bit about yourself… (max 500 chars)',
-          maxLength: 500,
-        ),
-        const Gap(32),
-
-        // Next button
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _saving ? null : _next,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+          // Next button
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _saving ? null : _next,
+              icon: _saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(LucideIcons.arrowRight, size: 18),
+              label: Text(_saving ? 'Saving...' : 'Next — AI Setup'),
             ),
-            child: _saving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Next — AI Setup',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                      Gap(8),
-                      Icon(LucideIcons.arrowRight, size: 18),
-                    ],
-                  ),
           ),
-        ),
-        const Gap(16),
-        Center(
-          child: Text(
+          const SizedBox(height: AppSpacing.sm),
+          const Text(
             'You can update all of this later in Settings.',
-            style: AppTextStyles.caption.copyWith(color: Colors.black38),
+            style: AppTextStyles.bodySm,
+            textAlign: TextAlign.center,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -698,68 +608,46 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: AppSurfaces.panel(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
+        border: AppSurfaces.cardBorder(context),
+        boxShadow: AppSurfaces.softShadow(context),
       ),
       child: Column(
         children: [
-          // ── Cover photo ────────────────────────────────────────────────
           Stack(
             children: [
-              GestureDetector(
-                onTap: uploadingCover ? null : onUploadCover,
-                child: Container(
-                  height: 140,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(18),
-                    ),
-                    image: coverUrl != null && coverUrl!.isNotEmpty
-                        ? DecorationImage(
-                            image: NetworkImage(coverUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                    gradient: coverUrl == null || coverUrl!.isEmpty
-                        ? const LinearGradient(
-                            colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
+              Container(
+                height: 140,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(18),
                   ),
-                  child: coverUrl == null || coverUrl!.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                uploadingCover
-                                    ? LucideIcons.loader
-                                    : LucideIcons.imagePlus,
-                                color: AppColors.primary.withOpacity(0.6),
-                                size: 28,
-                              ),
-                              const Gap(6),
-                              Text(
-                                uploadingCover
-                                    ? 'Uploading…'
-                                    : 'Tap to add cover photo',
-                                style: TextStyle(
-                                  color: AppColors.primary.withOpacity(0.7),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
+                  image: coverUrl != null && coverUrl!.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(coverUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  gradient: coverUrl == null || coverUrl!.isEmpty
+                      ? const LinearGradient(
+                          colors: [AppColors.lavenderBg, Colors.white],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                         )
                       : null,
                 ),
+                child: coverUrl == null || coverUrl!.isEmpty
+                    ? Center(
+                        child: Icon(
+                          LucideIcons.image,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 28,
+                        ),
+                      )
+                    : null,
               ),
-              // Text overlay (always visible, matches settings screen)
               Positioned(
                 left: 16,
                 bottom: 16,
@@ -770,168 +658,83 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
                       coverUrl == null || coverUrl!.isEmpty
                           ? 'Add a cover photo'
                           : 'Update your cover photo',
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 13,
+                      style: AppTextStyles.body.copyWith(
+                        color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const Gap(2),
+                    const SizedBox(height: 4),
                     Text(
                       'Give your profile a richer first impression.',
-                      style: TextStyle(
-                        color: AppColors.primary.withOpacity(0.75),
-                        fontSize: 11,
+                      style: AppTextStyles.bodySm.copyWith(
+                        color: Colors.white.withOpacity(0.84),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Change button when cover is set
-              if (coverUrl != null && coverUrl!.isNotEmpty)
-                Positioned(
-                  right: 10,
-                  bottom: 10,
-                  child: GestureDetector(
-                    onTap: uploadingCover ? null : onUploadCover,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.camera,
-                              size: 12, color: Colors.white),
-                          Gap(4),
-                          Text(
-                            'Change',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
-
-          // ── Avatar + upload buttons (overlaps cover by 28 px) ─────────
           Transform.translate(
             offset: const Offset(0, -28),
             child: Column(
               children: [
-                GestureDetector(
-                  onTap: uploadingAvatar ? null : onUploadAvatar,
+                CircleAvatar(
+                  radius: 38,
+                  backgroundColor: Colors.white,
                   child: CircleAvatar(
-                    radius: 38,
-                    backgroundColor: Colors.white,
-                    child: CircleAvatar(
-                      key: ValueKey(avatarUrl ?? ''),
-                      radius: 34,
-                      backgroundColor: AppColors.primary.withOpacity(0.15),
-                      backgroundImage:
-                          avatarUrl != null && avatarUrl!.isNotEmpty
-                              ? NetworkImage(avatarUrl!)
-                              : null,
-                      child: avatarUrl == null || avatarUrl!.isEmpty
-                          ? uploadingAvatar
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: AppColors.primary),
-                                )
-                              : Icon(LucideIcons.user,
-                                  color: AppColors.primary, size: 26)
-                          : null,
-                    ),
+                    radius: 34,
+                    backgroundColor: AppColors.primary.withOpacity(0.15),
+                    backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+                        ? NetworkImage(avatarUrl!)
+                        : null,
+                    child: avatarUrl == null || avatarUrl!.isEmpty
+                        ? const Icon(LucideIcons.user, color: AppColors.primary)
+                        : null,
                   ),
                 ),
-                const Gap(8),
+                const SizedBox(height: 8),
                 Wrap(
                   alignment: WrapAlignment.center,
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    _SmallUploadBtn(
-                      label: coverUrl == null || coverUrl!.isEmpty
-                          ? 'Add Cover'
-                          : 'Change Cover',
-                      icon: LucideIcons.imagePlus,
-                      loading: uploadingCover,
-                      onTap: onUploadCover,
+                    FilledButton.icon(
+                      onPressed: uploadingCover ? null : onUploadCover,
+                      icon: uploadingCover
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(LucideIcons.imagePlus, size: 14),
+                      label: Text(
+                        coverUrl == null || coverUrl!.isEmpty
+                            ? 'Add cover photo'
+                            : 'Update cover photo',
+                      ),
                     ),
-                    _SmallUploadBtn(
-                      label: avatarUrl == null || avatarUrl!.isEmpty
-                          ? 'Add Avatar'
-                          : 'Change Avatar',
-                      icon: LucideIcons.camera,
-                      loading: uploadingAvatar,
-                      onTap: onUploadAvatar,
+                    OutlinedButton.icon(
+                      onPressed: uploadingAvatar ? null : onUploadAvatar,
+                      icon: uploadingAvatar
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(LucideIcons.camera, size: 14),
+                      label: Text(
+                        avatarUrl == null || avatarUrl!.isEmpty
+                            ? 'Add avatar'
+                            : 'Change avatar',
+                      ),
                     ),
                   ],
                 ),
-                const Gap(8),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SmallUploadBtn extends StatelessWidget {
-  const _SmallUploadBtn({
-    required this.label,
-    required this.icon,
-    required this.loading,
-    required this.onTap,
-  });
-  final String label;
-  final IconData icon;
-  final bool loading;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: loading ? null : onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withAlpha(30),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.primary.withAlpha(80)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            loading
-                ? const SizedBox(
-                    width: 12,
-                    height: 12,
-                    child:
-                        CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryLight),
-                  )
-                : Icon(icon, size: 12, color: AppColors.primaryLight),
-            const Gap(4),
-            Text(
-              label,
-              style: const TextStyle(
-                  color: AppColors.primaryLight,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -967,10 +770,10 @@ class _AiStepState extends ConsumerState<_AiStep> {
   bool _obscureKey = true;
   String? _selectedModel;
   bool _saving = false;
-  bool _showSkipWarning = false;
   bool _aiInsightsEnabled = true;
   // 'idle' | 'checking' | 'valid' | 'invalid'
   String _keyStatus = 'idle';
+  String _keyStatusMessage = '';
 
   @override
   void dispose() {
@@ -1009,12 +812,28 @@ class _AiStepState extends ConsumerState<_AiStep> {
             provider: _selectedProviderId,
             apiKey: isOllama ? '' : key,
             selectedModel: _selectedModel,
+            enableInsights: _aiInsightsEnabled,
             ollamaBaseUrl:
                 isOllama ? _ollamaUrlCtrl.text.trim() : null,
           );
+      final mutState = ref.read(aiSettingsMutationProvider);
+      if (mutState is AiSettingsMutationError) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(mutState.message)),
+          );
+        }
+        return;
+      }
       await widget.onComplete(skippedAi: false);
     } catch (_) {
-      await widget.onComplete(skippedAi: false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save AI settings. Please try again.'),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1023,14 +842,42 @@ class _AiStepState extends ConsumerState<_AiStep> {
   Future<void> _validateKey() async {
     final key = _apiKeyCtrl.text.trim();
     if (key.isEmpty) return;
-    setState(() => _keyStatus = 'checking');
+    setState(() {
+      _keyStatus = 'checking';
+      _keyStatusMessage = '';
+    });
     try {
-      final valid = await ref
-          .read(aiSettingsMutationProvider.notifier)
+      final result = await ref
+          .read(aiSettingsRepositoryProvider)
           .validateKey(provider: _selectedProviderId, apiKey: key);
-      if (mounted) setState(() => _keyStatus = valid ? 'valid' : 'invalid');
-    } catch (_) {
-      if (mounted) setState(() => _keyStatus = 'invalid');
+      if (mounted) {
+        setState(() {
+          _keyStatus = result.valid ? 'valid' : 'invalid';
+          _keyStatusMessage = result.message ?? '';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _keyStatus = 'invalid';
+          _keyStatusMessage = 'Could not reach validation server. You can still save and fix the key later.';
+        });
+      }
+    }
+  }
+
+  Future<void> _onSkipTap() async {
+    final skip = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _SkipAiModal(
+        userName: widget.userName,
+        onSkip: () => Navigator.of(ctx).pop(true),
+        onConfigure: () => Navigator.of(ctx).pop(false),
+      ),
+    );
+    if (skip == true && mounted) {
+      widget.onComplete(skippedAi: true);
     }
   }
 
@@ -1346,52 +1193,40 @@ class _AiStepState extends ConsumerState<_AiStep> {
               Row(
                 children: [
                   Expanded(
-                    child: _InputField(
+                    child: TextFormField(
                       controller: _apiKeyCtrl,
-                      hint: '${selectedProviderInfo.keyPrefix}…',
-                      icon: LucideIcons.key,
                       obscureText: _obscureKey,
                       onChanged: (_) => setState(() => _keyStatus = 'idle'),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureKey
-                              ? LucideIcons.eye
-                              : LucideIcons.eyeOff,
-                          size: 18,
-                          color: Colors.black38,
+                      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
+                      decoration: InputDecoration(
+                        hintText: '${selectedProviderInfo.keyPrefix}…',
+                        hintStyle: const TextStyle(color: Colors.black38, fontSize: 15),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
-                        onPressed: () =>
-                            setState(() => _obscureKey = !_obscureKey),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                        ),
+                        prefixIcon: const Icon(LucideIcons.key, color: Colors.black38, size: 18),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureKey ? LucideIcons.eye : LucideIcons.eyeOff,
+                            size: 18,
+                            color: Colors.black38,
+                          ),
+                          onPressed: () => setState(() => _obscureKey = !_obscureKey),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       ),
                     ),
                   ),
                 ],
               ),
-              if (_keyStatus == 'valid') ...[
-                const Gap(6),
-                const Row(
-                  children: [
-                    Icon(LucideIcons.checkCircle,
-                        size: 14, color: Color(0xFF10B981)),
-                    Gap(6),
-                    Text('Key verified',
-                        style: TextStyle(
-                            color: Color(0xFF10B981), fontSize: 12)),
-                  ],
-                ),
-              ] else if (_keyStatus == 'invalid') ...[
-                const Gap(6),
-                const Row(
-                  children: [
-                    Icon(LucideIcons.alertCircle,
-                        size: 14, color: AppColors.error),
-                    Gap(6),
-                    Text('Key validation failed',
-                        style: TextStyle(
-                            color: AppColors.error, fontSize: 12)),
-                  ],
-                ),
-              ],
               const Gap(10),
               SizedBox(
                 width: double.infinity,
@@ -1425,6 +1260,37 @@ class _AiStepState extends ConsumerState<_AiStep> {
                   ),
                 ),
               ),
+              if (_keyStatus == 'valid') ...[
+                const Gap(6),
+                Row(
+                  children: [
+                    const Icon(LucideIcons.checkCircle,
+                        size: 14, color: Color(0xFF10B981)),
+                    const Gap(6),
+                    Expanded(
+                      child: Text(
+                        _keyStatusMessage.isNotEmpty ? _keyStatusMessage : 'Key verified',
+                        style: const TextStyle(
+                            color: Color(0xFF10B981), fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ] else if (_keyStatus == 'invalid') ...[
+                const Gap(6),
+                Row(
+                  children: [
+                    const Icon(LucideIcons.alertCircle,
+                        size: 14, color: AppColors.error),
+                    const Gap(6),
+                    Expanded(
+                      child: Text(
+                        _keyStatusMessage.isNotEmpty ? _keyStatusMessage : 'Key validation failed',
+                        style: const TextStyle(
+                            color: AppColors.error, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ],
             ] else ...[
               _FieldLabel(text: 'Ollama Base URL', required: true),
               const Gap(8),
@@ -1438,96 +1304,31 @@ class _AiStepState extends ConsumerState<_AiStep> {
             const Gap(20),
 
             // Model selection
-            if (models.isNotEmpty) ...[
-              Text(
-                'MODEL',
-                style: AppTextStyles.labelSm.copyWith(
-                    color: Colors.black54, letterSpacing: 1.2),
+            if (providersAsync.isLoading) ...[
+              Container(
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
               ),
-              const Gap(10),
-              ...models.map((m) {
-                final isSelected = m.id == _selectedModel;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedModel = m.id),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: isSelected
-                          ? AppColors.primary.withAlpha(30)
-                          : Colors.grey.shade100,
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : Colors.grey.shade300,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    m.name,
-                                    style: TextStyle(
-                                      color: AppColors.textPrimaryLight,
-                                      fontSize: 14,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                    ),
-                                  ),
-                                  if (m.recommended) ...[
-                                    const Gap(6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary
-                                            .withAlpha(50),
-                                        borderRadius:
-                                            BorderRadius.circular(6),
-                                      ),
-                                      child: const Text(
-                                        'Recommended',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.primaryLight,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              if (m.description.isNotEmpty) ...[
-                                const Gap(2),
-                                Text(
-                                  m.description,
-                                  style: const TextStyle(
-                                      color: Colors.black45, fontSize: 12),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          const Icon(LucideIcons.check,
-                              size: 16, color: AppColors.primary),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+              const Gap(12),
+            ] else if (models.isNotEmpty) ...[
+              AppDropdown<String>(
+                label: 'Model',
+                value: _selectedModel,
+                items: models
+                    .map((m) => AppDropdownItem<String>(
+                          value: m.id,
+                          label: m.name,
+                          subtitle: m.description.isNotEmpty ? m.description : null,
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _selectedModel = value);
+                },
+              ),
               const Gap(12),
             ],
 
@@ -1568,9 +1369,10 @@ class _AiStepState extends ConsumerState<_AiStep> {
                   Switch(
                     value: _aiInsightsEnabled,
                     onChanged: (v) => setState(() => _aiInsightsEnabled = v),
-                    activeColor: AppColors.primary,
+                    activeColor: Colors.white,
+                    activeTrackColor: AppColors.primary,
                     inactiveThumbColor: Colors.grey.shade400,
-                    inactiveTrackColor: Colors.grey.shade300,
+                    inactiveTrackColor: Colors.grey.shade200,
                   ),
                 ],
               ),
@@ -1618,14 +1420,12 @@ class _AiStepState extends ConsumerState<_AiStep> {
             SizedBox(
               width: double.infinity,
               child: TextButton(
-                onPressed:
-                    _saving ? null : () => setState(() => _showSkipWarning = true),
+                onPressed: _saving ? null : _onSkipTap,
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.black54,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
-                    side: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
                 child: const Text(
@@ -1644,17 +1444,6 @@ class _AiStepState extends ConsumerState<_AiStep> {
             ),
           ],
         ),
-
-        // Skip warning modal
-        if (_showSkipWarning)
-          _SkipAiModal(
-            userName: widget.userName,
-            onSkip: () {
-              setState(() => _showSkipWarning = false);
-              widget.onComplete(skippedAi: true);
-            },
-            onConfigure: () => setState(() => _showSkipWarning = false),
-          ),
       ],
     );
   }
@@ -1675,24 +1464,15 @@ class _SkipAiModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onConfigure,
-      child: Container(
-        color: Colors.black.withAlpha(160),
-        child: Center(
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: Colors.grey.shade200),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: 48,
@@ -1764,11 +1544,8 @@ class _SkipAiModal extends StatelessWidget {
                     ],
                   ),
                 ],
-              ),
-            ),
           ),
         ),
-      ),
     );
   }
 }
@@ -2028,18 +1805,23 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
         data: AppTheme.light,
         child: Scaffold(
           backgroundColor: AppColors.surfaceLight,
-          body: const Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(color: AppColors.primary),
-                Gap(20),
-                Text(
-                  'Setting up your account…',
-                  style: TextStyle(color: Colors.black54, fontSize: 16),
+          body: Stack(
+            children: [
+              const AppBackgroundEffects(),
+              const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: AppColors.primary),
+                    Gap(20),
+                    Text(
+                      'Setting up your account…',
+                      style: TextStyle(color: Colors.black54, fontSize: 16),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
@@ -2049,7 +1831,10 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
       data: AppTheme.light,
       child: Scaffold(
         backgroundColor: AppColors.surfaceLight,
-        body: SafeArea(
+        body: Stack(
+          children: [
+            const AppBackgroundEffects(),
+            SafeArea(
             child: Column(
               children: [
                 // Header
@@ -2131,10 +1916,28 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
                     ),
                   ),
                 ),
+
+                // Sign-out option — lets the user switch accounts if needed
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      await ref.read(authProvider.notifier).signOut();
+                      if (mounted) context.go('/login');
+                    },
+                    icon: const Icon(LucideIcons.logOut, size: 16),
+                    label: const Text('Sign out'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red.shade400,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+          ],
         ),
-      );
+      ),
+    );
   }
 }

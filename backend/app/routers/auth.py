@@ -3,7 +3,9 @@
 # Created by Ishan Chakraborty
 
 """Authentication routes using Supabase."""
+import asyncio
 from datetime import datetime, timezone
+from functools import partial
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -172,7 +174,7 @@ async def delete_account(user_id: str = Depends(get_current_user_id)):
 
     Steps:
     1. Fetch profile to get email + name for farewell email.
-    2. Send account-deleted confirmation email.
+    2. Send account-deleted confirmation email (best-effort; failure does not block deletion).
     3. Hard-delete user from Supabase Auth (cascades DB rows via FK / RLS).
     """
     try:
@@ -182,16 +184,24 @@ async def delete_account(user_id: str = Depends(get_current_user_id)):
             profile.get("full_name") or profile.get("display_name") or "there"
         )
 
-        # Send farewell email before deletion (so we still have the user record)
+        # Send farewell email before deletion (best-effort; swallows failures internally)
         if to_email:
-            await send_account_deleted_email(
+            email_sent = await send_account_deleted_email(
                 to_email=to_email,
                 to_name=to_name,
                 deleted_at=datetime.now(timezone.utc),
             )
+            if not email_sent:
+                print(f"[Auth] delete-account: farewell email skipped or failed for {to_email}")
 
-        # Hard-delete via Supabase Admin API (service role client)
-        supabase_service.client.auth.admin.delete_user(user_id)
+        # Hard-delete via Supabase Admin API (service role).
+        # Run synchronous call in thread-pool to avoid blocking the event loop.
+        loop = asyncio.get_event_loop()
+        delete_fn = partial(
+            supabase_service.client.auth.admin.delete_user, user_id
+        )
+        result = await loop.run_in_executor(None, delete_fn)
+        print(f"[Auth] delete-account: user {user_id} deleted. result={result}")
 
         return {"ok": True}
     except HTTPException:

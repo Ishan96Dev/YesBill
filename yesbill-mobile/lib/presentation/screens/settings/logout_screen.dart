@@ -8,6 +8,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/core_providers.dart';
 import '../../widgets/auth_widgets.dart';
@@ -74,9 +75,11 @@ class _LogoutScreenState extends ConsumerState<LogoutScreen> {
 
     final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'Y';
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Stack(
+    return Theme(
+      data: AppTheme.light,
+      child: Scaffold(
+        backgroundColor: AppColors.surfaceLight,
+        body: Stack(
         fit: StackFit.expand,
         children: [
           // Gradient background orbs (same style as AppScaffold)
@@ -331,6 +334,7 @@ class _LogoutScreenState extends ConsumerState<LogoutScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

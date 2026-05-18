@@ -53,20 +53,24 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
       _keyValidationMessage = 'Validating…';
     });
     final mutation = ref.read(aiSettingsMutationProvider.notifier);
-    final valid = await mutation.validateKey(
+    final result = await mutation.validateKey(
       provider: widget.provider,
       apiKey: key,
     );
     if (!mounted) return;
     setState(() {
-      _keyValidationStatus = valid ? 'valid' : 'invalid';
-      _keyValidationMessage = valid
-          ? 'Key verified and active'
-          : 'Key validation failed. Please check and retry.';
+      _keyValidationStatus = result.valid ? 'valid' : 'invalid';
+      _keyValidationMessage = result.valid
+          ? (result.message?.isNotEmpty == true
+              ? result.message!
+              : 'Key verified and active')
+          : (result.message?.isNotEmpty == true
+              ? result.message!
+              : 'Key validation failed. Please check and retry.');
     });
     // If validation failed and there is a saved key for this provider, mark it
     // invalid in the DB so the invalid state is persisted across sessions.
-    if (!valid) {
+    if (!result.valid) {
       final existing = ref
           .read(aiSettingsListProvider)
           .valueOrNull
@@ -124,16 +128,20 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
         reasoningEffort: _reasoningEffort,
       );
     } else {
-      final valid = await mutation.validateKey(
+      final validation = await mutation.validateKey(
         provider: widget.provider,
         apiKey: inputApiKey,
       );
 
-      if (!valid) {
+      if (!validation.valid) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('API key validation failed. Please check and retry.'),
+          SnackBar(
+            content: Text(
+              validation.message?.isNotEmpty == true
+                  ? validation.message!
+                  : 'API key validation failed. Please check and retry.',
+            ),
           ),
         );
         return;
@@ -144,6 +152,7 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
         apiKey: inputApiKey,
         selectedModel: _selectedModel,
         reasoningEffort: _reasoningEffort,
+        isKeyValid: true,
       );
     }
 

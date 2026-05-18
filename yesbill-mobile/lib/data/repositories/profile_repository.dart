@@ -34,18 +34,38 @@ class ProfileRepository {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('Not authenticated');
 
+      // Use upsert so onboarding users whose trigger row hasn't committed yet
+      // still get a profile row created rather than a PGRST116 "no rows" error.
       final data = await _supabase
           .from(_table)
-          .update({
+          .upsert({
+            'id': userId,
             ...updates,
             'updated_at': DateTime.now().toIso8601String(),
           })
-          .eq('id', userId)
           .select()
           .single();
       return UserProfile.fromJson(data);
     } catch (e) {
       throw ErrorHandler.handle(e);
+    }
+  }
+
+  /// Returns the MIME type for a given file name based on its extension.
+  static String _contentTypeFromFileName(String fileName) {
+    final ext = fileName.toLowerCase().split('.').last;
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
     }
   }
 
@@ -55,11 +75,14 @@ class ProfileRepository {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('Not authenticated');
 
-      final path = 'avatars/$userId/$fileName';
+      final path = '$userId/$fileName';
       await _supabase.storage
           .from('avatars')
           .uploadBinary(path, Uint8List.fromList(imageBytes),
-              fileOptions: const FileOptions(upsert: true));
+              fileOptions: FileOptions(
+                upsert: true,
+                contentType: _contentTypeFromFileName(fileName),
+              ));
       final url = _supabase.storage.from('avatars').getPublicUrl(path);
       await updateProfile({'avatar_url': url});
       return url;
@@ -78,7 +101,10 @@ class ProfileRepository {
       await _supabase.storage
           .from('cover-images')
           .uploadBinary(path, Uint8List.fromList(imageBytes),
-              fileOptions: const FileOptions(upsert: true));
+              fileOptions: FileOptions(
+                upsert: true,
+                contentType: _contentTypeFromFileName(fileName),
+              ));
       final url = _supabase.storage.from('cover-images').getPublicUrl(path);
       await updateProfile({'cover_image_url': url});
       return url;

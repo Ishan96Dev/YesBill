@@ -20,6 +20,7 @@ class AISettingsCreate(AISettingsBase):
     """Schema for creating/updating AI settings."""
     api_key: Optional[str] = Field(None, description="API key for the provider (not required for Ollama)")
     ollama_base_url: Optional[str] = Field(None, description="Base URL for local Ollama instance (e.g. http://localhost:11434)")
+    is_key_valid: bool = Field(default=False, description="Whether the API key was validated before save")
 
 
 class AISettingsUpdate(BaseModel):

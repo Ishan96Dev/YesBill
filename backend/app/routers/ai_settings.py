@@ -346,7 +346,15 @@ async def save_settings(
             detail=f"Model '{settings.selected_model}' is deprecated and cannot be selected.",
         )
 
-    if settings.selected_model and active_model_ids and settings.selected_model not in active_model_ids:
+    static_model_ids = {
+        m["id"] for m in AI_PROVIDERS.get(provider, {}).get("models", [])
+    }
+    if (
+        settings.selected_model
+        and active_model_ids
+        and settings.selected_model not in active_model_ids
+        and settings.selected_model not in static_model_ids
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unknown model '{settings.selected_model}' for provider '{provider}'.",
@@ -358,6 +366,11 @@ async def save_settings(
         active_models = [m for m in provider_models if not m.get("is_deprecated", False)]
         default_model = active_models[0]["id"] if active_models else provider_info["models"][0]["id"]
 
+    is_key_valid = bool(getattr(settings, "is_key_valid", False))
+    key_validated_at = (
+        datetime.now(timezone.utc).isoformat() if is_key_valid else None
+    )
+
     try:
         record = await supabase_service.upsert_ai_settings(
             user_id=user_id,
@@ -366,6 +379,8 @@ async def save_settings(
             selected_model=default_model,
             enable_insights=settings.enable_insights,
             default_reasoning_effort=settings.default_reasoning_effort or "none",
+            is_key_valid=is_key_valid,
+            key_validated_at=key_validated_at,
         )
         # Fire-and-forget probe so save response is instant
         asyncio.create_task(

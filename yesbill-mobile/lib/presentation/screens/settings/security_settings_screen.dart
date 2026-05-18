@@ -217,6 +217,16 @@ class _SecuritySettingsScreenState
 
     setState(() => _deletingAccount = true);
     try {
+      // Step 1: Send farewell email via Supabase Edge Function (best-effort).
+      // This runs before deletion so the user record still exists.
+      try {
+        final supabase = ref.read(supabaseClientProvider);
+        await supabase.functions.invoke('notify-account-deleted');
+      } catch (_) {
+        // Email is non-fatal; continue with account deletion regardless.
+      }
+
+      // Step 2: Hard-delete account via backend.
       await ref.read(dioProvider).delete(ApiConstants.authDeleteAccount);
       try {
         await ref.read(authProvider.notifier).signOut();

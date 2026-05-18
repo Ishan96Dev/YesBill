@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
 import '../../../providers/auth_provider.dart';
 import '../../widgets/auth_widgets.dart';
@@ -43,11 +44,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = AppTheme.light.colorScheme;
 
     if (_emailSent) {
-      return Scaffold(
-        backgroundColor: cs.surface,
+      return Theme(
+        data: AppTheme.light,
+        child: Scaffold(
+          backgroundColor: cs.surface,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -93,11 +96,14 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             ),
           ),
         ),
-      );
+      ),
+        );
     }
 
-    return Scaffold(
-      backgroundColor: cs.surface,
+    return Theme(
+      data: AppTheme.light,
+      child: Scaffold(
+        backgroundColor: cs.surface,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -221,6 +227,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             );
           },
         ),
+      ),
       ),
     );
   }

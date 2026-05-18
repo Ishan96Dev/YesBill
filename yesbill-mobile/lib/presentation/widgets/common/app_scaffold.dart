@@ -36,6 +36,10 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   DateTime? _lastBackPressedAt;
   static const _permissionsPromptKey = 'permissions_prompted_v1';
 
+  /// True once [_checkSetupStatus] has confirmed the user is fully onboarded.
+  /// Prevents the dashboard shell from rendering before the check redirects to /setup.
+  bool _setupChecked = false;
+
   static const _rootPaths = <String>{
     '/dashboard',
     '/calendar',
@@ -150,6 +154,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     } catch (_) {
       // Profile fetch failed — allow user through to dashboard
     }
+    if (mounted) setState(() => _setupChecked = true);
   }
 
   Future<void> _signOutFromUi() async {
@@ -554,6 +559,13 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    // Hold rendering until the setup check completes. This prevents the
+    // authenticated shell (dashboard) from flashing on screen before
+    // _checkSetupStatus redirects incomplete users to /setup.
+    if (!_setupChecked) {
+      return const Scaffold(backgroundColor: AppColors.surfaceLight);
+    }
+
     final location = GoRouterState.of(context).uri.path;
     final isRoot = _isRootLocation(location);
     final user = ref.watch(authProvider).user;

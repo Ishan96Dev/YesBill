@@ -255,7 +255,8 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     try {
       final bytes = await picked.readAsBytes();
       final repo = ref.read(profileRepositoryProvider);
-      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ext = picked.path.split('.').last.toLowerCase();
+      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final url = await repo.uploadAvatar(bytes, fileName);
       if (mounted) {
         setState(() => _avatarUrl = url);
@@ -280,7 +281,8 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     try {
       final bytes = await picked.readAsBytes();
       final repo = ref.read(profileRepositoryProvider);
-      final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ext = picked.path.split('.').last.toLowerCase();
+      final fileName = 'cover_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final url = await repo.uploadCoverImage(bytes, fileName);
       if (mounted) {
         setState(() => _coverImageUrl = url);

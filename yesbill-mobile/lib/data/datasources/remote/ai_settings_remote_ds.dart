@@ -37,6 +37,8 @@ class AiSettingsRemoteDataSource {
     required String apiKey,
     String? selectedModel,
     String reasoningEffort = 'none',
+    bool enableInsights = true,
+    bool isKeyValid = false,
     String? ollamaBaseUrl,
   }) async {
     try {
@@ -46,6 +48,8 @@ class AiSettingsRemoteDataSource {
         else 'api_key': apiKey,
         if (selectedModel != null) 'selected_model': selectedModel,
         'default_reasoning_effort': reasoningEffort,
+        'enable_insights': enableInsights,
+        'is_key_valid': isKeyValid,
       });
       return AiSettings.fromJson(
         _normalizeSettingsJson(Map<String, dynamic>.from(resp.data as Map)),
@@ -147,9 +151,14 @@ class AiSettingsRemoteDataSource {
         }
       }
 
+      final rawValid = data['valid'];
+      final isValid = rawValid == true ||
+          rawValid == 1 ||
+          rawValid?.toString().toLowerCase() == 'true';
+
       return KeyValidationResult(
-        valid: data['valid'] == true,
-        message: data['message'] as String?,
+        valid: isValid,
+        message: data['message']?.toString(),
         models: parsedModels,
       );
     } catch (e) {

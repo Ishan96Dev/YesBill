@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../providers/core_providers.dart';
 import '../../widgets/auth_widgets.dart';
 import '../../widgets/common/app_background_effects.dart';
@@ -57,9 +58,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surfaceDark,
-      body: Stack(
+    return Theme(
+      data: AppTheme.light,
+      child: Scaffold(
+        backgroundColor: AppColors.surfaceLight,
+        body: Stack(
         children: [
           const AppBackgroundEffects(),
           SafeArea(
@@ -97,6 +100,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -160,7 +164,7 @@ class _OnboardingPageView extends StatelessWidget {
           Text(
             page.description,
             style: AppTextStyles.bodyLg
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: AppColors.textSecondaryLight),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 350.ms),
           const Spacer(),

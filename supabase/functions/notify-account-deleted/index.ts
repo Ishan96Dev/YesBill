@@ -39,7 +39,7 @@ Deno.serve(async (req: Request) => {
   const { data: profile } = await adminClient
     .from("user_profiles")
     .select("display_name")
-    .eq("user_id", user.id)
+    .eq("id", user.id)
     .single();
 
   const userName = profile?.display_name || userEmail.split("@")[0];
