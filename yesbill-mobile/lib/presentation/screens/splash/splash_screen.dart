@@ -68,14 +68,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final onboardingCompleted = ref.read(preferencesProvider).onboardingCompleted;
 
     if (!hasToken) {
-      // Bug guard: onboardingCompleted can be true from a previous APK install
-      // because Android SharedPreferences persists across upgrades (not uninstalls).
-      // Only treat it as "already seen" when Supabase also has a known user,
-      // meaning this is a genuine returning user — not a clean reinstall.
-      final supabase = ref.read(supabaseClientProvider);
-      final hasKnownUser = supabase.auth.currentUser != null;
-
-      if (onboardingCompleted && hasKnownUser) {
+      // onboardingCompleted is stored in SharedPreferences (cleared on uninstall).
+      // If the user has already seen onboarding (true), go to login — even after
+      // a logout or account deletion.  Only go to onboarding on a truly fresh
+      // install where the flag has never been set.
+      if (onboardingCompleted) {
         _go('/login');
       } else {
         _go('/onboarding');

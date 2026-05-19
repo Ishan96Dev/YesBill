@@ -108,7 +108,7 @@ const _sections = <_DocSection>[
   ),
 ];
 
-const _docsBaseUrl = 'https://yesbill-docs.vercel.app';
+const _docsBaseUrl = 'https://ishan96dev.github.io/YesBill/docs';
 
 /// Flat lookup: Docusaurus page path → _DocItem (for in-app link navigation)
 Map<String, _DocItem> _buildDocPathMap() {

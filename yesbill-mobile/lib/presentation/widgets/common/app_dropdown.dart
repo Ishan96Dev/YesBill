@@ -65,6 +65,7 @@ class AppDropdown<T> extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      useRootNavigator: true,
       builder: (_) => _AppDropdownSheet<T>(
         label: label,
         items: items,
@@ -153,10 +154,20 @@ class _AppDropdownSheet<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ── Dynamic initial size: fit tightly to content ─────────────────────
+    // Sheet is shown with useRootNavigator:true, so it covers the full screen
+    // above the system safe area. No extra nav-bar offset is needed here.
+    final screenH = MediaQuery.of(context).size.height;
+    const headerH = 90.0; // handle + title row
+    const itemH   = 72.0; // item height + separator (slightly padded)
+    final bottomPad = 24.0 + MediaQuery.of(context).padding.bottom;
+    final needed = headerH + items.length * itemH + bottomPad;
+    final fitted = (needed / screenH).clamp(0.3, 0.92);
+
     return DraggableScrollableSheet(
-      initialChildSize: 0.45,
-      minChildSize: 0.3,
-      maxChildSize: 0.85,
+      initialChildSize: fitted,
+      minChildSize: fitted,   // prevent blank space below items
+      maxChildSize: 0.92,
       expand: false,
       builder: (context, scrollCtrl) {
         return Container(
@@ -215,7 +226,7 @@ class _AppDropdownSheet<T> extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   controller: scrollCtrl,
-                  padding: EdgeInsets.fromLTRB(16, 0, 16, 32 + MediaQuery.of(context).viewPadding.bottom),
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, 24.0 + MediaQuery.of(context).padding.bottom),
                   itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {

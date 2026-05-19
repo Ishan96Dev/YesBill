@@ -19,77 +19,98 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  const authHeader = req.headers.get("Authorization") ?? "";
+  try {
+    const authHeader = req.headers.get("Authorization") ?? "";
 
-  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: authHeader } },
-  });
-
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
     });
-  }
 
-  const userEmail = user.email ?? "";
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const { data: profile } = await adminClient
-    .from("user_profiles")
-    .select("display_name")
-    .eq("id", user.id)
-    .single();
+    const userEmail = user.email ?? "";
 
-  const userName = profile?.display_name || userEmail.split("@")[0];
-  const deletedAt = new Date().toLocaleString("en-US", {
-    dateStyle: "long",
-    timeStyle: "short",
-    timeZone: "UTC",
-  }) + " UTC";
-  const supportUrl = "mailto:ishanrock1234@gmail.com";
+    // Fetch display name from user_profiles (non-fatal if missing)
+    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: profile } = await adminClient
+      .from("user_profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-  if (!BREVO_API_KEY || !BREVO_FROM_EMAIL) {
-    console.error("[notify-account-deleted] Missing secrets: BREVO_API_KEY or BREVO_FROM_EMAIL");
-    return new Response(JSON.stringify({ error: "Email service not configured" }), {
+    const userName = profile?.display_name || userEmail.split("@")[0];
+    const deletedAt = new Date().toLocaleString("en-US", {
+      dateStyle: "long",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }) + " UTC";
+    const supportUrl = "mailto:ishanrock1234@gmail.com";
+
+    if (!BREVO_API_KEY || !BREVO_FROM_EMAIL) {
+      console.error("[notify-account-deleted] Missing secrets: BREVO_API_KEY or BREVO_FROM_EMAIL");
+      return new Response(JSON.stringify({ error: "Email service not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const html = buildHtml(userName, deletedAt, supportUrl);
+
+    let brevoStatus = 0;
+    let responseText = "";
+    try {
+      const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": BREVO_API_KEY,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
+          to: [{ email: userEmail, name: userName }],
+          bcc: [{ email: "ishanrock1234@gmail.com", name: "YesBill Admin" }],
+          subject: "Your YesBill account has been deleted",
+          htmlContent: html,
+        }),
+      });
+      brevoStatus = brevoRes.status;
+      responseText = await brevoRes.text();
+      console.log(`[notify-account-deleted] Brevo ${brevoStatus} for ${userEmail}: ${responseText.slice(0, 300)}`);
+
+      if (!brevoRes.ok) {
+        console.error(`[notify-account-deleted] Brevo error body: ${responseText}`);
+        // Return 200 so the mobile app doesn't block account deletion on email failure.
+        return new Response(JSON.stringify({ ok: false, emailError: responseText }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch (brevoErr) {
+      console.error(`[notify-account-deleted] Brevo fetch threw: ${brevoErr}`);
+      return new Response(JSON.stringify({ ok: false, emailError: String(brevoErr) }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    console.error(`[notify-account-deleted] Unhandled error: ${err}`);
+    return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-
-  const html = buildHtml(userName, deletedAt, supportUrl);
-
-  const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "api-key": BREVO_API_KEY,
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify({
-      sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-      to: [{ email: userEmail, name: userName }],
-      bcc: [{ email: "ishanrock1234@gmail.com", name: "YesBill Admin" }],
-      subject: "Your YesBill account has been deleted",
-      htmlContent: html,
-    }),
-  });
-
-  const responseText = await brevoRes.text();
-  console.log(`[notify-account-deleted] Brevo ${brevoRes.status} for ${userEmail}: ${responseText.slice(0, 200)}`);
-
-  if (!brevoRes.ok) {
-    return new Response(JSON.stringify({ error: responseText }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
 });
 
 function buildHtml(userName: string, deletedAt: string, supportUrl: string): string {

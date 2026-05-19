@@ -808,6 +808,42 @@ class _AiStepState extends ConsumerState<_AiStep> {
 
     setState(() => _saving = true);
     try {
+      // Validate the key if it hasn't been validated in this session.
+      // The Settings screen always validates before saving; we do the same so
+      // isKeyValid=true is stored and the AI features are immediately usable.
+      bool keyIsValid = isOllama; // Ollama needs no API key
+      if (!isOllama) {
+        if (_keyStatus == 'valid') {
+          keyIsValid = true;
+        } else {
+          // Run inline validation
+          final result = await ref
+              .read(aiSettingsRepositoryProvider)
+              .validateKey(provider: _selectedProviderId, apiKey: key);
+          if (mounted) {
+            setState(() {
+              _keyStatus = result.valid ? 'valid' : 'invalid';
+              _keyStatusMessage = result.message ?? '';
+            });
+          }
+          if (!result.valid) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    result.message?.isNotEmpty == true
+                        ? result.message!
+                        : 'API key validation failed. Please check and retry.',
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+          keyIsValid = true;
+        }
+      }
+
       await ref.read(aiSettingsMutationProvider.notifier).save(
             provider: _selectedProviderId,
             apiKey: isOllama ? '' : key,
@@ -815,6 +851,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
             enableInsights: _aiInsightsEnabled,
             ollamaBaseUrl:
                 isOllama ? _ollamaUrlCtrl.text.trim() : null,
+            isKeyValid: keyIsValid,
           );
       final mutState = ref.read(aiSettingsMutationProvider);
       if (mutState is AiSettingsMutationError) {
@@ -1197,31 +1234,37 @@ class _AiStepState extends ConsumerState<_AiStep> {
                       controller: _apiKeyCtrl,
                       obscureText: _obscureKey,
                       onChanged: (_) => setState(() => _keyStatus = 'idle'),
-                      style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
+                      style: AppTextStyles.body,
                       decoration: InputDecoration(
                         hintText: '${selectedProviderInfo.keyPrefix}…',
-                        hintStyle: const TextStyle(color: Colors.black38, fontSize: 15),
+                        hintStyle: AppTextStyles.body.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: AppColors.primary, width: 2),
                         ),
-                        prefixIcon: const Icon(LucideIcons.key, color: Colors.black38, size: 18),
+                        prefixIcon: Icon(LucideIcons.key, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 18),
                         suffixIcon: IconButton(
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shape: const CircleBorder(),
+                            minimumSize: const Size(40, 40),
+                          ),
                           icon: Icon(
-                            _obscureKey ? LucideIcons.eye : LucideIcons.eyeOff,
+                            _obscureKey ? LucideIcons.eyeOff : LucideIcons.eye,
                             size: 18,
-                            color: Colors.black38,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           onPressed: () => setState(() => _obscureKey = !_obscureKey),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       ),
                     ),
                   ),

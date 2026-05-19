@@ -35,13 +35,26 @@ import '../screens/docs/docs_screen.dart';
 import '../screens/support/support_screen.dart';
 import '../widgets/common/app_scaffold.dart';
 
+/// Lightweight ChangeNotifier that pokes GoRouter whenever auth state changes.
+/// Using [refreshListenable] prevents GoRouter from being recreated on every
+/// auth change (which previously caused a splash-screen flash after login).
+class _RouterRefreshNotifier extends ChangeNotifier {
+  void refresh() => notifyListeners();
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  // Create a notifier that GoRouter uses as refreshListenable.
+  // When auth state changes, we poke it so GoRouter re-runs the redirect
+  // WITHOUT creating a new GoRouter instance (avoids the splash-screen flash).
+  final notifier = _RouterRefreshNotifier();
+  ref.listen<AuthState>(authProvider, (_, __) => notifier.refresh());
+  ref.onDispose(notifier.dispose);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: notifier,
     redirect: (context, state) {
-      final isAuthenticated = authState.isAuthenticated;
+      final isAuthenticated = ref.read(authProvider).isAuthenticated;
       final path = state.uri.path;
 
       final authRoutes = [

@@ -412,7 +412,7 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                                     borderRadius: BorderRadius.circular(999),
                                   ),
                                   child: Text(
-                                    'Validated key on file',
+                                    'Key is Validated and Active',
                                     style: AppTextStyles.labelSm.copyWith(
                                       color: AppColors.success,
                                       fontWeight: FontWeight.w700,
