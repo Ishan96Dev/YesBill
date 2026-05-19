@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../widgets/auth_widgets.dart';
 
-class SecurityLoadingScreen extends StatelessWidget {
+class SecurityLoadingScreen extends StatefulWidget {
   const SecurityLoadingScreen({super.key});
+
+  @override
+  State<SecurityLoadingScreen> createState() => _SecurityLoadingScreenState();
+}
+
+class _SecurityLoadingScreenState extends State<SecurityLoadingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Navigate to dashboard after a brief welcome pause.
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) context.go('/dashboard');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +74,7 @@ class SecurityLoadingScreen extends StatelessWidget {
                     .scale(begin: const Offset(0.96, 0.96)),
                 const SizedBox(height: 22),
                 Text(
-                  'Verifying...',
+                  'Welcome',
                   style: AppTextStyles.h2.copyWith(
                     color: AppColors.textPrimaryLight,
                     fontWeight: FontWeight.w700,
@@ -67,7 +82,7 @@ class SecurityLoadingScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Securing your connection to YesBill.\nThis ensures your financial data remains\nprivate and protected.',
+                  'Setting up your YesBill workspace.\nThis ensures your financial data remains\nprivate and protected.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySm.copyWith(
                     color: AppColors.textSecondaryLight,

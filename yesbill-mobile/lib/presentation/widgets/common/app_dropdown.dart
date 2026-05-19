@@ -158,10 +158,15 @@ class _AppDropdownSheet<T> extends StatelessWidget {
     // Sheet is shown with useRootNavigator:true, so it covers the full screen
     // above the system safe area. No extra nav-bar offset is needed here.
     final screenH = MediaQuery.of(context).size.height;
-    const headerH = 90.0; // handle + title row
-    const itemH   = 72.0; // item height + separator (slightly padded)
+    const headerH = 80.0; // handle (12+4+16) + title row (32) + bottom gap (16)
+    // Per-item rendered height: items with a subtitle render taller than bare-label
+    // items. Using per-item measurement eliminates the large blank space that
+    // appeared when all items are short (no subtitle) or mixed.
+    final double contentH = items.fold(0.0,
+          (sum, item) => sum + (item.subtitle != null ? 65.0 : 50.0))
+        + (items.length > 1 ? (items.length - 1) * 8.0 : 0.0);
     final bottomPad = 24.0 + MediaQuery.of(context).padding.bottom;
-    final needed = headerH + items.length * itemH + bottomPad;
+    final needed = headerH + contentH + bottomPad;
     final fitted = (needed / screenH).clamp(0.3, 0.92);
 
     return DraggableScrollableSheet(

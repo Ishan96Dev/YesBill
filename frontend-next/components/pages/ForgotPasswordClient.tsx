@@ -27,6 +27,22 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
+      // Check if the email belongs to a registered account before sending.
+      const { data: exists, error: rpcError } = await supabase.rpc('is_email_registered', {
+        lookup_email: email.trim(),
+      });
+
+      if (rpcError) throw rpcError;
+
+      if (!exists) {
+        toast({
+          title: "Account not found",
+          description: "No account exists with this email address. Please check the email or create a new account.",
+          type: "error",
+        });
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });

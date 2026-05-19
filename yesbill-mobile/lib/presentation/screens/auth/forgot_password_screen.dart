@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -162,6 +163,25 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
+      // Check if the email is registered before sending the reset link.
+      final supabase = Supabase.instance.client;
+      final rpcResult = await supabase.rpc(
+        'is_email_registered',
+        params: {'lookup_email': _emailCtrl.text.trim()},
+      );
+      final isRegistered = rpcResult as bool? ?? false;
+
+      if (!isRegistered) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No account found with this email address.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+
       await ref
           .read(authProvider.notifier)
           .sendPasswordResetEmail(_emailCtrl.text.trim());

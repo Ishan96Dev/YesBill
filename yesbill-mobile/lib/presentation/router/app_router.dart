@@ -75,8 +75,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login?redirect=${Uri.encodeComponent(path)}';
       }
 
-      // Authenticated and on auth route — go home
-      if (isAuthenticated && isAuthRoute) return '/dashboard';
+      // Authenticated and on an auth route → go to welcome/loading screen first
+      // (provides a smooth transition instead of snapping straight to dashboard).
+      // If already on /security-loading let that screen handle the final navigation.
+      if (isAuthenticated && isAuthRoute && path != '/security-loading') {
+        return '/security-loading';
+      }
 
       return null;
     },
