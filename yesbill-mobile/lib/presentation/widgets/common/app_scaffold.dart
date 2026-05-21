@@ -7,15 +7,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../data/models/service_confirmation.dart';
 import '../../../data/models/user_profile.dart';
+import '../../../data/models/user_service.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/calendar_provider.dart';
 import '../../../providers/core_providers.dart';
 import '../../../providers/notifications_provider.dart';
+import '../../../providers/services_provider.dart';
 import '../../../providers/shell_chrome_provider.dart';
 import '../../../services/permission_service.dart';
 import '../../../services/widget_service.dart';
@@ -206,6 +211,61 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     final email = user?.email;
     if (email == null || email.trim().isEmpty) return 'You';
     return email.split('@').first;
+  }
+
+  // ── Android widget helpers ────────────────────────────────────────────────
+
+  /// Formats a service price + billing-cycle into a short rate string.
+  String _rateString(double price, String type) {
+    final formatted =
+        '₹${price.truncateToDouble() == price ? price.toInt() : price.toStringAsFixed(2)}';
+    return switch (type) {
+      'daily' => '$formatted/day',
+      'weekly' => '$formatted/wk',
+      'monthly' => '$formatted/mo',
+      'yearly' => '$formatted/yr',
+      _ => formatted,
+    };
+  }
+
+  /// Push active services list to the Android Services home-screen widget.
+  void _pushServicesWidget(List<UserService> services) {
+    final entries = services.take(4).map((s) {
+      return WidgetEntry(name: s.name, detail: _rateString(s.price, s.type));
+    }).toList();
+    unawaited(WidgetService.pushServicesData(
+      activeCount: services.length,
+      services: entries,
+    ));
+  }
+
+  /// Push today's delivery status to the Android Calendar home-screen widget.
+  void _pushCalendarWidget(
+    List<ServiceConfirmation> confirmations,
+    List<UserService> services,
+  ) {
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayConfs =
+        confirmations.where((c) => c.date == today).toList();
+
+    final statusMap = <String, String>{
+      for (final c in todayConfs) c.serviceId: c.status,
+    };
+
+    final deliveredCount =
+        todayConfs.where((c) => c.status == 'delivered').length;
+
+    final entries = services.take(4).map((s) {
+      final status = statusMap[s.id] ?? 'pending';
+      return WidgetEntry(name: s.name, status: status);
+    }).toList();
+
+    unawaited(WidgetService.pushCalendarData(
+      date: DateTime.now(),
+      deliveredCount: deliveredCount,
+      totalCount: services.length,
+      services: entries,
+    ));
   }
 
   Future<void> _requestPermissionsIfNeeded() async {
@@ -578,6 +638,25 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                 ? profile!.fullName!
                 : null) ??
         _userDisplayLabel(user);
+
+    // Push widget data to Android home-screen widgets whenever data changes.
+    final currentYearMonth = DateFormat('yyyy-MM').format(DateTime.now());
+    ref.listen<AsyncValue<List<UserService>>>(
+      activeServicesProvider,
+      (_, next) {
+        if (next.hasValue) _pushServicesWidget(next.value!);
+      },
+    );
+    ref.listen<AsyncValue<List<ServiceConfirmation>>>(
+      monthConfirmationsProvider(currentYearMonth),
+      (_, next) {
+        if (next.hasValue) {
+          final services =
+              ref.read(activeServicesProvider).valueOrNull ?? [];
+          _pushCalendarWidget(next.value!, services);
+        }
+      },
+    );
 
     return PopScope(
       canPop: false,

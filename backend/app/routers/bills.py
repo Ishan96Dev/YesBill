@@ -593,9 +593,28 @@ async def get_generated_bill(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Bill not found",
         )
-    payload = row.get("payload") or {}
-    payload["id"] = row["id"]
-    return payload
+    return {
+        "id": row["id"],
+        "user_id": row.get("user_id"),
+        "year_month": row.get("year_month"),
+        "service_ids": row.get("service_ids") or [],
+        "payload": row.get("payload") or {},
+        "total_amount": float(row.get("total_amount") or 0),
+        "currency": row.get("currency") or "INR",
+        "is_paid": row.get("is_paid", False),
+        "paid_at": row.get("paid_at"),
+        "payment_method": row.get("payment_method"),
+        "payment_note": row.get("payment_note"),
+        "ai_model_used": row.get("ai_model_used"),
+        "created_at": row.get("created_at"),
+        "updated_at": row.get("updated_at"),
+        "bill_title": row.get("bill_title"),
+        "pdf_url": row.get("pdf_url"),
+        "email_sent": row.get("email_sent", False),
+        "custom_note": row.get("custom_note"),
+        "auto_generated": row.get("auto_generated", False),
+        "trigger_type": row.get("trigger_type"),
+    }
 
 
 @router.delete("/generated/{bill_id}", status_code=status.HTTP_204_NO_CONTENT)

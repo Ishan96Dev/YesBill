@@ -172,7 +172,7 @@ class _AppDropdownSheet<T> extends StatelessWidget {
     return DraggableScrollableSheet(
       initialChildSize: fitted,
       minChildSize: fitted,   // prevent blank space below items
-      maxChildSize: 0.92,
+      maxChildSize: fitted,   // prevent blank space above items when dragged up
       expand: false,
       builder: (context, scrollCtrl) {
         return Container(

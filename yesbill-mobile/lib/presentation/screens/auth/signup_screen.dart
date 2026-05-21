@@ -19,7 +19,8 @@ class SignupScreen extends ConsumerStatefulWidget {
   ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends ConsumerState<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -29,21 +30,41 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscureConfirm = true;
   String _passwordValue = '';
 
+  /// True while the Google OAuth browser is open (or until the deep-link
+  /// callback fires). Keeps the loading screen visible so the signup form
+  /// never flashes during the OAuth window.
+  bool _oauthPending = false;
+
   @override
   void initState() {
     super.initState();
     _passwordCtrl.addListener(() {
       setState(() => _passwordValue = _passwordCtrl.text);
     });
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmPasswordCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _oauthPending) {
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted || !_oauthPending) return;
+        final auth = ref.read(authProvider);
+        if (!auth.isAuthenticated && !auth.isLoading) {
+          setState(() => _oauthPending = false);
+        }
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -78,21 +99,122 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Future<void> _googleSignIn() async {
+    setState(() => _oauthPending = true);
     await ref.read(authProvider.notifier).signInWithGoogle();
     if (mounted) {
       final error = ref.read(authProvider).error;
       if (error != null) {
+        // Auth failed immediately (e.g. launch error) — reset to form.
+        setState(() => _oauthPending = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error), backgroundColor: AppColors.error),
         );
       }
+      // On success _oauthPending stays true; the router navigates away and
+      // disposes this widget, so no explicit reset is needed.
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(authProvider).isLoading;
+    final authState = ref.watch(authProvider);
+    final isLoading = authState.isLoading;
+    final isAuthenticated = authState.isAuthenticated;
     final cs = AppTheme.light.colorScheme;
+
+    // Hide the form whenever auth is in-flight or OAuth browser is open.
+    if (isLoading || isAuthenticated || _oauthPending) {
+      return Theme(
+        data: AppTheme.light,
+        child: Scaffold(
+          backgroundColor: AppColors.surfaceLight,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              IgnorePointer(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned(
+                      top: -130,
+                      left: -110,
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary.withOpacity(0.15),
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: const Alignment(0.1, -0.5),
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFA78BFA).withOpacity(0.12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 86,
+                      height: 86,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 86,
+                            height: 86,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 4,
+                              valueColor:
+                                  AlwaysStoppedAnimation(AppColors.primary),
+                              backgroundColor: Color(0xFFD7DCEC),
+                            ),
+                          ),
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFFF7F8FB),
+                              border: Border.all(
+                                  color: const Color(0xFFD9DFEF)),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: Image.asset(
+                              'assets/images/yesbill_logo_black.png',
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Setting up your account…',
+                      style: AppTextStyles.bodySm.copyWith(
+                        color: AppColors.textSecondaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Theme(
       data: AppTheme.light,
