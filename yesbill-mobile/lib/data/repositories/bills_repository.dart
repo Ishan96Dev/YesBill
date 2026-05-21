@@ -54,6 +54,7 @@ class BillsRepository {
     required List<String> serviceIds,
     String? customNote,
     bool sendEmail = false,
+    bool useAi = true,
   }) async {
     try {
       return await _remoteDs.generateBill(
@@ -61,6 +62,7 @@ class BillsRepository {
         serviceIds: serviceIds,
         customNote: customNote,
         sendEmail: sendEmail,
+        useAi: useAi,
       );
     } catch (e) {
       throw ErrorHandler.handle(e);

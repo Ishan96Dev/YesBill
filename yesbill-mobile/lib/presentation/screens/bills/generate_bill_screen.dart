@@ -11,6 +11,7 @@ import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../data/models/user_service.dart';
+import '../../../providers/ai_settings_provider.dart';
 import '../../../providers/bills_provider.dart';
 import '../../../providers/services_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
@@ -27,6 +28,9 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
   final _noteCtrl = TextEditingController();
   final _serviceIds = <String>{};
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  bool _useAi = false;
+  bool _aiSettingsChecked = false;
+  bool _combineBills = false;
 
   @override
   void dispose() {
@@ -48,6 +52,19 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
     final servicesAsync = ref.watch(activeServicesProvider);
     final generationState = ref.watch(billGenerationProvider);
     final isLoading = generationState is BillGenerationLoading;
+
+    // Determine default AI toggle from valid AI settings (only on first build)
+    final aiSettings = ref.watch(aiSettingsListProvider);
+    if (!_aiSettingsChecked) {
+      aiSettings.whenData((settings) {
+        if (!_aiSettingsChecked) {
+          setState(() {
+            _useAi = settings.any((s) => s.isActive);
+            _aiSettingsChecked = true;
+          });
+        }
+      });
+    }
 
     final monthOptions = [
       DateTime(_selectedMonth.year, _selectedMonth.month - 1),
@@ -72,46 +89,6 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           children: [
-            Text(
-              'SMART ENGINE',
-              style: AppTextStyles.labelSm.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.4,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.primary, AppColors.purple],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Generate Bill with AI',
-                    style: AppTextStyles.h3.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Transform your monthly service usage into a professional invoice in seconds.',
-                    style: AppTextStyles.bodySm.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
             Text(
               'Billing Period',
               style: AppTextStyles.body.copyWith(
@@ -187,6 +164,170 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
               },
             ),
             const SizedBox(height: 14),
+            // ── Generation Settings ──
+            Text(
+              'Generation Settings',
+              style: AppTextStyles.body.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: AppSurfaces.panel(context),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withOpacity(0.25),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: _useAi
+                                ? const Color(0xFF8B5CF6).withValues(alpha: 0.12)
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            _useAi
+                                ? LucideIcons.sparkles
+                                : LucideIcons.database,
+                            size: 18,
+                            color: _useAi
+                                ? const Color(0xFF8B5CF6)
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Use AI Insights',
+                                style: AppTextStyles.body.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _useAi
+                                    ? 'AI will analyse your data and write a summary'
+                                    : 'Bill generated directly from your service data',
+                                style: AppTextStyles.bodySm.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: _useAi,
+                          onChanged: (v) => setState(() => _useAi = v),
+                          thumbColor:
+                              WidgetStateProperty.all(Colors.white),
+                          trackColor:
+                              WidgetStateProperty.resolveWith((states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return const Color(0xFF8B5CF6);
+                            }
+                            return Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHigh;
+                          }),
+                          trackOutlineColor:
+                              WidgetStateProperty.resolveWith((states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return Colors.transparent;
+                            }
+                            return Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withValues(alpha: 0.3);
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_useAi && _serviceIds.length > 1) ...
+                    [
+                      Divider(
+                        height: 1,
+                        indent: 14,
+                        endIndent: 14,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withOpacity(0.2),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bill Style',
+                              style: AppTextStyles.bodySm.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SegmentedButton<bool>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: false,
+                                  label: Text('Per Service'),
+                                  icon: Icon(LucideIcons.layoutList, size: 14),
+                                ),
+                                ButtonSegment(
+                                  value: true,
+                                  label: Text('Combined'),
+                                  icon: Icon(LucideIcons.layers, size: 14),
+                                ),
+                              ],
+                              selected: {_combineBills},
+                              onSelectionChanged: (s) =>
+                                  setState(() => _combineBills = s.first),
+                              style: ButtonStyle(
+                                visualDensity: VisualDensity.compact,
+                                textStyle: WidgetStateProperty.all(
+                                  const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             Text(
               'Bill Notes',
               style: AppTextStyles.body.copyWith(
@@ -233,10 +374,13 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(LucideIcons.sparkles, size: 16),
+                        Icon(
+                          _useAi ? LucideIcons.sparkles : LucideIcons.zap,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Text(
-                          'Generate Bill Now',
+                          _useAi ? 'Generate with AI' : 'Generate from Data',
                           style: AppTextStyles.body.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -262,6 +406,7 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
           serviceIds: _serviceIds.toList(),
           customNote: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
           sendEmail: false,
+          useAi: _useAi,
         );
   }
 }

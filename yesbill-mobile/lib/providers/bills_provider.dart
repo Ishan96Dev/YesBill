@@ -47,6 +47,7 @@ class BillGenerationNotifier extends Notifier<BillGenerationState> {
     required List<String> serviceIds,
     String? customNote,
     bool sendEmail = false,
+    bool useAi = true,
   }) async {
     state = const BillGenerationLoading();
     try {
@@ -55,6 +56,7 @@ class BillGenerationNotifier extends Notifier<BillGenerationState> {
             serviceIds: serviceIds,
             customNote: customNote,
             sendEmail: sendEmail,
+            useAi: useAi,
           );
       ref.invalidate(generatedBillsProvider);
       state = BillGenerationSuccess(bill);
@@ -101,3 +103,26 @@ class BillPaymentNotifier extends Notifier<AsyncValue<void>> {
 final billPaymentProvider =
     NotifierProvider<BillPaymentNotifier, AsyncValue<void>>(
         BillPaymentNotifier.new);
+
+/// Handles deleting a bill.
+class BillDeleteNotifier extends Notifier<AsyncValue<void>> {
+  @override
+  AsyncValue<void> build() => const AsyncValue.data(null);
+
+  Future<bool> deleteBill(String billId) async {
+    state = const AsyncValue.loading();
+    try {
+      await ref.read(billsRemoteDsProvider).deleteBill(billId);
+      ref.invalidate(generatedBillsProvider);
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+}
+
+final billDeleteProvider =
+    NotifierProvider<BillDeleteNotifier, AsyncValue<void>>(
+        BillDeleteNotifier.new);

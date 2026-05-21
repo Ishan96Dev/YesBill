@@ -14,6 +14,7 @@ class BillsRemoteDataSource {
     required List<String> serviceIds,
     String? customNote,
     bool sendEmail = false,
+    bool useAi = true,
   }) async {
     try {
       final resp = await _dio.post(
@@ -21,6 +22,7 @@ class BillsRemoteDataSource {
         data: {
           'year_month': yearMonth,
           'service_ids': serviceIds,
+          'use_ai': useAi,
           if (customNote != null) 'custom_note': customNote,
         },
       );

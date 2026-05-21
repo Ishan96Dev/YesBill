@@ -25,6 +25,7 @@ class ChatWidgetProvider : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences,
     ) {
+        try {
         val greeting = widgetData.getString("chat_greeting", "Hello!") ?: "Hello!"
 
         // Tap → open chat screen
@@ -44,6 +45,16 @@ class ChatWidgetProvider : HomeWidgetProvider() {
                 setOnClickPendingIntent(R.id.widget_chat_root, tapPending)
             }
             appWidgetManager.updateAppWidget(widgetId, views)
+        }
+        } catch (e: Exception) {
+            appWidgetIds.forEach { widgetId ->
+                try {
+                    val fallback = RemoteViews(context.packageName, R.layout.widget_chat).apply {
+                        setTextViewText(R.id.widget_chat_greeting, "Open YesBill")
+                    }
+                    appWidgetManager.updateAppWidget(widgetId, fallback)
+                } catch (_: Exception) { }
+            }
         }
     }
 }

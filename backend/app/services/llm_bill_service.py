@@ -25,34 +25,39 @@ GOOGLE_GENERATE_URL = "https://generativelanguage.googleapis.com/v1beta/models/{
 
 
 def _build_bill_context(month_name: str, items: list[dict], total: float, currency: str) -> str:
-    """Build a short context string for the LLM with service details."""
-    lines = [f"Month: {month_name}. Total: {currency} {total:.2f}."]
+    """Build a detailed context string for the LLM with service names and specific numbers."""
+    lines = [f"Month: {month_name}. Grand Total: {currency} {total:.2f} across {len(items)} service(s)."]
     for it in items:
-        service_name = it.get('service', '')
-        service_type = it.get('icon', 'generic')
-        schedule = it.get('schedule', 'daily')
+        service_name = it.get('service', 'Unknown Service')
         delivery_type = it.get('delivery_type', 'home_delivery')
-        service_desc = f"{service_name} ({service_type}, {schedule} service)"
+        delivered = it.get('days_delivered', 0)
+        skipped = it.get('days_skipped', 0)
+        svc_total = it.get('total', 0)
+        rate_per_day = it.get('rate_per_day') or it.get('price', 0)
+        total_tracked = delivered + skipped
 
         if delivery_type in ('subscription', 'payment'):
             lines.append(
-                f"- {service_desc} [Fixed billing]: {currency} {it.get('total', 0):.2f} fixed charge."
+                f"- {service_name} [Fixed/Subscription]: fixed charge {currency} {svc_total:.2f}."
             )
         elif delivery_type == 'utility':
-            active = it.get('days_delivered', 0) > 0
             lines.append(
-                f"- {service_desc} [Utility]: {'Active this month' if active else 'Not marked active'}, "
-                f"{currency} {it.get('total', 0):.2f}."
+                f"- {service_name} [Utility]: {'active' if delivered > 0 else 'not active'} this month, "
+                f"charged {currency} {svc_total:.2f}."
             )
         elif delivery_type == 'visit_based':
+            pct = round(delivered / total_tracked * 100) if total_tracked > 0 else 0
             lines.append(
-                f"- {service_desc} [Visit-based]: {it.get('days_delivered', 0)} visited, "
-                f"{it.get('days_skipped', 0)} missed, {currency} {it.get('total', 0):.2f}."
+                f"- {service_name} [Visit-based]: {delivered} visits out of {total_tracked} tracked days "
+                f"({pct}% attendance), {skipped} missed, charged {currency} {svc_total:.2f}."
             )
         else:
+            # home_delivery or default
+            pct = round(delivered / total_tracked * 100) if total_tracked > 0 else 0
+            rate_str = f" @ {currency} {rate_per_day:.2f}/day" if rate_per_day else ""
             lines.append(
-                f"- {service_desc}: {it.get('days_delivered', 0)} delivered, "
-                f"{it.get('days_skipped', 0)} skipped, {currency} {it.get('total', 0):.2f}."
+                f"- {service_name} [Home Delivery]: {delivered} days delivered out of {total_tracked} "
+                f"({pct}% delivery rate){rate_str}, {skipped} skipped, charged {currency} {svc_total:.2f}."
             )
     return "\n".join(lines)
 
@@ -144,31 +149,28 @@ Custom Note from User:
 
 Please refine and rephrase this note professionally for inclusion in the bill. Make it concise and business-appropriate."""
 
-    prompt = f"""You are YesBill's billing assistant. Given this month's billing data, generate insights.
+    prompt = f"""You are YesBill, a smart billing assistant for Indian households. Analyse the monthly service data below and produce personalised, specific bill insights.
 
-Service Types & Context:
-- **Home Delivery (tiffin, milk, newspaper, laundry)**: Day-based tracking. Skipped days save costs.
-- **Visit-Based (gym, clinic, classes)**: Attendance tracking. "Visited" = attended, "missed" = didn't go.
-- **Utility (electricity, internet, gas, water)**: Monthly fixed charge if active. Use billing language, not delivery.
-- **Subscription (OTT, magazine, software)**: Fixed monthly fee. Use payment/subscription language.
-- **EMI / Loan / Rent (payment)**: Fixed due-date payment. Use financial/payment language.
+RULES:
+- ALWAYS use the exact service name(s) given in the data — never say "your service" or "the service"
+- ALWAYS include the specific numbers (days, percentages, amounts) in the summary
+- Use vocabulary appropriate to the service type:
+  • Home Delivery (tiffin, milk, newspaper, laundry, water cans): "delivered", "deliveries", "skipped days", "delivery rate"
+  • Visit-Based (gym, clinic, yoga, classes): "visits", "attended", "missed", "attendance rate"
+  • Utility (electricity, internet, gas, water board): "bill", "usage charge", "active billing"
+  • Subscription/EMI/Rent: "subscription", "payment due", "monthly charge"
+- ai_summary must be 1-2 sentences, factual, and mention specific numbers from the data
+- recommendation must be 1 sentence, actionable, and reference the specific service(s) by name
+- refined_note: if a custom note was provided, clean it up professionally; otherwise null
 
 Billing Data:
 {context}{note_instruction}
 
-Instructions:
-1. Write a friendly 1-2 sentence summary appropriate to the service type(s):
-   - Home delivery: mention delivery consistency
-   - Visit-based: mention attendance/visits
-   - Utility/subscription/EMI: mention billing, payment status, or fixed charges (never say "delivered" or "skipped")
-2. Provide ONE specific recommendation:
-   - Home delivery: if rate < 80%, suggest scheduling skips in advance
-   - Visit-based: if visits are low, suggest setting reminders or reviewing membership value
-   - Utility/subscription/EMI: remind to pay on time, note the due date, or praise on-time payment
-3. If a custom note was provided, refine and rephrase it professionally
+Example good output:
+{{"ai_summary": "Your Morning Milk delivery had a 93% delivery rate in {month_name} — 28 out of 30 days delivered at ₹20/day, totalling ₹560. Dainik Bhaskar newspaper was delivered all 30 days (₹6/day = ₹180).", "recommendation": "Consider pre-scheduling your 2 Morning Milk skips online to avoid last-minute cancellations and ensure seamless billing.", "refined_note": null}}
 
-Reply in JSON format only:
-{{"ai_summary": "your 1-2 sentence summary", "recommendation": "your specific recommendation", "refined_note": "refined custom note or null if none provided"}}"""
+Now produce output for the data above. Reply in JSON only — no markdown, no extra text:
+{{"ai_summary": "...", "recommendation": "...", "refined_note": "... or null"}}"""
 
     ai_model_used = f"{provider}/{model}"
     logger.info("[BILL-LLM] provider=%s model=%s prompt=%d chars", provider, model, len(prompt))

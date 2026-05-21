@@ -458,9 +458,30 @@ async def generate_bill(
             "total": service_total,
         })
 
-    ai_summary, recommendation, ai_model_used, refined_note = await generate_bill_insights(
-        user_id, month_name, items_for_llm, total, "INR", body.custom_note
-    )
+    ai_summary: str | None
+    recommendation: str | None
+    ai_model_used: str | None
+    refined_note: str | None
+    trigger_type: str
+
+    if body.use_ai:
+        ai_summary, recommendation, ai_model_used, refined_note = await generate_bill_insights(
+            user_id, month_name, items_for_llm, total, "INR", body.custom_note
+        )
+        trigger_type = "manual"
+    else:
+        ai_summary = None
+        recommendation = None
+        ai_model_used = None
+        refined_note = body.custom_note
+        if not refined_note:
+            service_names_list = [s.get("name", "") for s in services]
+            service_names_str = ", ".join(service_names_list)
+            refined_note = (
+                f"Auto-summary: {len(services)} service(s) ({service_names_str}), "
+                f"₹{total:.2f} total for {month_name}."
+            )
+        trigger_type = "manual_db"
 
     payload, total_amount, bill_title = _build_bill_payload(
         body.year_month,
@@ -482,6 +503,7 @@ async def generate_bill(
         ai_model_used=ai_model_used,
         bill_title=bill_title,
         custom_note=refined_note,
+        trigger_type=trigger_type,
     )
 
     payload["id"] = row["id"]

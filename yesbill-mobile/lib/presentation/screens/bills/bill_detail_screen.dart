@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/extensions/context_extensions.dart';
 import '../../../core/extensions/date_extensions.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -25,11 +31,32 @@ class BillDetailScreen extends ConsumerStatefulWidget {
 class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
   String _paymentMethod = 'cash';
   final _paymentNoteCtrl = TextEditingController();
+  bool _exporting = false;
 
   @override
   void dispose() {
     _paymentNoteCtrl.dispose();
     super.dispose();
+  }
+
+  static String _paymentMethodLabel(String method) {
+    const labels = {
+      'cash': 'Cash',
+      'upi': 'UPI',
+      'bank_transfer': 'Bank Transfer',
+      'credit_card': 'Credit Card',
+      'debit_card': 'Debit Card',
+      'net_banking': 'Net Banking',
+    };
+    return labels[method] ?? method;
+  }
+
+  static String _monthLabel(String yearMonth) {
+    try {
+      return DateFormat('MMMM yyyy').format(DateTime.parse('$yearMonth-01'));
+    } catch (_) {
+      return yearMonth;
+    }
   }
 
   @override
@@ -38,7 +65,54 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
     final paymentState = ref.watch(billPaymentProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Bill details')),
+      appBar: AppBar(
+        title: const Text('Bill details'),
+        actions: [
+          if (billAsync.hasValue)
+            _exporting
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : PopupMenuButton<String>(
+                    icon: const Icon(LucideIcons.share2, size: 20),
+                    tooltip: 'Export',
+                    onSelected: (val) {
+                      if (val == 'pdf') {
+                        _exportPdf(billAsync.value!);
+                      } else {
+                        _shareText(billAsync.value!);
+                      }
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: 'pdf',
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.fileText, size: 16),
+                            SizedBox(width: 8),
+                            Text('Export as PDF'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'text',
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.messageSquare, size: 16),
+                            SizedBox(width: 8),
+                            Text('Share as text'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+        ],
+      ),
       body: billAsync.when(
         loading: () => const Padding(
           padding: EdgeInsets.all(AppSpacing.base),
@@ -50,52 +124,95 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
         ),
         data: (bill) {
           final month = bill.yearMonth.toYearMonthDate();
+          final items = bill.items;
+          final totalDelivered = items.fold<int>(0, (s, item) {
+            final row = (item as Map?)?.cast<String, dynamic>() ?? {};
+            return s + ((row['daysDelivered'] as num?)?.toInt() ?? 0);
+          });
+          final totalSkipped = items.fold<int>(0, (s, item) {
+            final row = (item as Map?)?.cast<String, dynamic>() ?? {};
+            return s + ((row['daysSkipped'] as num?)?.toInt() ?? 0);
+          });
+          final daysTracked = totalDelivered + totalSkipped;
+          final servicesCount =
+              items.isNotEmpty ? items.length : bill.serviceIds.length;
+          final maxPossible = items.fold<double>(0.0, (s, item) {
+            final row = (item as Map?)?.cast<String, dynamic>() ?? {};
+            final rate = (row['ratePerDay'] as num?)?.toDouble() ?? 0.0;
+            final total = (row['total'] as num?)?.toDouble() ??
+                (row['amount'] as num?)?.toDouble() ?? 0.0;
+            final del = (row['daysDelivered'] as num?)?.toInt() ?? 0;
+            final skip = (row['daysSkipped'] as num?)?.toInt() ?? 0;
+            return s + (rate > 0 ? rate * (del + skip) : total);
+          });
+          final saved =
+              maxPossible > bill.totalAmount ? maxPossible - bill.totalAmount : 0.0;
+
           return ListView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.base, AppSpacing.base, AppSpacing.base, 120),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.base, AppSpacing.base, AppSpacing.base, 120),
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.base),
+              _HeaderCard(bill: bill, month: month),
+              const SizedBox(height: AppSpacing.sm),
+              if (daysTracked > 0 || servicesCount > 0) ...[
+                _StatsRow(
+                  deliveryRate: bill.deliveryRate,
+                  daysTracked: daysTracked,
+                  servicesCount: servicesCount,
+                  saved: saved,
+                  currency: bill.currency,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+              if (bill.summary.trim().isNotEmpty) ...[
+                _SectionCard(
+                  title: 'AI Summary',
+                  icon: LucideIcons.sparkles,
+                  child: Text(bill.summary, style: AppTextStyles.bodySm),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+              _LineItemsSection(bill: bill),
+              const SizedBox(height: AppSpacing.sm),
+              if (bill.recommendations.trim().isNotEmpty) ...[
+                _SectionCard(
+                  title: 'Recommendations',
+                  icon: LucideIcons.lightbulb,
+                  child: Text(bill.recommendations, style: AppTextStyles.bodySm),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+              if ((bill.customNote ?? '').trim().isNotEmpty) ...[
+                _SectionCard(
+                  title: 'Note',
+                  icon: LucideIcons.stickyNote,
+                  child: Text(bill.customNote!, style: AppTextStyles.bodySm),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+              if (bill.isPaid && bill.paidAt != null) ...[
+                _SectionCard(
+                  title: 'Payment info',
+                  icon: LucideIcons.badgeCheck,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(month.toMonthYearDisplay(), style: AppTextStyles.h3),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        CurrencyFormatter.formatCompact(
-                          bill.totalAmount,
-                          currency: bill.currency,
-                        ),
-                        style: AppTextStyles.h2,
+                      _InfoRow(
+                        label: 'Paid on',
+                        value: DateFormat('d MMM yyyy').format(bill.paidAt!),
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _StatusPill(isPaid: bill.isPaid),
-                      if (bill.aiModelUsed != null) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          'AI model: ${bill.aiModelUsed}',
-                          style: AppTextStyles.bodySm,
+                      if (bill.paymentMethod != null)
+                        _InfoRow(
+                          label: 'Method',
+                          value: _paymentMethodLabel(bill.paymentMethod!),
                         ),
-                      ],
+                      if ((bill.paymentNote ?? '').trim().isNotEmpty)
+                        _InfoRow(label: 'Note', value: bill.paymentNote!),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              if (bill.summary.trim().isNotEmpty)
-                _SectionCard(
-                  title: 'Summary',
-                  child: Text(bill.summary, style: AppTextStyles.bodySm),
-                ),
-              if (bill.recommendations.trim().isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.sm),
-                _SectionCard(
-                  title: 'Recommendations',
-                  child: Text(bill.recommendations, style: AppTextStyles.bodySm),
-                ),
               ],
-              const SizedBox(height: AppSpacing.sm),
-              _LineItemsSection(bill: bill),
               const SizedBox(height: AppSpacing.base),
               if (!bill.isPaid)
                 FilledButton.icon(
@@ -127,44 +244,91 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
   Future<void> _markPaid(BuildContext context, GeneratedBill bill) async {
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(AppSpacing.base),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Payment method', style: AppTextStyles.h4),
-              const SizedBox(height: AppSpacing.sm),
-              AppDropdown<String>(
-                label: 'Payment method',
-                value: _paymentMethod,
-                items: const [
-                  AppDropdownItem(value: 'cash', label: 'Cash'),
-                  AppDropdownItem(value: 'upi', label: 'UPI'),
-                  AppDropdownItem(value: 'bank_transfer', label: 'Bank Transfer'),
-                  AppDropdownItem(value: 'credit_card', label: 'Credit Card'),
-                  AppDropdownItem(value: 'debit_card', label: 'Debit Card'),
-                  AppDropdownItem(value: 'net_banking', label: 'Net Banking'),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _paymentMethod = value);
-                },
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(ctx).bottom,
               ),
-              const SizedBox(height: AppSpacing.sm),
-              TextFormField(
-                controller: _paymentNoteCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Note (optional)'),
-              ),
-              const SizedBox(height: AppSpacing.base),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Confirm payment'),
-              ),
-            ],
-          ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.base, 0, AppSpacing.base, AppSpacing.base),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Mark as paid', style: AppTextStyles.h4),
+                      const SizedBox(height: 4),
+                      Text(
+                        CurrencyFormatter.formatCompact(
+                          bill.totalAmount,
+                          currency: bill.currency,
+                        ),
+                        style: AppTextStyles.h3
+                            .copyWith(color: AppColors.success),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppDropdown<String>(
+                        label: 'Payment method',
+                        value: _paymentMethod,
+                        items: const [
+                          AppDropdownItem(value: 'cash', label: 'Cash'),
+                          AppDropdownItem(value: 'upi', label: 'UPI'),
+                          AppDropdownItem(
+                              value: 'bank_transfer',
+                              label: 'Bank Transfer'),
+                          AppDropdownItem(
+                              value: 'credit_card', label: 'Credit Card'),
+                          AppDropdownItem(
+                              value: 'debit_card', label: 'Debit Card'),
+                          AppDropdownItem(
+                              value: 'net_banking', label: 'Net Banking'),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setSheetState(() => _paymentMethod = value);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextFormField(
+                        controller: _paymentNoteCtrl,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'Note (optional)',
+                          hintText: 'e.g. Paid via GPay',
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.base),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          icon: const Icon(LucideIcons.badgeCheck),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          label: const Text('Confirm payment'),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              );
+          },
         );
       },
     );
@@ -173,46 +337,424 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
     final ok = await ref.read(billPaymentProvider.notifier).markPaid(
           bill.id,
           paymentMethod: _paymentMethod,
-          paymentNote:
-              _paymentNoteCtrl.text.trim().isEmpty ? null : _paymentNoteCtrl.text.trim(),
+          paymentNote: _paymentNoteCtrl.text.trim().isEmpty
+              ? null
+              : _paymentNoteCtrl.text.trim(),
         );
 
     if (!mounted) return;
     if (ok) {
-      context.showSnackBar('Bill marked as paid');
+      context.showSnackBar('Bill marked as paid ✓');
     } else {
       context.showErrorSnackBar('Failed to update bill');
     }
   }
+
+  Future<void> _exportPdf(GeneratedBill bill) async {
+    setState(() => _exporting = true);
+    try {
+      final pdfDoc = pw.Document();
+      final monthLabel = _monthLabel(bill.yearMonth);
+
+      pdfDoc.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context ctx) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                bill.billTitle ?? 'YesBill — $monthLabel',
+                style: pw.TextStyle(
+                    fontSize: 22, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text(monthLabel,
+                  style: const pw.TextStyle(
+                      fontSize: 13, color: PdfColors.grey700)),
+              pw.SizedBox(height: 16),
+              pw.Divider(),
+              pw.SizedBox(height: 12),
+              ...bill.items.map((item) {
+                final row =
+                    (item as Map?)?.cast<String, dynamic>() ?? {};
+                final name = row['service_name'] as String? ??
+                    row['name'] as String? ??
+                    row['service'] as String? ??
+                    'Service';
+                final del = (row['daysDelivered'] as num?)?.toInt();
+                final skip = (row['daysSkipped'] as num?)?.toInt();
+                final rate = (row['ratePerDay'] as num?)?.toDouble();
+                final total = (row['total'] as num?)?.toDouble() ??
+                    (row['amount'] as num?)?.toDouble() ??
+                    0.0;
+                final details = [
+                  if (del != null) '$del days delivered',
+                  if (skip != null && skip > 0) '$skip skipped',
+                  if (rate != null) '₹${rate.toStringAsFixed(2)}/day',
+                ].join(' · ');
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 8),
+                  child: pw.Row(
+                    mainAxisAlignment:
+                        pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment:
+                              pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(name,
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                            if (details.isNotEmpty)
+                              pw.Text(details,
+                                  style: const pw.TextStyle(
+                                      fontSize: 11,
+                                      color: PdfColors.grey600)),
+                          ],
+                        ),
+                      ),
+                      pw.Text('₹${total.toStringAsFixed(2)}',
+                          style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                );
+              }),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Total',
+                      style: pw.TextStyle(
+                          fontSize: 16,
+                          fontWeight: pw.FontWeight.bold)),
+                  pw.Text('₹${bill.totalAmount.toStringAsFixed(2)}',
+                      style: pw.TextStyle(
+                          fontSize: 16,
+                          fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              if (bill.isPaid && bill.paidAt != null) ...[
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'Paid on ${DateFormat('d MMMM yyyy').format(bill.paidAt!)}${bill.paymentMethod != null ? ' via ${_paymentMethodLabel(bill.paymentMethod!)}' : ''}',
+                  style: const pw.TextStyle(color: PdfColors.green700),
+                ),
+              ],
+              if (bill.summary.trim().isNotEmpty) ...[
+                pw.SizedBox(height: 16),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+                pw.Text('Summary',
+                    style:
+                        pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 4),
+                pw.Text(bill.summary,
+                    style: const pw.TextStyle(fontSize: 11)),
+              ],
+              pw.SizedBox(height: 24),
+              pw.Text('Generated by YesBill',
+                  style: const pw.TextStyle(
+                      fontSize: 10, color: PdfColors.grey500)),
+            ],
+          );
+        },
+      ));
+
+      final bytes = await pdfDoc.save();
+      final filename =
+          'yesbill_${bill.yearMonth.replaceAll('-', '_')}.pdf';
+      if (mounted) {
+        await Printing.sharePdf(bytes: bytes, filename: filename);
+      }
+    } catch (e) {
+      if (mounted) context.showErrorSnackBar('Failed to generate PDF');
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _shareText(GeneratedBill bill) async {
+    final monthLabel = _monthLabel(bill.yearMonth);
+    final sb = StringBuffer();
+    sb.writeln('*${bill.billTitle ?? 'YesBill — $monthLabel'}*');
+    sb.writeln('Month: $monthLabel');
+    sb.writeln('Amount: ${CurrencyFormatter.formatCompact(bill.totalAmount, currency: bill.currency)}');
+    sb.writeln('Status: ${bill.isPaid ? '✓ Paid' : '⏳ Pending'}');
+    if (bill.items.isNotEmpty) {
+      sb.writeln('\n*Breakdown:*');
+      for (final item in bill.items) {
+        final row = (item as Map?)?.cast<String, dynamic>() ?? {};
+        final name =
+            row['service_name'] as String? ?? row['name'] as String? ?? row['service'] as String? ?? 'Service';
+        final total = (row['total'] as num?)?.toDouble() ??
+            (row['amount'] as num?)?.toDouble() ??
+            0.0;
+        sb.writeln('• $name: ${CurrencyFormatter.formatCompact(total, currency: bill.currency)}');
+      }
+    }
+    sb.writeln('\n_Generated by YesBill_');
+    await Share.share(sb.toString(),
+        subject: bill.billTitle ?? 'YesBill — $monthLabel');
+  }
 }
 
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.isPaid});
+// ── Header card ──────────────────────────────────────────────────────────────
 
-  final bool isPaid;
+class _HeaderCard extends StatelessWidget {
+  const _HeaderCard({required this.bill, required this.month});
+
+  final GeneratedBill bill;
+  final DateTime month;
 
   @override
   Widget build(BuildContext context) {
-    final color = isPaid ? Colors.green : Colors.orange;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+      padding: const EdgeInsets.all(AppSpacing.base),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xFF1E1B4B), Color(0xFF2D2A6A)]
+              : const [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Text(
-        isPaid ? 'Paid' : 'Pending payment',
-        style: AppTextStyles.labelSm.copyWith(color: color),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            bill.billTitle ?? '${DateFormat('MMMM yyyy').format(month)} Bill',
+            style: AppTextStyles.h3.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            DateFormat('MMMM yyyy').format(month),
+            style: AppTextStyles.bodySm
+                .copyWith(color: Colors.white.withOpacity(0.75)),
+          ),
+          const SizedBox(height: AppSpacing.base),
+          Text(
+            CurrencyFormatter.formatCompact(
+              bill.totalAmount,
+              currency: bill.currency,
+            ),
+            style: AppTextStyles.h1.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _BillChip(
+                label: bill.isPaid ? 'Paid' : 'Pending',
+                color: bill.isPaid ? AppColors.success : AppColors.warning,
+              ),
+              if (bill.autoGenerated)
+                const _BillChip(
+                    label: 'Auto-generated', color: AppColors.primary),
+              if (bill.aiModelUsed != null)
+                _BillChip(
+                  label: bill.aiModelUsed!,
+                  color: const Color(0xFF8B5CF6),
+                  icon: LucideIcons.sparkles,
+                ),
+              if (bill.triggerType == 'db' ||
+                  bill.triggerType == 'manual_db')
+                const _BillChip(
+                    label: 'YesBill Generated',
+                    color: Color(0xFF0EA5E9)),
+            ],
+          ),
+          if (bill.isPaid && bill.paidAt != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                const Icon(LucideIcons.badgeCheck,
+                    size: 14, color: Colors.white70),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Paid on ${DateFormat('d MMM yyyy').format(bill.paidAt!)}${bill.paymentMethod != null ? ' · ${_BillDetailScreenState._paymentMethodLabel(bill.paymentMethod!)}' : ''}',
+                    style: AppTextStyles.bodySm
+                        .copyWith(color: Colors.white.withOpacity(0.85)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
 }
 
+class _BillChip extends StatelessWidget {
+  const _BillChip({required this.label, required this.color, this.icon});
+  final String label;
+  final Color color;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withOpacity(0.45)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: Colors.white),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: AppTextStyles.labelSm.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Stats row ────────────────────────────────────────────────────────────────
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({
+    required this.deliveryRate,
+    required this.daysTracked,
+    required this.servicesCount,
+    required this.saved,
+    required this.currency,
+  });
+
+  final double deliveryRate;
+  final int daysTracked;
+  final int servicesCount;
+  final double saved;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final rateDisplay =
+        deliveryRate > 0 ? '${deliveryRate.toStringAsFixed(0)}%' : '—';
+    final savedDisplay = saved > 0
+        ? CurrencyFormatter.formatCompact(saved, currency: currency)
+        : '₹0';
+
+    return Row(
+      children: [
+        _StatTile(
+            label: 'Delivery\nrate',
+            value: rateDisplay,
+            icon: LucideIcons.trendingUp,
+            color: AppColors.success),
+        const SizedBox(width: 8),
+        _StatTile(
+            label: 'Days\ntracked',
+            value: '$daysTracked',
+            icon: LucideIcons.calendarDays,
+            color: AppColors.primary),
+        const SizedBox(width: 8),
+        _StatTile(
+            label: 'Services',
+            value: '$servicesCount',
+            icon: LucideIcons.package,
+            color: const Color(0xFF8B5CF6)),
+        const SizedBox(width: 8),
+        _StatTile(
+            label: 'Saved',
+            value: savedDisplay,
+            icon: LucideIcons.piggyBank,
+            color: AppColors.warning),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark
+                ? AppColors.cardDarkBorder
+                : color.withOpacity(0.18),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: AppTextStyles.h4.copyWith(
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+            Text(
+              label,
+              style: AppTextStyles.labelSm.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Section card ─────────────────────────────────────────────────────────────
+
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.child});
+  const _SectionCard(
+      {required this.title, required this.child, this.icon});
 
   final String title;
   final Widget child;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +764,17 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: AppTextStyles.h4),
+            Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 16,
+                      color:
+                          Theme.of(context).colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                ],
+                Text(title, style: AppTextStyles.h4),
+              ],
+            ),
             const SizedBox(height: AppSpacing.sm),
             child,
           ],
@@ -231,6 +783,38 @@ class _SectionCard extends StatelessWidget {
     );
   }
 }
+
+// ── Info row ─────────────────────────────────────────────────────────────────
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: AppTextStyles.bodySm.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(child: Text(value, style: AppTextStyles.bodySm)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Line items section ───────────────────────────────────────────────────────
 
 class _LineItemsSection extends StatelessWidget {
   const _LineItemsSection({required this.bill});
@@ -242,48 +826,136 @@ class _LineItemsSection extends StatelessWidget {
     final items = bill.items;
 
     return _SectionCard(
-      title: 'Items',
+      title: 'Itemized Breakdown',
+      icon: LucideIcons.list,
       child: items.isEmpty
           ? const Text('No line items available for this bill.')
           : Column(
               children: items.map((item) {
-                final row = (item as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{};
-                final title = row['service_name'] as String? ?? row['name'] as String? ?? 'Service';
+                final row =
+                    (item as Map?)?.cast<String, dynamic>() ??
+                        const <String, dynamic>{};
+                final title = row['service_name'] as String? ??
+                    row['name'] as String? ??
+                    row['service'] as String? ??
+                    'Service';
+                final daysDelivered =
+                    (row['daysDelivered'] as num?)?.toInt();
+                final daysSkipped =
+                    (row['daysSkipped'] as num?)?.toInt();
+                final ratePerDay =
+                    (row['ratePerDay'] as num?)?.toDouble();
                 final quantity = row['quantity'];
-                final unitPrice = (row['unit_price'] as num?)?.toDouble();
+                final unitPrice =
+                    (row['unit_price'] as num?)?.toDouble();
                 final total = (row['total'] as num?)?.toDouble() ??
                     (row['amount'] as num?)?.toDouble() ??
-                    0;
+                    0.0;
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Row(
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(LucideIcons.dot, size: 18),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(title, style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w600)),
-                            if (quantity != null || unitPrice != null)
-                              Text(
-                                '${quantity ?? '-'} × ${unitPrice != null ? CurrencyFormatter.formatCompact(unitPrice, currency: bill.currency) : '-'}',
-                                style: AppTextStyles.label,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: AppTextStyles.bodySm.copyWith(
+                                fontWeight: FontWeight.w700,
                               ),
-                          ],
-                        ),
+                            ),
+                          ),
+                          Text(
+                            CurrencyFormatter.formatCompact(
+                              total,
+                              currency: bill.currency,
+                            ),
+                            style: AppTextStyles.bodyLg.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        CurrencyFormatter.formatCompact(total, currency: bill.currency),
-                        style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w700),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          if (daysDelivered != null)
+                            _MiniTag(
+                              label: '$daysDelivered delivered',
+                              color: AppColors.success,
+                              icon: LucideIcons.check,
+                            ),
+                          if (daysSkipped != null && daysSkipped > 0)
+                            _MiniTag(
+                              label: '$daysSkipped skipped',
+                              color: AppColors.error,
+                              icon: LucideIcons.x,
+                            ),
+                          if (ratePerDay != null)
+                            _MiniTag(
+                              label:
+                                  '${CurrencyFormatter.formatCompact(ratePerDay, currency: bill.currency)}/day',
+                              color: AppColors.primary,
+                              icon: LucideIcons.coins,
+                            ),
+                          if (daysDelivered == null &&
+                              ratePerDay == null &&
+                              quantity != null)
+                            _MiniTag(
+                              label:
+                                  '$quantity × ${unitPrice != null ? CurrencyFormatter.formatCompact(unitPrice, currency: bill.currency) : '-'}',
+                              color: AppColors.primary,
+                              icon: LucideIcons.hash,
+                            ),
+                        ],
                       ),
                     ],
                   ),
                 );
               }).toList(),
             ),
+    );
+  }
+}
+
+class _MiniTag extends StatelessWidget {
+  const _MiniTag(
+      {required this.label, required this.color, required this.icon});
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: AppTextStyles.labelSm.copyWith(color: color),
+          ),
+        ],
+      ),
     );
   }
 }

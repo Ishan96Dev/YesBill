@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../../../core/extensions/context_extensions.dart';
 import '../../../core/theme/app_colors.dart';
@@ -15,6 +21,8 @@ import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import '../../widgets/common/yesbill_loading_widget.dart';
 
+enum _BillRoleFilter { all, consumer, provider }
+
 class BillsScreen extends ConsumerStatefulWidget {
   const BillsScreen({super.key});
 
@@ -24,6 +32,7 @@ class BillsScreen extends ConsumerStatefulWidget {
 
 class _BillsScreenState extends ConsumerState<BillsScreen> {
   String _query = '';
+  _BillRoleFilter _roleFilter = _BillRoleFilter.all;
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +117,11 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            _BillFilterTabs(
+              selected: _roleFilter,
+              onChanged: (v) => setState(() => _roleFilter = v),
+            ),
             const SizedBox(height: 16),
             _GenerateBillPromptCard(
               onTap: () => context.push('/bills/generate'),
@@ -135,8 +149,17 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                 onRetry: () => ref.invalidate(generatedBillsProvider),
               ),
               data: (bills) {
+                final roleFiltered = _roleFilter == _BillRoleFilter.all
+                    ? bills
+                    : bills.where((bill) {
+                        final role =
+                            bill.payload['service_role'] as String? ??
+                                'consumer';
+                        return role == _roleFilter.name;
+                      }).toList();
+
                 final query = _query.trim().toLowerCase();
-                final filtered = bills.where((bill) {
+                final filtered = roleFiltered.where((bill) {
                   if (query.isEmpty) return true;
                   return bill.yearMonth.toLowerCase().contains(query) ||
                       bill.id.toLowerCase().contains(query);
@@ -158,7 +181,11 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                       ],
                     ),
                     child: Text(
-                      'No generated bills found for your query.',
+                      _roleFilter != _BillRoleFilter.all && query.isEmpty
+                          ? _roleFilter == _BillRoleFilter.consumer
+                              ? 'No consumer bills found.'
+                              : 'No invoices found.'
+                          : 'No generated bills found for your query.',
                       style: AppTextStyles.body.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -520,7 +547,7 @@ class _GenerateBillPromptCard extends StatelessWidget {
   }
 }
 
-class _BillTile extends StatelessWidget {
+class _BillTile extends ConsumerStatefulWidget {
   const _BillTile({
     required this.bill,
     required this.onMarkPaid,
@@ -530,18 +557,199 @@ class _BillTile extends StatelessWidget {
   final Future<void> Function(String billId) onMarkPaid;
 
   @override
-  Widget build(BuildContext context) {
-    final statusColor = bill.isPaid ? AppColors.success : AppColors.error;
-    final shortName = () {
-      try {
-        return DateFormat('MMMM yyyy').format(DateTime.parse('${bill.yearMonth}-01')) + ' Bill';
-      } catch (_) {
-        return 'Bill ${bill.id.substring(0, 6).toUpperCase()}';
+  ConsumerState<_BillTile> createState() => _BillTileState();
+}
+
+class _BillTileState extends ConsumerState<_BillTile> {
+  bool _exporting = false;
+
+  String get _shortName {
+    try {
+      return DateFormat('MMMM yyyy').format(
+              DateTime.parse('${widget.bill.yearMonth}-01')) +
+          ' Bill';
+    } catch (_) {
+      return 'Bill ${widget.bill.id.substring(0, 6).toUpperCase()}';
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete bill?'),
+        content: const Text(
+            'This will permanently delete the bill. This action cannot be undone.'),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.error),
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Delete'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ok =
+        await ref.read(billDeleteProvider.notifier).deleteBill(widget.bill.id);
+    if (!mounted) return;
+    if (ok) {
+      context.showSnackBar('Bill deleted');
+    } else {
+      context.showErrorSnackBar('Failed to delete bill');
+    }
+  }
+
+  Future<void> _exportPdf(BuildContext context) async {
+    setState(() => _exporting = true);
+    try {
+      final bill = widget.bill;
+      final monthLabel = () {
+        try {
+          return DateFormat('MMMM yyyy')
+              .format(DateTime.parse('${bill.yearMonth}-01'));
+        } catch (_) {
+          return bill.yearMonth;
+        }
+      }();
+      final pdfDoc = pw.Document();
+      pdfDoc.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context ctx) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                bill.billTitle ?? 'YesBill — $monthLabel',
+                style: pw.TextStyle(
+                    fontSize: 22, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text(monthLabel,
+                  style: const pw.TextStyle(
+                      fontSize: 13, color: PdfColors.grey700)),
+              pw.SizedBox(height: 16),
+              pw.Divider(),
+              pw.SizedBox(height: 12),
+              ...bill.items.map((item) {
+                final row =
+                    (item as Map?)?.cast<String, dynamic>() ?? {};
+                final name = row['service_name'] as String? ??
+                    row['name'] as String? ??
+                    row['service'] as String? ??
+                    'Service';
+                final del = (row['daysDelivered'] as num?)?.toInt();
+                final skip = (row['daysSkipped'] as num?)?.toInt();
+                final rate = (row['ratePerDay'] as num?)?.toDouble();
+                final total = (row['total'] as num?)?.toDouble() ??
+                    (row['amount'] as num?)?.toDouble() ??
+                    0.0;
+                final details = [
+                  if (del != null) '$del days delivered',
+                  if (skip != null && skip > 0) '$skip skipped',
+                  if (rate != null) '₹${rate.toStringAsFixed(2)}/day',
+                ].join(' · ');
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 8),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(name,
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                            if (details.isNotEmpty)
+                              pw.Text(details,
+                                  style: const pw.TextStyle(
+                                      fontSize: 11,
+                                      color: PdfColors.grey600)),
+                          ],
+                        ),
+                      ),
+                      pw.Text('₹${total.toStringAsFixed(2)}',
+                          style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                );
+              }),
+              pw.Divider(),
+              pw.SizedBox(height: 8),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Total',
+                      style: pw.TextStyle(
+                          fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(
+                      '₹${bill.totalAmount.toStringAsFixed(2)}',
+                      style: pw.TextStyle(
+                          fontSize: 16,
+                          fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              if (bill.isPaid && bill.paidAt != null) ...[
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'Paid on ${DateFormat('d MMMM yyyy').format(bill.paidAt!)}',
+                  style: const pw.TextStyle(color: PdfColors.green700),
+                ),
+              ],
+              pw.SizedBox(height: 24),
+              pw.Text(
+                bill.aiModelUsed != null
+                    ? 'Generated by YesBill AI'
+                    : 'Generated by YesBill',
+                style: const pw.TextStyle(
+                    fontSize: 10, color: PdfColors.grey500)),
+            ],
+          );
+        },
+      ));
+      final bytes = await pdfDoc.save();
+      final filename = 'yesbill_${bill.yearMonth.replaceAll('-', '_')}.pdf';
+      if (mounted) {
+        await Printing.sharePdf(bytes: bytes, filename: filename);
       }
-    }();
+    } catch (e) {
+      if (mounted) context.showErrorSnackBar('Failed to generate PDF');
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bill = widget.bill;
+    final statusColor = bill.isPaid ? AppColors.success : AppColors.error;
+    final title = bill.billTitle ?? _shortName;
+    final hasAiModel = bill.aiModelUsed != null && bill.aiModelUsed!.isNotEmpty;
+    final isDbGenerated =
+        bill.triggerType == 'manual_db' || bill.triggerType == 'db';
+    final paidDateStr = bill.paidAt != null
+        ? DateFormat('d MMM yyyy').format(bill.paidAt!)
+        : null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: _billsCardColor(context),
         borderRadius: BorderRadius.circular(14),
@@ -554,66 +762,202 @@ class _BillTile extends StatelessWidget {
           ),
         ],
       ),
-      child: ListTile(
+      child: InkWell(
         onTap: () => context.push('/bills/${bill.id}'),
-        leading: CircleAvatar(
-          radius: 18,
-          backgroundColor: statusColor.withOpacity(0.16),
-          child: Icon(
-            bill.isPaid ? LucideIcons.check : LucideIcons.receipt,
-            color: statusColor,
-            size: 16,
-          ),
-        ),
-        title: Text(
-          shortName,
-          style: AppTextStyles.bodyLg.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        subtitle: Text(
-          bill.isPaid ? 'Paid • ${bill.yearMonth}' : 'Pending • ${bill.yearMonth}',
-          style: AppTextStyles.bodySm.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        trailing: SizedBox(
-          width: 84,
-          child: bill.isPaid
-              ? Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top row: icon + title + amount ──
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: statusColor.withOpacity(0.16),
+                    child: Icon(
+                      bill.isPaid ? LucideIcons.check : LucideIcons.receipt,
+                      color: statusColor,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.bodyLg.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          bill.isPaid
+                              ? 'Paid${paidDateStr != null ? ' · $paidDateStr' : ''}'
+                              : 'Pending · ${bill.yearMonth}',
+                          style: AppTextStyles.bodySm.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
                     CurrencyFormatter.formatCompact(
                       bill.totalAmount,
                       currency: bill.currency,
                     ),
-                    style: AppTextStyles.bodySm.copyWith(
+                    style: AppTextStyles.bodyLg.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                )
-              : OutlinedButton(
-                  onPressed: () => onMarkPaid(bill.id),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary, width: 1.5),
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    minimumSize: const Size(72, 32),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    backgroundColor: Colors.transparent,
-                  ),
-                  child: const Text('Mark\nPaid', textAlign: TextAlign.center),
+                ],
+              ),
+              // ── Tags row ──
+              if (hasAiModel || bill.autoGenerated || isDbGenerated) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    if (hasAiModel)
+                      _SmallChip(
+                        label: bill.aiModelUsed!.split('/').last,
+                        color: const Color(0xFF8B5CF6),
+                        icon: LucideIcons.sparkles,
+                      ),
+                    if (isDbGenerated)
+                      const _SmallChip(
+                        label: 'YesBill Generated',
+                        color: Color(0xFF0EA5E9),
+                        icon: LucideIcons.database,
+                      ),
+                    if (bill.autoGenerated)
+                      const _SmallChip(
+                        label: 'Auto',
+                        color: AppColors.primary,
+                        icon: LucideIcons.zap,
+                      ),
+                  ],
                 ),
+              ],
+              // ── Actions row ──
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (!bill.isPaid) ...[
+                    SizedBox(
+                      height: 28,
+                      child: FilledButton.icon(
+                        onPressed: () => widget.onMarkPaid(bill.id),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.success,
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 10),
+                          minimumSize: const Size(0, 28),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          textStyle: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                        icon: const Icon(LucideIcons.badgeCheck, size: 14),
+                        label: const Text('Mark Paid'),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  // Export PDF
+                  SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: _exporting
+                        ? const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : IconButton.outlined(
+                            padding: EdgeInsets.zero,
+                            iconSize: 14,
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(28, 28),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () => _exportPdf(context),
+                            icon: const Icon(LucideIcons.fileText),
+                            tooltip: 'Export PDF',
+                          ),
+                  ),
+                  const SizedBox(width: 4),
+                  // Delete
+                  SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: IconButton.outlined(
+                      padding: EdgeInsets.zero,
+                      iconSize: 14,
+                      style: IconButton.styleFrom(
+                        minimumSize: const Size(28, 28),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        foregroundColor: AppColors.error,
+                      ),
+                      onPressed: () => _confirmDelete(context),
+                      icon: const Icon(LucideIcons.trash2),
+                      tooltip: 'Delete',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _SmallChip extends StatelessWidget {
+  const _SmallChip(
+      {required this.label, required this.color, required this.icon});
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTextStyles.labelSm.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -628,3 +972,86 @@ class _BillTile extends StatelessWidget {
     Theme.of(context).brightness == Brightness.dark
       ? Border.all(color: AppColors.cardDarkBorder)
       : null;
+
+// ─── Filter Tabs ────────────────────────────────────────────────────────────
+
+class _BillFilterTabs extends StatelessWidget {
+  const _BillFilterTabs({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final _BillRoleFilter selected;
+  final ValueChanged<_BillRoleFilter> onChanged;
+
+  static const _labels = {
+    _BillRoleFilter.all: 'All',
+    _BillRoleFilter.consumer: 'My Bills',
+    _BillRoleFilter.provider: 'Invoices',
+  };
+
+  static const _icons = {
+    _BillRoleFilter.all: LucideIcons.layoutList,
+    _BillRoleFilter.consumer: LucideIcons.wallet,
+    _BillRoleFilter.provider: LucideIcons.briefcase,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 38,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        children: _BillRoleFilter.values.map((filter) {
+          final isSelected = selected == filter;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onChanged(filter),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                    width: isSelected ? 1.5 : 0.5,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _icons[filter]!,
+                      size: 13,
+                      color: isSelected
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      _labels[filter]!,
+                      style: AppTextStyles.labelSm.copyWith(
+                        color: isSelected
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}

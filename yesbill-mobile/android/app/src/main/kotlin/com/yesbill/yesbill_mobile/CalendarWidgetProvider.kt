@@ -30,6 +30,7 @@ class CalendarWidgetProvider : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences,
     ) {
+        try {
         val date = widgetData.getString("cal_date", "Today") ?: "Today"
         val delivered = widgetData.getString("cal_delivered", "–") ?: "–"
         val total = widgetData.getString("cal_total", "–") ?: "–"
@@ -89,6 +90,27 @@ class CalendarWidgetProvider : HomeWidgetProvider() {
                 setOnClickPendingIntent(R.id.widget_cal_root, tapPending)
             }
             appWidgetManager.updateAppWidget(widgetId, views)
+        }
+        } catch (e: Exception) {
+            // On any error, show a safe fallback layout so the widget doesn't
+            // display the system "Can't load widget" error message.
+            appWidgetIds.forEach { widgetId ->
+                try {
+                    val fallback = RemoteViews(context.packageName, R.layout.widget_calendar).apply {
+                        setTextViewText(R.id.widget_cal_date, "Open YesBill")
+                        setTextViewText(R.id.widget_cal_count, "–")
+                        setTextViewText(R.id.widget_cal_total, "/–")
+                        (1..4).forEach { i ->
+                            setViewVisibility(
+                                when (i) { 1 -> R.id.widget_cal_s1; 2 -> R.id.widget_cal_s2;
+                                           3 -> R.id.widget_cal_s3; else -> R.id.widget_cal_s4 },
+                                View.GONE
+                            )
+                        }
+                    }
+                    appWidgetManager.updateAppWidget(widgetId, fallback)
+                } catch (_: Exception) { /* ignore nested errors */ }
+            }
         }
     }
 }

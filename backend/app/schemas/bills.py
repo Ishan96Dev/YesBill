@@ -131,6 +131,7 @@ class GenerateBillRequest(BaseModel):
     year_month: str = Field(pattern=r"^\d{4}-\d{2}$", description="YYYY-MM")
     service_ids: list[str] = Field(min_length=1, description="At least one service UUID")
     custom_note: str | None = Field(None, max_length=500, description="Optional custom note for the bill")
+    use_ai: bool = Field(True, description="If True, call LLM for insights; if False, generate bill directly from DB data")
 
     @field_validator("year_month")
     @classmethod

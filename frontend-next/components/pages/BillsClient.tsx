@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Wallet,
   Briefcase,
+  LayoutList,
 } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import { Button } from "@/components/ui/button";
@@ -658,6 +659,64 @@ export default function Bills() {
           )}
         </AnimatePresence>
 
+        {/* Bill Stats Summary */}
+        {!historyLoading && billHistory.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+          >
+            {[
+              {
+                label: "Total Bills",
+                value: billHistory.length,
+                icon: FileText,
+                color: "text-primary",
+                bg: "bg-primary/8",
+                border: "border-primary/20",
+              },
+              {
+                label: "Total Amount",
+                value: `₹${billHistory.reduce((s, b) => s + (b.total_amount || 0), 0).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                icon: BarChart2,
+                color: "text-indigo-600",
+                bg: "bg-indigo-50",
+                border: "border-indigo-200/60",
+              },
+              {
+                label: "Paid",
+                value: billHistory.filter((b) => b.is_paid).length,
+                icon: CheckCircle,
+                color: "text-emerald-600",
+                bg: "bg-emerald-50",
+                border: "border-emerald-200/60",
+              },
+              {
+                label: "Pending",
+                value: billHistory.filter((b) => !b.is_paid).length,
+                icon: Clock,
+                color: "text-amber-600",
+                bg: "bg-amber-50",
+                border: "border-amber-200/60",
+              },
+            ].map(({ label, value, icon: Icon, color, bg, border }) => (
+              <div
+                key={label}
+                className={`rounded-2xl border ${border} ${bg} p-5 flex items-center gap-4`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg} border ${border}`}>
+                  <Icon className={`w-5 h-5 ${color}`} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+                  <p className={`text-2xl font-bold ${color}`}>{value}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+
         {/* Previous Bills */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -669,7 +728,7 @@ export default function Bills() {
             <h2 className="text-2xl font-bold text-gray-900">Previous Bills</h2>
             <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl self-start sm:self-auto">
               {[
-                { key: "all", label: "All", Icon: null },
+                { key: "all", label: "All", Icon: LayoutList },
                 { key: "consumer", label: "My Bills", Icon: Wallet },
                 { key: "provider", label: "Invoices", Icon: Briefcase },
               ].map(({ key, label, Icon }) => (

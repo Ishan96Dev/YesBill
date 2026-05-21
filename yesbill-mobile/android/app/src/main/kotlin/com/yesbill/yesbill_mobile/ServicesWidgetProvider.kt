@@ -28,6 +28,7 @@ class ServicesWidgetProvider : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences,
     ) {
+        try {
         val count = widgetData.getString("svc_count", "0") ?: "0"
 
         val names = (1..4).map { i -> widgetData.getString("svc_s${i}_name", null) }
@@ -77,6 +78,20 @@ class ServicesWidgetProvider : HomeWidgetProvider() {
                 setOnClickPendingIntent(R.id.widget_svc_root, tapPending)
             }
             appWidgetManager.updateAppWidget(widgetId, views)
+        }
+        } catch (e: Exception) {
+            appWidgetIds.forEach { widgetId ->
+                try {
+                    val fallback = RemoteViews(context.packageName, R.layout.widget_services).apply {
+                        setTextViewText(R.id.widget_svc_count, "Open YesBill")
+                        listOf(R.id.widget_svc_row1, R.id.widget_svc_row2,
+                               R.id.widget_svc_row3, R.id.widget_svc_row4).forEach {
+                            setViewVisibility(it, View.GONE)
+                        }
+                    }
+                    appWidgetManager.updateAppWidget(widgetId, fallback)
+                } catch (_: Exception) { }
+            }
         }
     }
 }
