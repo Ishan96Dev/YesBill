@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/utils/currency_formatter.dart';
@@ -13,7 +15,27 @@ class PdfService {
   PdfService._();
 
   static Future<void> exportBill(GeneratedBill bill) async {
-    final pdf = pw.Document();
+    // Load Unicode-capable fonts (support ₹ and other symbols)
+    final baseFont = await PdfGoogleFonts.notoSansRegular();
+    final boldFont = await PdfGoogleFonts.notoSansBold();
+    final italicFont = await PdfGoogleFonts.notoSansItalic();
+
+    // Load YesBill logo
+    pw.MemoryImage? logoImage;
+    try {
+      final logoBytes = await rootBundle.load('assets/images/yesbill_logo_black.png');
+      logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    } catch (_) {
+      // Logo is optional — continue without it
+    }
+
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: baseFont,
+        bold: boldFont,
+        italic: italicFont,
+      ),
+    );
     final currency = bill.currency;
 
     pdf.addPage(
@@ -28,13 +50,17 @@ class PdfService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text(
-                    'YesBill',
-                    style: pw.TextStyle(
-                      fontSize: 24,
-                      fontWeight: pw.FontWeight.bold,
+                  if (logoImage != null)
+                    pw.Image(logoImage, width: 100, height: 32, fit: pw.BoxFit.contain)
+                  else
+                    pw.Text(
+                      'YesBill',
+                      style: pw.TextStyle(
+                        fontSize: 24,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                     ),
-                  ),
+                  pw.SizedBox(height: 4),
                   pw.Text('Monthly Service Bill',
                       style: const pw.TextStyle(fontSize: 12)),
                 ],

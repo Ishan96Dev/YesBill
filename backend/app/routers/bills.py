@@ -507,6 +507,19 @@ async def generate_bill(
     )
 
     payload["id"] = row["id"]
+    payload["user_id"] = user_id
+    payload["created_at"] = row.get("created_at", datetime.utcnow().isoformat() + "Z")
+    payload["updated_at"] = row.get("updated_at", datetime.utcnow().isoformat() + "Z")
+    payload["is_paid"] = row.get("is_paid", False)
+    payload["email_sent"] = row.get("email_sent", False)
+    payload["auto_generated"] = row.get("auto_generated", False)
+    payload["trigger_type"] = trigger_type
+    payload["service_ids"] = body.service_ids
+    payload["total_amount"] = total_amount
+    payload["pdf_url"] = row.get("pdf_url")
+    payload["paid_at"] = row.get("paid_at")
+    payload["payment_method"] = row.get("payment_method")
+    payload["payment_note"] = row.get("payment_note")
 
     # Notify user that bill was created
     if row:

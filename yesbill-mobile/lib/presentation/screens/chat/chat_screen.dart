@@ -235,6 +235,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   children: [
                     if (configured)
                       _ChatControlBar(
+                        providerId: activeSetting.provider,
                         providerName:
                             activeProvider?.name ?? activeSetting.provider,
                         selectedModelLabel: selectedModel?.name ??
@@ -285,6 +286,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 children: [
                   if (configured)
                     _ChatControlBar(
+                      providerId: activeSetting.provider,
                       providerName:
                           activeProvider?.name ?? activeSetting.provider,
                       selectedModelLabel: selectedModel?.name ??
@@ -1019,8 +1021,17 @@ class _SuggestedPromptGrid extends StatelessWidget {
   }
 }
 
+String? _aiProviderAsset(String? id) => switch (id) {
+      'openai' => 'assets/images/openai.png',
+      'anthropic' => 'assets/images/anthropic.png',
+      'google' => 'assets/images/google-ai.png',
+      'ollama' => 'assets/images/ollama.png',
+      _ => null,
+    };
+
 class _ChatControlBar extends StatelessWidget {
   const _ChatControlBar({
+    required this.providerId,
     required this.providerName,
     required this.selectedModelLabel,
     required this.selectedReasoningLabel,
@@ -1032,6 +1043,7 @@ class _ChatControlBar extends StatelessWidget {
     required this.onSelectReasoning,
   });
 
+  final String providerId;
   final String providerName;
   final String selectedModelLabel;
   final String selectedReasoningLabel;
@@ -1053,6 +1065,7 @@ class _ChatControlBar extends StatelessWidget {
           _StaticInfoChip(
             icon: LucideIcons.brain,
             label: providerName,
+            imageAsset: _aiProviderAsset(providerId),
           ),
           PillSelectorChip<String>(
             icon: LucideIcons.settings2,
@@ -1095,10 +1108,15 @@ class _ChatControlBar extends StatelessWidget {
 }
 
 class _StaticInfoChip extends StatelessWidget {
-  const _StaticInfoChip({required this.icon, required this.label});
+  const _StaticInfoChip({
+    required this.icon,
+    required this.label,
+    this.imageAsset,
+  });
 
   final IconData icon;
   final String label;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -1112,7 +1130,20 @@ class _StaticInfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: _chatMd3Primary),
+          if (imageAsset != null)
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: Image.asset(
+                imageAsset!,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.medium,
+                errorBuilder: (_, __, ___) =>
+                    Icon(icon, size: 14, color: _chatMd3Primary),
+              ),
+            )
+          else
+            Icon(icon, size: 14, color: _chatMd3Primary),
           const SizedBox(width: 6),
           Text(
             label,

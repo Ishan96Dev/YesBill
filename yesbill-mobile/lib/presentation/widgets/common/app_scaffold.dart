@@ -849,6 +849,9 @@ class _ShellHeader extends ConsumerWidget {
                   case _HeaderMenuAction.support:
                     context.go('/support');
                     break;
+                  case _HeaderMenuAction.docs:
+                    context.go('/docs');
+                    break;
                   case _HeaderMenuAction.signOut:
                     onSignOut();
                     break;
@@ -896,6 +899,13 @@ class _ShellHeader extends ConsumerWidget {
                   child: _HeaderMenuRow(
                     icon: LucideIcons.lifeBuoy,
                     label: 'Support',
+                  ),
+                ),
+                const PopupMenuItem<_HeaderMenuAction>(
+                  value: _HeaderMenuAction.docs,
+                  child: _HeaderMenuRow(
+                    icon: LucideIcons.bookOpen,
+                    label: 'Documentation',
                   ),
                 ),
                 const PopupMenuDivider(),
@@ -1536,6 +1546,7 @@ class _SearchDestination {
 enum _HeaderMenuAction {
   settings,
   support,
+  docs,
   signOut,
 }
 

@@ -57,9 +57,11 @@ class AppTheme {
       textTheme: mergedTextTheme,
 
       // ── Scaffold ─────────────────────────────────────────────────────────
-      // Transparent so nested Scaffolds (sub-screens) never flash a white
-      // Material background — AppScaffold provides its own Container background.
-      scaffoldBackgroundColor: Colors.transparent,
+      // Set to the surface colour so route transitions never expose a white
+      // canvas underneath.  AppScaffold still provides its own background
+      // container on top, so nested screens render correctly.
+      scaffoldBackgroundColor:
+          isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
 
       // ── AppBar ────────────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(

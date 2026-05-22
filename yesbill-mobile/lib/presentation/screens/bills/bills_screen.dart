@@ -209,12 +209,6 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                         (e) => _MonthSection(
                           monthKey: e.value.key,
                           bills: e.value.value,
-                          onMarkPaid: (billId) async {
-                            await ref.read(billPaymentProvider.notifier).markPaid(
-                                  billId,
-                                  paymentMethod: 'manual',
-                                );
-                          },
                         ).animate(delay: Duration(milliseconds: 60 * e.key))
                             .fadeIn(duration: 280.ms)
                             .slideY(begin: 0.05, end: 0),
@@ -366,16 +360,14 @@ class _CircleStat extends StatelessWidget {
   }
 }
 
-class _MonthSection extends StatelessWidget {
+class _MonthSection extends ConsumerWidget {
   const _MonthSection({
     required this.monthKey,
     required this.bills,
-    required this.onMarkPaid,
   });
 
   final String monthKey;
   final List<BillListItem> bills;
-  final Future<void> Function(String billId) onMarkPaid;
 
   String _monthHeading(String key) {
     try {
@@ -390,7 +382,7 @@ class _MonthSection extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -446,7 +438,9 @@ class _MonthSection extends StatelessWidget {
                   );
                   if (confirmed == true && context.mounted) {
                     for (final bill in unpaidBills) {
-                      await onMarkPaid(bill.id);
+                      await ref
+                          .read(billPaymentProvider.notifier)
+                          .markPaid(bill.id, paymentMethod: 'cash');
                     }
                   }
                 },
@@ -461,7 +455,7 @@ class _MonthSection extends StatelessWidget {
             ],
           ),
         ),
-        ...bills.map((bill) => _BillTile(bill: bill, onMarkPaid: onMarkPaid)),
+        ...bills.map((bill) => _BillTile(bill: bill)),
       ],
     );
   }
@@ -550,11 +544,11 @@ class _GenerateBillPromptCard extends StatelessWidget {
 class _BillTile extends ConsumerStatefulWidget {
   const _BillTile({
     required this.bill,
-    required this.onMarkPaid,
+    this.onMarkPaid,
   });
 
   final BillListItem bill;
-  final Future<void> Function(String billId) onMarkPaid;
+  final Future<void> Function(String billId)? onMarkPaid;
 
   @override
   ConsumerState<_BillTile> createState() => _BillTileState();
@@ -562,6 +556,15 @@ class _BillTile extends ConsumerStatefulWidget {
 
 class _BillTileState extends ConsumerState<_BillTile> {
   bool _exporting = false;
+  bool _deleting = false;
+  String _paymentMethod = 'cash';
+  final _paymentNoteCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _paymentNoteCtrl.dispose();
+    super.dispose();
+  }
 
   String get _shortName {
     try {
@@ -570,6 +573,129 @@ class _BillTileState extends ConsumerState<_BillTile> {
           ' Bill';
     } catch (_) {
       return 'Bill ${widget.bill.id.substring(0, 6).toUpperCase()}';
+    }
+  }
+
+  static String _paymentMethodLabel(String method) {
+    const labels = {
+      'cash': 'Cash',
+      'upi': 'UPI',
+      'bank_transfer': 'Bank Transfer',
+      'credit_card': 'Credit Card',
+      'debit_card': 'Debit Card',
+      'net_banking': 'Net Banking',
+    };
+    return labels[method] ?? method;
+  }
+
+  Future<void> _markPaidWithDialog(BuildContext context) async {
+    _paymentNoteCtrl.clear();
+    _paymentMethod = 'cash';
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        top: false,
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.viewInsetsOf(ctx).bottom,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Mark as paid',
+                      style: AppTextStyles.h4),
+                  const SizedBox(height: 4),
+                  Text(
+                    CurrencyFormatter.formatCompact(
+                      widget.bill.totalAmount,
+                      currency: widget.bill.currency,
+                    ),
+                    style: AppTextStyles.h3.copyWith(
+                        color: AppColors.success),
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    value: _paymentMethod,
+                    decoration: const InputDecoration(
+                      labelText: 'Payment method',
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'cash', child: Text('Cash')),
+                      DropdownMenuItem(value: 'upi', child: Text('UPI')),
+                      DropdownMenuItem(
+                          value: 'bank_transfer',
+                          child: Text('Bank Transfer')),
+                      DropdownMenuItem(
+                          value: 'credit_card',
+                          child: Text('Credit Card')),
+                      DropdownMenuItem(
+                          value: 'debit_card',
+                          child: Text('Debit Card')),
+                      DropdownMenuItem(
+                          value: 'net_banking',
+                          child: Text('Net Banking')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        setSheetState(() => _paymentMethod = v);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _paymentNoteCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Note (optional)',
+                      hintText: 'e.g. Paid via GPay',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      icon: const Icon(LucideIcons.badgeCheck),
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      label: const Text('Confirm payment'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ok = await ref.read(billPaymentProvider.notifier).markPaid(
+          widget.bill.id,
+          paymentMethod: _paymentMethod,
+          paymentNote: _paymentNoteCtrl.text.trim().isEmpty
+              ? null
+              : _paymentNoteCtrl.text.trim(),
+        );
+    if (!mounted) return;
+    if (ok) {
+      context.showSnackBar('Bill marked as paid');
+    } else {
+      context.showErrorSnackBar('Failed to update bill');
     }
   }
 
@@ -604,9 +730,11 @@ class _BillTileState extends ConsumerState<_BillTile> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    setState(() => _deleting = true);
     final ok =
         await ref.read(billDeleteProvider.notifier).deleteBill(widget.bill.id);
     if (!mounted) return;
+    setState(() => _deleting = false);
     if (ok) {
       context.showSnackBar('Bill deleted');
     } else {
@@ -860,7 +988,7 @@ class _BillTileState extends ConsumerState<_BillTile> {
                     SizedBox(
                       height: 28,
                       child: FilledButton.icon(
-                        onPressed: () => widget.onMarkPaid(bill.id),
+                        onPressed: () => _markPaidWithDialog(context),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.success,
                           padding:
@@ -905,18 +1033,26 @@ class _BillTileState extends ConsumerState<_BillTile> {
                   SizedBox(
                     width: 28,
                     height: 28,
-                    child: IconButton.outlined(
-                      padding: EdgeInsets.zero,
-                      iconSize: 14,
-                      style: IconButton.styleFrom(
-                        minimumSize: const Size(28, 28),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        foregroundColor: AppColors.error,
-                      ),
-                      onPressed: () => _confirmDelete(context),
-                      icon: const Icon(LucideIcons.trash2),
-                      tooltip: 'Delete',
-                    ),
+                    child: _deleting
+                        ? const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.error,
+                            ),
+                          )
+                        : IconButton.outlined(
+                            padding: EdgeInsets.zero,
+                            iconSize: 14,
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(28, 28),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              foregroundColor: AppColors.error,
+                            ),
+                            onPressed: () => _confirmDelete(context),
+                            icon: const Icon(LucideIcons.trash2),
+                            tooltip: 'Delete',
+                          ),
                   ),
                 ],
               ),

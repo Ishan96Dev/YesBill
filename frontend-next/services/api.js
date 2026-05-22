@@ -159,18 +159,20 @@ export const configAPI = {
 
 /** Generated bills (AI): generate, list, get, delete */
 export const generatedBillsAPI = {
-  generate: (yearMonth, serviceIds, customNote = null) =>
+  generate: (yearMonth, serviceIds, customNote = null, useAi = true) =>
     api.post('/bills/generate', {
       year_month: yearMonth,
       service_ids: serviceIds,
-      custom_note: customNote
+      custom_note: customNote,
+      use_ai: useAi,
     }),
   // Same as generate but also dispatches the bill email (used by Generate Now modal)
-  generateAndSend: (yearMonth, serviceIds, customNote = null) =>
+  generateAndSend: (yearMonth, serviceIds, customNote = null, useAi = true) =>
     api.post('/bills/generate?send_email=true', {
       year_month: yearMonth,
       service_ids: serviceIds,
-      custom_note: customNote
+      custom_note: customNote,
+      use_ai: useAi,
     }),
   list: () => api.get('/bills/generated'),
   get: (id) => api.get(`/bills/generated/${id}`),

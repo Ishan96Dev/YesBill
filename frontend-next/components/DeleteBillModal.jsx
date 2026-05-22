@@ -10,7 +10,7 @@ import { Button } from './ui/button';
 /**
  * Custom delete confirmation modal matching YesBill branding
  */
-export function DeleteBillModal({ isOpen, onClose, onConfirm, bill }) {
+export function DeleteBillModal({ isOpen, onClose, onConfirm, bill, loading }) {
     if (!bill) return null;
 
     const monthLabel = bill.payload?.month || bill.year_month;
@@ -22,7 +22,6 @@ export function DeleteBillModal({ isOpen, onClose, onConfirm, bill }) {
 
     const handleConfirm = () => {
         onConfirm();
-        onClose();
     };
 
     return (
@@ -147,15 +146,17 @@ export function DeleteBillModal({ isOpen, onClose, onConfirm, bill }) {
                                         onClick={onClose}
                                         variant="outline"
                                         className="flex-1 h-12 rounded-xl border-2"
+                                        disabled={loading}
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         onClick={handleConfirm}
+                                        disabled={loading}
                                         className="flex-1 h-12 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/30"
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete Bill
+                                        {loading ? "Deleting..." : "Delete Bill"}
                                     </Button>
                                 </div>
                             </div>

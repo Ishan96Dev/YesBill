@@ -50,12 +50,14 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // getUser() validates the JWT with Supabase — never trust a stale cookie
+  // getSession() reads the session from the cookie (no network round-trip to
+  // Supabase Auth). This keeps middleware fast for client-side navigations.
+  // Individual pages and API routes still call getUser() for full validation.
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  const isAuthed = !!user
+  const isAuthed = !!session
   const { pathname } = request.nextUrl
 
   // Redirect unauthenticated users away from protected routes

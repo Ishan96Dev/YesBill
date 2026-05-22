@@ -196,7 +196,7 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                           height: 40,
                           decoration: BoxDecoration(
                             color: _useAi
-                                ? const Color(0xFF8B5CF6).withValues(alpha: 0.12)
+                                ? AppColors.primary.withValues(alpha: 0.12)
                                 : Theme.of(context)
                                     .colorScheme
                                     .surfaceContainerHigh,
@@ -209,7 +209,7 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                                 : LucideIcons.database,
                             size: 18,
                             color: _useAi
-                                ? const Color(0xFF8B5CF6)
+                                ? AppColors.primary
                                 : Theme.of(context)
                                     .colorScheme
                                     .onSurfaceVariant,
@@ -249,7 +249,7 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                           trackColor:
                               WidgetStateProperty.resolveWith((states) {
                             if (states.contains(WidgetState.selected)) {
-                              return const Color(0xFF8B5CF6);
+                              return AppColors.primary;
                             }
                             return Theme.of(context)
                                 .colorScheme

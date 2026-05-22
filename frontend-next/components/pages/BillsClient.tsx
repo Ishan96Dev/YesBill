@@ -103,10 +103,12 @@ export default function Bills() {
 
   const [selectedModelName, setSelectedModelName] = useState(null);
   const [aiInsightsEnabled, setAiInsightsEnabled] = useState(true);
+  const [useAiInsights, setUseAiInsights] = useState(true);
 
   // Delete confirmation modal state
   const [deleteBillModalOpen, setDeleteBillModalOpen] = useState(false);
   const [billToDelete, setBillToDelete] = useState(null);
+  const [isDeletingBill, setIsDeletingBill] = useState(false);
 
   // Pay bill modal state
   const [payBillModal, setPayBillModal] = useState({ open: false, bill: null });
@@ -141,6 +143,7 @@ export default function Bills() {
       if (!cancelled) {
         setSelectedModelName(name);
         setAiInsightsEnabled(insightsOn);
+        setUseAiInsights(insightsOn);
       }
     });
     return () => { cancelled = true; };
@@ -218,7 +221,8 @@ export default function Bills() {
         const { data } = await generatedBillsAPI.generate(
           selectedMonth,
           [serviceId],
-          customNote.trim() || null
+          customNote.trim() || null,
+          useAiInsights
         );
         results.push(data);
       }
@@ -273,15 +277,18 @@ export default function Bills() {
 
   const handleConfirmDelete = async () => {
     if (!billToDelete) return;
+    setIsDeletingBill(true);
     try {
       await generatedBillsAPI.delete(billToDelete.id);
       setGeneratedBills((prev) => prev.filter((b) => b.id !== billToDelete.id));
       await loadBillHistory();
+      setDeleteBillModalOpen(false);
+      setBillToDelete(null);
       toast({ title: "Bill deleted", type: "success" });
     } catch (err) {
       toast({ title: "Delete failed", description: err.message, type: "error" });
     } finally {
-      setBillToDelete(null);
+      setIsDeletingBill(false);
     }
   };
 
@@ -441,11 +448,15 @@ export default function Bills() {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Generate Bill with AI
+                Generate Bill
               </h2>
               <p className="text-gray-600 mb-4">
-                Our {selectedModelName ? `${selectedModelName}-powered` : "AI"} engine analyzes your calendar
-                confirmations, calculates itemized totals, and delivers insights on your spending patterns.
+                {useAiInsights
+                  ? selectedModelName
+                    ? `${selectedModelName}-powered AI analyzes your calendar confirmations, calculates itemized totals, and delivers insights on your spending patterns.`
+                    : "AI analyzes your calendar confirmations, calculates itemized totals, and delivers insights on your spending patterns."
+                  : "Bill generated directly from your calendar and service data — no AI processing."
+                }
                 {selectedServiceIds.length > 1 && (
                   <span className="ml-1 text-primary font-medium">
                     Each service will get its own separate bill.
@@ -523,6 +534,41 @@ export default function Bills() {
                         {selectedServiceIds.length} services selected — {selectedServiceIds.length} separate bills will be generated
                       </p>
                     )}
+                </div>
+
+                {/* Section: Generation Settings */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-4 bg-violet-500 rounded-full" />
+                    <span className="text-xs font-bold text-violet-600 uppercase tracking-wider">Generation Settings</span>
+                  </div>
+                  <div className="rounded-xl border border-gray-200 bg-white/80 divide-y divide-gray-100">
+                    {/* AI Insights toggle */}
+                    <div className="flex items-center gap-3 p-4">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${useAiInsights ? "bg-violet-100" : "bg-gray-100"}`}>
+                        <Sparkles className={`w-4 h-4 ${useAiInsights ? "text-violet-600" : "text-gray-400"}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800">Use AI Insights</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {useAiInsights
+                            ? selectedModelName
+                              ? `${selectedModelName} will analyse your data and write a summary`
+                              : "AI will analyse your data and write a summary"
+                            : "Bill generated directly from your service data"
+                          }
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        title={useAiInsights ? "Disable AI Insights" : "Enable AI Insights"}
+                        onClick={() => setUseAiInsights(v => !v)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 ${useAiInsights ? "bg-violet-600" : "bg-gray-300"}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${useAiInsights ? "translate-x-6" : "translate-x-1"}`} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section: Bill Notes */}
@@ -944,9 +990,10 @@ export default function Bills() {
       {/* Delete Confirmation Modal */}
       <DeleteBillModal
         isOpen={deleteBillModalOpen}
-        onClose={() => setDeleteBillModalOpen(false)}
+        onClose={() => !isDeletingBill && setDeleteBillModalOpen(false)}
         onConfirm={handleConfirmDelete}
         bill={billToDelete}
+        loading={isDeletingBill}
       />
 
       {/* Pay Bill Modal */}
