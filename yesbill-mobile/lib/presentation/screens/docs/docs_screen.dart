@@ -18,7 +18,8 @@ class _DocItem {
 }
 
 class _DocSection {
-  const _DocSection({required this.title, required this.icon, required this.items});
+  const _DocSection(
+      {required this.title, required this.icon, required this.items});
   final String title;
   final IconData icon;
   final List<_DocItem> items;
@@ -37,10 +38,18 @@ const _sections = <_DocSection>[
     title: 'Getting Started',
     icon: LucideIcons.rocket,
     items: [
-      _DocItem(label: 'Creating Account', asset: 'assets/docs/getting-started/creating-account.md'),
-      _DocItem(label: 'Onboarding', asset: 'assets/docs/getting-started/onboarding.md'),
-      _DocItem(label: 'First Service', asset: 'assets/docs/getting-started/first-service.md'),
-      _DocItem(label: 'Dashboard', asset: 'assets/docs/getting-started/dashboard.md'),
+      _DocItem(
+          label: 'Creating Account',
+          asset: 'assets/docs/getting-started/creating-account.md'),
+      _DocItem(
+          label: 'Onboarding',
+          asset: 'assets/docs/getting-started/onboarding.md'),
+      _DocItem(
+          label: 'First Service',
+          asset: 'assets/docs/getting-started/first-service.md'),
+      _DocItem(
+          label: 'Dashboard',
+          asset: 'assets/docs/getting-started/dashboard.md'),
     ],
   ),
   _DocSection(
@@ -48,12 +57,21 @@ const _sections = <_DocSection>[
     icon: LucideIcons.briefcase,
     items: [
       _DocItem(label: 'Overview', asset: 'assets/docs/services/overview.md'),
-      _DocItem(label: 'Home Delivery', asset: 'assets/docs/services/home-delivery.md'),
-      _DocItem(label: 'Visit-Based', asset: 'assets/docs/services/visit-based.md'),
-      _DocItem(label: 'Managing Services', asset: 'assets/docs/services/managing-services.md'),
+      _DocItem(
+          label: 'Home Delivery',
+          asset: 'assets/docs/services/home-delivery.md'),
+      _DocItem(
+          label: 'Visit-Based', asset: 'assets/docs/services/visit-based.md'),
+      _DocItem(
+          label: 'Managing Services',
+          asset: 'assets/docs/services/managing-services.md'),
       _DocItem(label: 'Payments', asset: 'assets/docs/services/payments.md'),
-      _DocItem(label: 'Subscriptions', asset: 'assets/docs/services/subscriptions.md'),
-      _DocItem(label: 'Utility Services', asset: 'assets/docs/services/utility-services.md'),
+      _DocItem(
+          label: 'Subscriptions',
+          asset: 'assets/docs/services/subscriptions.md'),
+      _DocItem(
+          label: 'Utility Services',
+          asset: 'assets/docs/services/utility-services.md'),
     ],
   ),
   _DocSection(
@@ -61,18 +79,27 @@ const _sections = <_DocSection>[
     icon: LucideIcons.calendarDays,
     items: [
       _DocItem(label: 'Overview', asset: 'assets/docs/calendar/overview.md'),
-      _DocItem(label: 'Daily Tracking', asset: 'assets/docs/calendar/daily-tracking.md'),
-      _DocItem(label: 'Yearly View', asset: 'assets/docs/calendar/yearly-view.md'),
+      _DocItem(
+          label: 'Daily Tracking',
+          asset: 'assets/docs/calendar/daily-tracking.md'),
+      _DocItem(
+          label: 'Yearly View', asset: 'assets/docs/calendar/yearly-view.md'),
     ],
   ),
   _DocSection(
     title: 'Bills',
     icon: LucideIcons.receipt,
     items: [
-      _DocItem(label: 'Understanding Bills', asset: 'assets/docs/bills/understanding-bills.md'),
-      _DocItem(label: 'Auto-Generation', asset: 'assets/docs/bills/auto-generation.md'),
-      _DocItem(label: 'Marking Paid', asset: 'assets/docs/bills/marking-paid.md'),
-      _DocItem(label: 'Bill History', asset: 'assets/docs/bills/bill-history.md'),
+      _DocItem(
+          label: 'Understanding Bills',
+          asset: 'assets/docs/bills/understanding-bills.md'),
+      _DocItem(
+          label: 'Auto-Generation',
+          asset: 'assets/docs/bills/auto-generation.md'),
+      _DocItem(
+          label: 'Marking Paid', asset: 'assets/docs/bills/marking-paid.md'),
+      _DocItem(
+          label: 'Bill History', asset: 'assets/docs/bills/bill-history.md'),
     ],
   ),
   _DocSection(
@@ -81,11 +108,20 @@ const _sections = <_DocSection>[
     items: [
       _DocItem(label: 'Overview', asset: 'assets/docs/ai-features/overview.md'),
       _DocItem(label: 'Ask AI', asset: 'assets/docs/ai-features/ask-ai.md'),
-      _DocItem(label: 'Agent Chatbot', asset: 'assets/docs/ai-features/agent-chatbot.md'),
-      _DocItem(label: 'Agent Actions', asset: 'assets/docs/ai-features/agent-actions.md'),
-      _DocItem(label: 'AI Bill Generation', asset: 'assets/docs/ai-features/ai-bill-generation.md'),
-      _DocItem(label: 'AI Configuration', asset: 'assets/docs/ai-features/ai-configuration.md'),
-      _DocItem(label: 'Analytics', asset: 'assets/docs/ai-features/analytics.md'),
+      _DocItem(
+          label: 'Agent Chatbot',
+          asset: 'assets/docs/ai-features/agent-chatbot.md'),
+      _DocItem(
+          label: 'Agent Actions',
+          asset: 'assets/docs/ai-features/agent-actions.md'),
+      _DocItem(
+          label: 'AI Bill Generation',
+          asset: 'assets/docs/ai-features/ai-bill-generation.md'),
+      _DocItem(
+          label: 'AI Configuration',
+          asset: 'assets/docs/ai-features/ai-configuration.md'),
+      _DocItem(
+          label: 'Analytics', asset: 'assets/docs/ai-features/analytics.md'),
     ],
   ),
   _DocSection(
@@ -93,8 +129,12 @@ const _sections = <_DocSection>[
     icon: LucideIcons.settings,
     items: [
       _DocItem(label: 'Profile', asset: 'assets/docs/settings/profile.md'),
-      _DocItem(label: 'AI Configuration', asset: 'assets/docs/settings/ai-configuration.md'),
-      _DocItem(label: 'Notifications', asset: 'assets/docs/settings/notifications.md'),
+      _DocItem(
+          label: 'AI Configuration',
+          asset: 'assets/docs/settings/ai-configuration.md'),
+      _DocItem(
+          label: 'Notifications',
+          asset: 'assets/docs/settings/notifications.md'),
       _DocItem(label: 'Security', asset: 'assets/docs/settings/security.md'),
       _DocItem(label: 'Support', asset: 'assets/docs/settings/support.md'),
     ],
@@ -115,9 +155,8 @@ Map<String, _DocItem> _buildDocPathMap() {
   final map = <String, _DocItem>{};
   for (final section in _sections) {
     for (final item in section.items) {
-      final path = item.asset
-          .replaceFirst('assets/docs', '')
-          .replaceFirst('.md', '');
+      final path =
+          item.asset.replaceFirst('assets/docs', '').replaceFirst('.md', '');
       map[path] = item;
     }
   }
@@ -224,7 +263,7 @@ class _DocsDrawerState extends State<_DocsDrawer> {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [
                               AppColors.primary,
                               AppColors.primaryDark,
@@ -261,9 +300,7 @@ class _DocsDrawerState extends State<_DocsDrawer> {
                           Text(
                             'Documentation',
                             style: TextStyle(
-                              color: isDark
-                                  ? Colors.white38
-                                  : Colors.black38,
+                              color: isDark ? Colors.white38 : Colors.black38,
                               fontSize: 11,
                               height: 1.4,
                             ),
@@ -341,8 +378,7 @@ class _SectionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headingColor =
-        isDark ? Colors.white54 : const Color(0xFF6B7280);
+    final headingColor = isDark ? Colors.white54 : const Color(0xFF6B7280);
 
     // Check if any child of this section is selected
     final hasSelected =
@@ -374,9 +410,7 @@ class _SectionTile extends StatelessWidget {
                   child: Icon(
                     section.icon,
                     size: 13,
-                    color: hasSelected
-                        ? AppColors.primary
-                        : headingColor,
+                    color: hasSelected ? AppColors.primary : headingColor,
                   ),
                 ),
                 const SizedBox(width: 9),
@@ -419,9 +453,8 @@ class _SectionTile extends StatelessWidget {
               );
             }).toList(),
           ),
-          crossFadeState: expanded
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
+          crossFadeState:
+              expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),
         ),
         const SizedBox(height: 2),
@@ -500,8 +533,7 @@ class _DocItemTile extends StatelessWidget {
                     color: selected
                         ? AppColors.primary
                         : (isDark ? Colors.white70 : const Color(0xFF374151)),
-                    fontWeight:
-                        selected ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     letterSpacing: selected ? 0 : 0.1,
                   ),
                 ),
@@ -666,8 +698,9 @@ class _DocsBodyState extends State<_DocsBody> {
     final subColor = isDark ? Colors.white60 : Colors.black45;
     final codeBackground =
         isDark ? Colors.white.withAlpha(14) : Colors.black.withAlpha(8);
-    final blockquoteBorder =
-        isDark ? AppColors.primary.withAlpha(120) : AppColors.primary.withAlpha(80);
+    final blockquoteBorder = isDark
+        ? AppColors.primary.withAlpha(120)
+        : AppColors.primary.withAlpha(80);
 
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -733,7 +766,8 @@ class _DocsBodyState extends State<_DocsBody> {
                           ),
                         ),
                         errorWidget: (_, __, ___) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                           decoration: BoxDecoration(
                             color: codeBackground,
                             borderRadius: BorderRadius.circular(10),
@@ -746,10 +780,13 @@ class _DocsBodyState extends State<_DocsBody> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(LucideIcons.imageOff, size: 16, color: subColor),
+                              Icon(LucideIcons.imageOff,
+                                  size: 16, color: subColor),
                               const SizedBox(width: 6),
                               Text(
-                                alt?.isNotEmpty == true ? alt! : 'Image unavailable',
+                                alt?.isNotEmpty == true
+                                    ? alt!
+                                    : 'Image unavailable',
                                 style: TextStyle(color: subColor, fontSize: 12),
                               ),
                             ],
@@ -785,8 +822,7 @@ class _DocsBodyState extends State<_DocsBody> {
               }
             },
             styleSheet: MarkdownStyleSheet(
-              p: TextStyle(
-                  color: textColor, fontSize: 14.5, height: 1.65),
+              p: TextStyle(color: textColor, fontSize: 14.5, height: 1.65),
               h1: TextStyle(
                   color: textColor,
                   fontSize: 24,
@@ -803,13 +839,9 @@ class _DocsBodyState extends State<_DocsBody> {
                   fontWeight: FontWeight.w600,
                   height: 1.4),
               h4: TextStyle(
-                  color: textColor,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600),
-              strong: TextStyle(
-                  color: textColor, fontWeight: FontWeight.w700),
-              em: TextStyle(
-                  color: textColor, fontStyle: FontStyle.italic),
+                  color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
+              strong: TextStyle(color: textColor, fontWeight: FontWeight.w700),
+              em: TextStyle(color: textColor, fontStyle: FontStyle.italic),
               code: TextStyle(
                   color: isDark ? Colors.greenAccent.shade100 : Colors.indigo,
                   fontSize: 13,
@@ -828,8 +860,8 @@ class _DocsBodyState extends State<_DocsBody> {
                     : AppColors.primary.withAlpha(10),
               ),
               blockquotePadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              listBullet: TextStyle(color: AppColors.primary),
-              a: TextStyle(
+              listBullet: const TextStyle(color: AppColors.primary),
+              a: const TextStyle(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
                   decorationColor: AppColors.primary),
@@ -862,9 +894,8 @@ class _DocTitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final divider = isDark
-        ? Colors.white.withAlpha(14)
-        : Colors.black.withAlpha(10);
+    final divider =
+        isDark ? Colors.white.withAlpha(14) : Colors.black.withAlpha(10);
 
     return Container(
       decoration: BoxDecoration(

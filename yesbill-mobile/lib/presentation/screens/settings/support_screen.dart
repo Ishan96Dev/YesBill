@@ -24,8 +24,7 @@ class SupportScreen extends StatelessWidget {
       'https://github.com/Ishan96Dev/YesBill/issues/new?template=feature_request.yml';
   static const _aiIssueUrl =
       'https://github.com/Ishan96Dev/YesBill/issues/new?template=ai_issue.yml';
-  static const _allIssuesUrl =
-      'https://github.com/Ishan96Dev/YesBill/issues';
+  static const _allIssuesUrl = 'https://github.com/Ishan96Dev/YesBill/issues';
   static const _discussionsUrl =
       'https://github.com/Ishan96Dev/YesBill/discussions';
   static const _emailUrl = 'mailto:support@yesbill.com';
@@ -104,7 +103,7 @@ class SupportScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
 
           // ── GET HELP VIA GITHUB ─────────────────────────────────────────
-          _SectionLabel(label: 'GET HELP VIA GITHUB'),
+          const _SectionLabel(label: 'GET HELP VIA GITHUB'),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
@@ -126,8 +125,7 @@ class SupportScreen extends StatelessWidget {
                   iconColor: AppColors.primary,
                   iconBg: AppColors.primary.withOpacity(0.1),
                   title: 'Request a Feature',
-                  description:
-                      'Have an idea to make YesBill better?',
+                  description: 'Have an idea to make YesBill better?',
                   actionLabel: 'Request Feature',
                   onTap: () => _open(_featureUrl),
                 ).animate().fadeIn(delay: 130.ms),
@@ -149,7 +147,7 @@ class SupportScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
 
           // ── MORE WAYS TO GET SUPPORT ────────────────────────────────────
-          _SectionLabel(label: 'MORE WAYS TO GET SUPPORT'),
+          const _SectionLabel(label: 'MORE WAYS TO GET SUPPORT'),
           const SizedBox(height: AppSpacing.sm),
           _SupportGroup(
             tiles: [
@@ -214,28 +212,30 @@ class SupportScreen extends StatelessWidget {
                       RichText(
                         text: TextSpan(
                           style: AppTextStyles.bodySm.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
                           children: [
-                            TextSpan(
-                                text:
-                                    'Bug reports are triaged within '),
+                            const TextSpan(
+                                text: 'Bug reports are triaged within '),
                             TextSpan(
                               text: '24 hours',
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  color: Theme.of(context).colorScheme.onSurface),
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
                             ),
-                            TextSpan(
+                            const TextSpan(
                                 text:
                                     '. Feature requests are reviewed weekly. For urgent issues, email us directly at '),
-                            TextSpan(
+                            const TextSpan(
                               text: 'support@yesbill.com',
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            TextSpan(text: '.'),
+                            const TextSpan(text: '.'),
                           ],
                         ),
                       ),
@@ -248,7 +248,7 @@ class SupportScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
 
           // ── TIPS FOR A GREAT BUG REPORT ─────────────────────────────────
-          _SectionLabel(label: 'TIPS FOR A GREAT BUG REPORT'),
+          const _SectionLabel(label: 'TIPS FOR A GREAT BUG REPORT'),
           const SizedBox(height: AppSpacing.sm),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -257,26 +257,26 @@ class SupportScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: AppSurfaces.softShadow(context),
             ),
-            child: Column(
+            child: const Column(
               children: [
                 _TipRow(
                   number: 1,
                   text:
                       'Describe what happened — What did you expect vs. what actually occurred?',
                 ),
-                const Divider(height: 20, thickness: 0.5),
+                Divider(height: 20, thickness: 0.5),
                 _TipRow(
                   number: 2,
                   text:
                       'Include steps to reproduce — How can we trigger this bug consistently?',
                 ),
-                const Divider(height: 20, thickness: 0.5),
+                Divider(height: 20, thickness: 0.5),
                 _TipRow(
                   number: 3,
                   text:
                       'Add screenshots or recordings — Visual evidence speeds up debugging significantly.',
                 ),
-                const Divider(height: 20, thickness: 0.5),
+                Divider(height: 20, thickness: 0.5),
                 _TipRow(
                   number: 4,
                   text:
@@ -333,20 +333,19 @@ class _GitHubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = horizontal
-        ? _buildHorizontal(context)
-        : _buildVertical(context);
+    final content =
+        horizontal ? _buildHorizontal(context) : _buildVertical(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-        color: AppSurfaces.panel(context),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: AppSurfaces.softShadow(context),
-      ),
-      child: content,
+          color: AppSurfaces.panel(context),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: AppSurfaces.softShadow(context),
+        ),
+        child: content,
       ),
     );
   }
@@ -358,27 +357,30 @@ class _GitHubCard extends StatelessWidget {
         Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+              color: iconBg, borderRadius: BorderRadius.circular(12)),
           child: Icon(icon, color: iconColor, size: 18),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           title,
           style: AppTextStyles.body.copyWith(
-              fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 4),
         Text(
           description,
-          style: AppTextStyles.bodySm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: AppTextStyles.bodySm
+              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
             Text(
               actionLabel,
-              style: AppTextStyles.bodySm.copyWith(
-                  color: iconColor, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodySm
+                  .copyWith(color: iconColor, fontWeight: FontWeight.w600),
             ),
             const SizedBox(width: 4),
             Icon(LucideIcons.arrowRight, size: 12, color: iconColor),
@@ -394,8 +396,8 @@ class _GitHubCard extends StatelessWidget {
         Container(
           width: 40,
           height: 40,
-          decoration:
-              BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+              color: iconBg, borderRadius: BorderRadius.circular(12)),
           child: Icon(icon, color: iconColor, size: 18),
         ),
         const SizedBox(width: AppSpacing.md),
@@ -406,11 +408,13 @@ class _GitHubCard extends StatelessWidget {
               Text(
                 title,
                 style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
               Text(
                 description,
-                style: AppTextStyles.bodySm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: AppTextStyles.bodySm.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -420,8 +424,8 @@ class _GitHubCard extends StatelessWidget {
           children: [
             Text(
               actionLabel,
-              style: AppTextStyles.bodySm.copyWith(
-                  color: iconColor, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodySm
+                  .copyWith(color: iconColor, fontWeight: FontWeight.w600),
             ),
             const SizedBox(width: 4),
             Icon(LucideIcons.chevronRight, size: 12, color: iconColor),
@@ -483,8 +487,8 @@ class _SupportTile extends StatelessWidget {
       onTap: data.onTap,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: 14),
+        padding:
+            const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 14),
         child: Row(
           children: [
             Container(
@@ -494,7 +498,9 @@ class _SupportTile extends StatelessWidget {
                 color: AppSurfaces.elevated(context),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(data.icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              child: Icon(data.icon,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -517,7 +523,9 @@ class _SupportTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(data.trailing, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            Icon(data.trailing,
+                size: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ],
         ),
       ),
@@ -538,7 +546,7 @@ class _TipRow extends StatelessWidget {
         Container(
           width: 22,
           height: 22,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.primary,
             shape: BoxShape.circle,
           ),
@@ -546,16 +554,15 @@ class _TipRow extends StatelessWidget {
           child: Text(
             '$number',
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w700),
+                color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             text,
-            style: AppTextStyles.bodySm.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: AppTextStyles.bodySm.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
       ],

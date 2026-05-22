@@ -12,6 +12,7 @@ import '../../../core/utils/validators.dart';
 import '../../../providers/ai_settings_provider.dart';
 import '../../widgets/auth_widgets.dart';
 import '../../widgets/common/app_dropdown.dart';
+import '../../widgets/common/provider_badge.dart';
 
 class AiProviderSetupScreen extends ConsumerStatefulWidget {
   const AiProviderSetupScreen({super.key, required this.provider});
@@ -25,7 +26,8 @@ class AiProviderSetupScreen extends ConsumerStatefulWidget {
 class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _apiKeyCtrl = TextEditingController();
-  final _ollamaBaseUrlCtrl = TextEditingController(text: 'http://localhost:11434');
+  final _ollamaBaseUrlCtrl =
+      TextEditingController(text: 'http://localhost:11434');
   bool _obscureKey = true;
   String _reasoningEffort = 'none';
   String? _selectedModel;
@@ -93,7 +95,8 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
       if (!mounted) return;
       setState(() {
         _ollamaModels = models;
-        if (models.isNotEmpty && (_selectedModel == null || !models.contains(_selectedModel))) {
+        if (models.isNotEmpty &&
+            (_selectedModel == null || !models.contains(_selectedModel))) {
           _selectedModel = models.first;
         }
       });
@@ -189,7 +192,8 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+            borderSide:
+                BorderSide(color: Theme.of(context).colorScheme.outline),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -216,7 +220,8 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
               : const Icon(LucideIcons.refreshCw, size: 14),
           label: Text(_loadingOllamaModels ? 'Loading...' : 'Load Models'),
           style: OutlinedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
       ),
@@ -246,12 +251,12 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
               style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
-            Text(
+            const Text(
               '"Load Models" calls Ollama directly from this device — localhost:11434 works here on the same machine.',
               style: AppTextStyles.bodySm,
             ),
             const SizedBox(height: 4),
-            Text(
+            const Text(
               'AI inference (chat, bill generation) runs through the YesBill cloud server, which cannot reach localhost or a private IP. Enter a publicly accessible URL such as a Cloudflare or ngrok tunnel for full AI functionality.',
               style: AppTextStyles.bodySm,
             ),
@@ -271,9 +276,11 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
 
     final hasExistingKey = existing?.isKeyValid == true;
 
-    final isLoading = ref.watch(aiSettingsMutationProvider) is AiSettingsMutationLoading;
+    final isLoading =
+        ref.watch(aiSettingsMutationProvider) is AiSettingsMutationLoading;
     return providersAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, _) => Scaffold(
         appBar: AppBar(title: const Text('AI Provider')),
         body: Center(child: Text(error.toString())),
@@ -328,7 +335,8 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                         Text(
                           provider.description,
                           style: AppTextStyles.body.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xl),
@@ -336,272 +344,316 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                           label: 'Model',
                           value: _selectedModel,
                           items: (isOllama && _ollamaModels.isNotEmpty
-                                  ? _ollamaModels
-                                      .map((m) => AppDropdownItem(value: m, label: m))
-                                      .toList()
-                                  : provider.models
-                                      .map(
-                                        (m) => AppDropdownItem(
-                                          value: m.id,
-                                          label: m.name,
-                                          subtitle: (m.description != null &&
-                                                  m.description!.isNotEmpty)
-                                              ? m.description
-                                              : null,
+                              ? _ollamaModels
+                                  .map((m) =>
+                                      AppDropdownItem(
+                                        value: m,
+                                        label: m,
+                                        leading: const ProviderBadge(
+                                          providerId: 'ollama',
+                                          size: 24,
+                                          padding: 3,
                                         ),
-                                      )
-                                      .toList()),
-                          onChanged: (value) {
-                            if (value != null) setState(() => _selectedModel = value);
-                          },
-                        ),
-                        if (isOllama) ..._buildOllamaSection()
-                        else ...[
-                        const SizedBox(height: AppSpacing.lg),
-                        const Text('API Key', style: AppTextStyles.label),
-                        const SizedBox(height: AppSpacing.sm),
-                        if (existing?.isKeyValid == false &&
-                            existing?.apiKeyEncrypted?.isNotEmpty == true)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.error.withOpacity(0.10),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: AppColors.error.withOpacity(0.35),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(LucideIcons.alertCircle,
-                                      size: 16, color: AppColors.error),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Saved key is invalid or revoked. Enter a new key below.',
-                                      style: AppTextStyles.bodySm.copyWith(
-                                        color: AppColors.error,
-                                        fontWeight: FontWeight.w600,
+                                      ))
+                                  .toList()
+                              : provider.models
+                                  .map(
+                                    (m) => AppDropdownItem(
+                                      value: m.id,
+                                      label: m.name,
+                                      subtitle: (m.description.isNotEmpty)
+                                          ? m.description
+                                          : null,
+                                      leading: ProviderBadge(
+                                        providerId: widget.provider,
+                                        size: 24,
+                                        padding: 3,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        if (hasExistingKey)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.success.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    'Key is Validated and Active',
-                                    style: AppTextStyles.labelSm.copyWith(
-                                      color: AppColors.success,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                  )
+                                  .toList()),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedModel = value);
+                            }
+                          },
+                        ),
+                        if (isOllama)
+                          ..._buildOllamaSection()
+                        else ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          const Text('API Key', style: AppTextStyles.label),
+                          const SizedBox(height: AppSpacing.sm),
+                          if (existing?.isKeyValid == false &&
+                              existing?.apiKeyEncrypted?.isNotEmpty == true)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: AppSpacing.sm),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withOpacity(0.10),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.error.withOpacity(0.35),
                                   ),
                                 ),
-                                if (existing?.keyValidatedAt != null)
+                                child: Row(
+                                  children: [
+                                    const Icon(LucideIcons.alertCircle,
+                                        size: 16, color: AppColors.error),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Saved key is invalid or revoked. Enter a new key below.',
+                                        style: AppTextStyles.bodySm.copyWith(
+                                          color: AppColors.error,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          if (hasExistingKey)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: AppSpacing.sm),
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .surfaceContainerHighest,
+                                      color:
+                                          AppColors.success.withOpacity(0.12),
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                     child: Text(
-                                      'Last checked ${existing!.keyValidatedAt!.toLocal().toString().split('.').first}',
+                                      'Key is Validated and Active',
                                       style: AppTextStyles.labelSm.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                        color: AppColors.success,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                          ),
-                        TextFormField(
-                          controller: _apiKeyCtrl,
-                          obscureText: _obscureKey,
-                          onChanged: (_) => setState(() {
-                            _keyValidationStatus = 'idle';
-                            _keyValidationMessage = '';
-                          }),
-                          validator: (value) {
-                            final trimmed = (value ?? '').trim();
-                            if (trimmed.isEmpty && hasExistingKey) {
-                              return null;
-                            }
-                            return Validators.apiKey(
-                              value,
-                              provider: widget.provider,
-                            );
-                          },
-                          style: AppTextStyles.body,
-                          decoration: InputDecoration(
-                            hintText: hasExistingKey
-                                ? 'Leave blank to keep current key'
-                                : 'Enter your API key',
-                            hintStyle: AppTextStyles.body.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                            filled: true,
-                            fillColor:
-                                Theme.of(context).colorScheme.surfaceContainerHighest,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.outline,
+                                  if (existing?.keyValidatedAt != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceContainerHighest,
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        'Last checked ${existing!.keyValidatedAt!.toLocal().toString().split('.').first}',
+                                        style: AppTextStyles.labelSm.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.outline,
+                          TextFormField(
+                            controller: _apiKeyCtrl,
+                            obscureText: _obscureKey,
+                            onChanged: (_) => setState(() {
+                              _keyValidationStatus = 'idle';
+                              _keyValidationMessage = '';
+                            }),
+                            validator: (value) {
+                              final trimmed = (value ?? '').trim();
+                              if (trimmed.isEmpty && hasExistingKey) {
+                                return null;
+                              }
+                              return Validators.apiKey(
+                                value,
+                                provider: widget.provider,
+                              );
+                            },
+                            style: AppTextStyles.body,
+                            decoration: InputDecoration(
+                              hintText: hasExistingKey
+                                  ? 'Leave blank to keep current key'
+                                  : 'Enter your API key',
+                              hintStyle: AppTextStyles.body.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                                width: 2,
+                              filled: true,
+                              fillColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
                               ),
-                            ),
-                            prefixIcon: Icon(
-                              LucideIcons.key,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              size: 18,
-                            ),
-                            suffixIcon: IconButton(
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shape: const CircleBorder(),
-                                minimumSize: const Size(40, 40),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
                               ),
-                              icon: Icon(
-                                _obscureKey ? LucideIcons.eyeOff : LucideIcons.eye,
-                                color:
-                                    Theme.of(context).colorScheme.onSurfaceVariant,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              prefixIcon: Icon(
+                                LucideIcons.key,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                                 size: 18,
                               ),
-                              onPressed: () =>
-                                  setState(() => _obscureKey = !_obscureKey),
+                              suffixIcon: IconButton(
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  minimumSize: const Size(40, 40),
+                                ),
+                                icon: Icon(
+                                  _obscureKey
+                                      ? LucideIcons.eyeOff
+                                      : LucideIcons.eye,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  size: 18,
+                                ),
+                                onPressed: () =>
+                                    setState(() => _obscureKey = !_obscureKey),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        ApiKeyStrengthIndicator(
-                          value: _apiKeyCtrl.text,
-                          provider: widget.provider,
-                          hasStoredValidKey: hasExistingKey,
-                        ),
-                        // ── Validate Key button ──────────────────────────
-                        const SizedBox(height: AppSpacing.sm),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: (_apiKeyCtrl.text.trim().isEmpty || isLoading)
-                                ? null
-                                : _validateApiKey,
-                            icon: _keyValidationStatus == 'checking'
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : Icon(
-                                    LucideIcons.shieldCheck,
-                                    size: 14,
-                                    color: _keyValidationStatus == 'valid'
-                                        ? AppColors.success
-                                        : null,
-                                  ),
-                            label: Text(
-                              _keyValidationStatus == 'checking'
-                                  ? 'Checking…'
-                                  : 'Validate Key',
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _keyValidationStatus == 'valid'
-                                  ? AppColors.success
-                                  : _keyValidationStatus == 'invalid'
-                                      ? AppColors.error
-                                      : AppColors.primary,
-                              side: BorderSide(
-                                color: _keyValidationStatus == 'valid'
+                          const SizedBox(height: AppSpacing.sm),
+                          ApiKeyStrengthIndicator(
+                            value: _apiKeyCtrl.text,
+                            provider: widget.provider,
+                            hasStoredValidKey: hasExistingKey,
+                          ),
+                          // ── Validate Key button ──────────────────────────
+                          const SizedBox(height: AppSpacing.sm),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed:
+                                  (_apiKeyCtrl.text.trim().isEmpty || isLoading)
+                                      ? null
+                                      : _validateApiKey,
+                              icon: _keyValidationStatus == 'checking'
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : Icon(
+                                      LucideIcons.shieldCheck,
+                                      size: 14,
+                                      color: _keyValidationStatus == 'valid'
+                                          ? AppColors.success
+                                          : null,
+                                    ),
+                              label: Text(
+                                _keyValidationStatus == 'checking'
+                                    ? 'Checking…'
+                                    : 'Validate Key',
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: _keyValidationStatus == 'valid'
                                     ? AppColors.success
                                     : _keyValidationStatus == 'invalid'
                                         ? AppColors.error
-                                        : AppColors.primary.withOpacity(0.4),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                        : AppColors.primary,
+                                side: BorderSide(
+                                  color: _keyValidationStatus == 'valid'
+                                      ? AppColors.success
+                                      : _keyValidationStatus == 'invalid'
+                                          ? AppColors.error
+                                          : AppColors.primary.withOpacity(0.4),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // ── Validation status message ────────────────────
-                        if (_keyValidationMessage.isNotEmpty) ...[
-                          const SizedBox(height: AppSpacing.xs),
-                          Row(
-                            children: [
-                              Icon(
-                                _keyValidationStatus == 'valid'
-                                    ? LucideIcons.checkCircle
-                                    : LucideIcons.alertCircle,
-                                size: 13,
-                                color: _keyValidationStatus == 'valid'
-                                    ? AppColors.success
-                                    : AppColors.error,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _keyValidationMessage,
-                                style: AppTextStyles.bodySm.copyWith(
+                          // ── Validation status message ────────────────────
+                          if (_keyValidationMessage.isNotEmpty) ...[
+                            const SizedBox(height: AppSpacing.xs),
+                            Row(
+                              children: [
+                                Icon(
+                                  _keyValidationStatus == 'valid'
+                                      ? LucideIcons.checkCircle
+                                      : LucideIcons.alertCircle,
+                                  size: 13,
                                   color: _keyValidationStatus == 'valid'
                                       ? AppColors.success
                                       : AppColors.error,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  _keyValidationMessage,
+                                  style: AppTextStyles.bodySm.copyWith(
+                                    color: _keyValidationStatus == 'valid'
+                                        ? AppColors.success
+                                        : AppColors.error,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ], // end of non-Ollama section
                         const SizedBox(height: AppSpacing.xl),
                         AppDropdown<String>(
                           label: 'Reasoning effort',
                           value: _reasoningEffort,
                           items: const [
-                            AppDropdownItem(value: 'none', label: 'None', subtitle: 'Fastest — no chain-of-thought'),
-                            AppDropdownItem(value: 'low', label: 'Low', subtitle: 'Light reasoning'),
-                            AppDropdownItem(value: 'medium', label: 'Medium', subtitle: 'Balanced speed & depth'),
-                            AppDropdownItem(value: 'high', label: 'High', subtitle: 'Thorough analysis'),
+                            AppDropdownItem(
+                                value: 'none',
+                                label: 'None',
+                                subtitle: 'Fastest — no chain-of-thought'),
+                            AppDropdownItem(
+                                value: 'low',
+                                label: 'Low',
+                                subtitle: 'Light reasoning'),
+                            AppDropdownItem(
+                                value: 'medium',
+                                label: 'Medium',
+                                subtitle: 'Balanced speed & depth'),
+                            AppDropdownItem(
+                                value: 'high',
+                                label: 'High',
+                                subtitle: 'Thorough analysis'),
                           ],
                           onChanged: (value) {
-                            if (value != null) setState(() => _reasoningEffort = value);
+                            if (value != null) {
+                              setState(() => _reasoningEffort = value);
+                            }
                           },
                         ),
                         const SizedBox(height: AppSpacing.xl),
@@ -624,7 +676,8 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : Text(
                                   'Save Settings',
@@ -635,27 +688,29 @@ class _AiProviderSetupScreenState extends ConsumerState<AiProviderSetupScreen> {
                         ),
                         const SizedBox(height: AppSpacing.md),
                         if (!isOllama)
-                        Center(
-                          child: TextButton.icon(
-                            onPressed: () async {
-                              final uri = Uri.tryParse(provider.docsUrl ?? '');
-                              if (uri != null && uri.hasScheme) {
-                                await launchUrl(uri, mode: LaunchMode.externalApplication);
-                              }
-                            },
-                            icon: const Icon(
-                              LucideIcons.externalLink,
-                              size: 14,
-                              color: AppColors.primary,
-                            ),
-                            label: Text(
-                              'Get an API key from ${provider.name}',
-                              style: AppTextStyles.bodySm.copyWith(
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: () async {
+                                final uri =
+                                    Uri.tryParse(provider.docsUrl ?? '');
+                                if (uri != null && uri.hasScheme) {
+                                  await launchUrl(uri,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              icon: const Icon(
+                                LucideIcons.externalLink,
+                                size: 14,
                                 color: AppColors.primary,
+                              ),
+                              label: Text(
+                                'Get an API key from ${provider.name}',
+                                style: AppTextStyles.bodySm.copyWith(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),

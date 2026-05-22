@@ -289,6 +289,7 @@ class ShellHeaderActions extends ConsumerWidget {
           userEmail: userEmail,
           isDark: isDark,
           onSettings: () => context.go('/settings'),
+          onDocs: () => context.go('/docs'),
           onSupport: () => context.go('/support'),
           onSignOut: () async {
             try {
@@ -390,7 +391,7 @@ class _BellBtn extends StatelessWidget {
   }
 }
 
-enum _ProfileAction { settings, support, signOut }
+enum _ProfileAction { settings, docs, support, signOut }
 
 class _ProfileMenu extends StatelessWidget {
   const _ProfileMenu({
@@ -399,6 +400,7 @@ class _ProfileMenu extends StatelessWidget {
     required this.userEmail,
     required this.isDark,
     required this.onSettings,
+    required this.onDocs,
     required this.onSupport,
     required this.onSignOut,
   });
@@ -408,6 +410,7 @@ class _ProfileMenu extends StatelessWidget {
   final String? userEmail;
   final bool isDark;
   final VoidCallback onSettings;
+  final VoidCallback onDocs;
   final VoidCallback onSupport;
   final VoidCallback onSignOut;
 
@@ -425,6 +428,7 @@ class _ProfileMenu extends StatelessWidget {
       ),
       onSelected: (value) {
         if (value == _ProfileAction.settings) onSettings();
+        if (value == _ProfileAction.docs) onDocs();
         if (value == _ProfileAction.support) onSupport();
         if (value == _ProfileAction.signOut) onSignOut();
       },
@@ -454,16 +458,20 @@ class _ProfileMenu extends StatelessWidget {
           ),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<_ProfileAction>(
+        const PopupMenuItem<_ProfileAction>(
           value: _ProfileAction.settings,
           child: _MenuRow(icon: LucideIcons.settings, label: 'Settings'),
         ),
-        PopupMenuItem<_ProfileAction>(
+        const PopupMenuItem<_ProfileAction>(
+          value: _ProfileAction.docs,
+          child: _MenuRow(icon: LucideIcons.bookOpen, label: 'Docs'),
+        ),
+        const PopupMenuItem<_ProfileAction>(
           value: _ProfileAction.support,
           child: _MenuRow(icon: LucideIcons.lifeBuoy, label: 'Support'),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<_ProfileAction>(
+        const PopupMenuItem<_ProfileAction>(
           value: _ProfileAction.signOut,
           child: _MenuRow(icon: LucideIcons.logOut, label: 'Log out', destructive: true),
         ),

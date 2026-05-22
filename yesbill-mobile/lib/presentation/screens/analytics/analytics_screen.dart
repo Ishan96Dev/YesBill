@@ -1,6 +1,5 @@
-﻿import 'package:fl_chart/fl_chart.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -16,7 +15,18 @@ import '../../../providers/dashboard_provider.dart';
 import '../../../providers/services_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/loading_shimmer.dart';
+import '../../widgets/common/provider_badge.dart';
 import '../../widgets/common/yesbill_loading_widget.dart';
+
+// Detect provider string from a model ID for use with ProviderBadge.
+String? _detectProviderFromModel(String model) {
+  final s = model.toLowerCase();
+  if (s.contains('claude')) return 'anthropic';
+  if (s.startsWith('gpt') || s.startsWith('o1') || s.startsWith('o3') || s.startsWith('o4')) return 'openai';
+  if (s.contains('gemini')) return 'google';
+  if (s.contains('ollama') || s.contains('llama')) return 'ollama';
+  return null;
+}
 
 // ── USD → INR conversion (approximate) ───────────────────────────────────────
 const double _usdToInr = 84.0;
@@ -51,8 +61,19 @@ String _monthLabel(String ym) {
   final parts = ym.split('-');
   if (parts.length != 2) return ym;
   const months = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   final m = int.tryParse(parts[1]) ?? 0;
   return '${months[m]} ${parts[0]}';
@@ -105,8 +126,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     }
   }
 
-  bool get _isCurrentMonth =>
-      _selectedMonth == _toYearMonth(DateTime.now());
+  bool get _isCurrentMonth => _selectedMonth == _toYearMonth(DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -131,304 +151,311 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     );
 
     return ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-        children: [
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Analytics',
+                    style: AppTextStyles.h1.copyWith(
+                      color: cs.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Spending insights and AI usage overview.',
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _AnalyticsTabs(
+          selectedTab: _selectedTab,
+          onSelectedTab: (value) => setState(() => _selectedTab = value),
+        ),
+        const SizedBox(height: 14),
+        if (_selectedTab == 0)
+          const _YesBillAnalyticsOverview()
+        else ...[
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Analytics',
-                      style: AppTextStyles.h1.copyWith(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Spending insights and AI usage overview.',
-                      style: AppTextStyles.bodySm.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+              const Spacer(),
+              _MonthPicker(
+                label: _monthLabel(_selectedMonth),
+                onPrev: _prevMonth,
+                onNext: _isCurrentMonth ? null : _nextMonth,
               ),
             ],
           ),
           const SizedBox(height: 14),
-              _AnalyticsTabs(
-                selectedTab: _selectedTab,
-                onSelectedTab: (value) => setState(() => _selectedTab = value),
+          dataAsync.when(
+            loading: () => const ShimmerList(count: 4, itemHeight: 80),
+            error: (error, _) => ErrorRetryView(
+              error: error,
+              onRetry: () =>
+                  ref.invalidate(aiAnalyticsProvider(_selectedMonth)),
+            ),
+            data: (data) => _AnalyticsBody(data: data),
           ),
-              const SizedBox(height: 14),
-              if (_selectedTab == 0)
-                const _YesBillAnalyticsOverview()
-              else ...[
-                Row(
-                  children: [
-                    const Spacer(),
-                    _MonthPicker(
-                      label: _monthLabel(_selectedMonth),
-                      onPrev: _prevMonth,
-                      onNext: _isCurrentMonth ? null : _nextMonth,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                dataAsync.when(
-                  loading: () => const ShimmerList(count: 4, itemHeight: 80),
-                  error: (error, _) => ErrorRetryView(
-                    error: error,
-                    onRetry: () => ref.invalidate(aiAnalyticsProvider(_selectedMonth)),
-                  ),
-                  data: (data) => _AnalyticsBody(data: data),
-                ),
-              ],
         ],
+      ],
     );
   }
 }
 
-    class _AnalyticsTabs extends StatelessWidget {
-      const _AnalyticsTabs({
-        required this.selectedTab,
-        required this.onSelectedTab,
-      });
+class _AnalyticsTabs extends StatelessWidget {
+  const _AnalyticsTabs({
+    required this.selectedTab,
+    required this.onSelectedTab,
+  });
 
-      final int selectedTab;
-      final ValueChanged<int> onSelectedTab;
+  final int selectedTab;
+  final ValueChanged<int> onSelectedTab;
 
-      @override
-      Widget build(BuildContext context) {
-        final cs = Theme.of(context).colorScheme;
-        const tabs = [
-          (label: 'YesBill Analytics', icon: LucideIcons.barChart3),
-          (label: 'AI Usage', icon: LucideIcons.brain),
-        ];
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    const tabs = [
+      (label: 'YesBill Analytics', icon: LucideIcons.barChart3),
+      (label: 'AI Usage', icon: LucideIcons.brain),
+    ];
 
-        return Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: AppSurfaces.subtle(context),
-            borderRadius: BorderRadius.circular(18),
-            border: AppSurfaces.cardBorder(context),
-          ),
-          child: Row(
-            children: List.generate(tabs.length, (index) {
-              final tab = tabs[index];
-              final selected = selectedTab == index;
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: AppSurfaces.subtle(context),
+        borderRadius: BorderRadius.circular(18),
+        border: AppSurfaces.cardBorder(context),
+      ),
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final tab = tabs[index];
+          final selected = selectedTab == index;
 
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onSelectedTab(index),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: selected ? AppColors.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          tab.icon,
-                          size: 16,
-                          color: selected ? Colors.white : cs.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            tab.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.bodySm.copyWith(
-                              color: selected ? Colors.white : cs.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onSelectedTab(index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: selected ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              );
-            }),
-          ),
-        );
-      }
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      tab.icon,
+                      size: 16,
+                      color: selected ? Colors.white : cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        tab.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySm.copyWith(
+                          color: selected ? Colors.white : cs.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _YesBillAnalyticsOverview extends ConsumerWidget {
+  const _YesBillAnalyticsOverview();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final statsAsync = ref.watch(dashboardStatsProvider);
+    final servicesAsync = ref.watch(activeServicesProvider);
+    final billsAsync = ref.watch(generatedBillsProvider);
+
+    final stats = statsAsync.valueOrNull;
+    final services = servicesAsync.valueOrNull;
+    final bills = billsAsync.valueOrNull;
+
+    final isLoading = (statsAsync.isLoading ||
+            servicesAsync.isLoading ||
+            billsAsync.isLoading) &&
+        (stats == null || services == null || bills == null);
+
+    if (isLoading) {
+      return const YesBillLoadingWidget(
+        label: 'Loading Analytics...',
+        sublabel: 'Crunching your numbers',
+      );
     }
 
-    class _YesBillAnalyticsOverview extends ConsumerWidget {
-      const _YesBillAnalyticsOverview();
+    if (statsAsync.hasError) {
+      return ErrorRetryView(
+        error: statsAsync.error!,
+        onRetry: () => ref.invalidate(dashboardStatsProvider),
+      );
+    }
 
-      @override
-      Widget build(BuildContext context, WidgetRef ref) {
-        final cs = Theme.of(context).colorScheme;
-        final statsAsync = ref.watch(dashboardStatsProvider);
-        final servicesAsync = ref.watch(activeServicesProvider);
-        final billsAsync = ref.watch(generatedBillsProvider);
+    if (servicesAsync.hasError) {
+      return ErrorRetryView(
+        error: servicesAsync.error!,
+        onRetry: () => ref.invalidate(activeServicesProvider),
+      );
+    }
 
-        final stats = statsAsync.valueOrNull;
-        final services = servicesAsync.valueOrNull;
-        final bills = billsAsync.valueOrNull;
+    if (billsAsync.hasError) {
+      return ErrorRetryView(
+        error: billsAsync.error!,
+        onRetry: () => ref.invalidate(generatedBillsProvider),
+      );
+    }
 
-        final isLoading = (statsAsync.isLoading || servicesAsync.isLoading || billsAsync.isLoading) &&
-            (stats == null || services == null || bills == null);
+    final safeStats = stats ?? const DashboardStats.empty();
+    final safeServices = services ?? const [];
+    final safeBills = bills ?? const [];
 
-        if (isLoading) {
-          return const YesBillLoadingWidget(
-            label: 'Loading Analytics...',
-            sublabel: 'Crunching your numbers',
-          );
-        }
+    final paidBills = safeBills.where((bill) => bill.isPaid).toList();
+    final pendingBills = safeBills.where((bill) => !bill.isPaid).toList();
+    final paidAmount =
+        paidBills.fold<double>(0, (sum, bill) => sum + bill.totalAmount);
+    final pendingAmount =
+        pendingBills.fold<double>(0, (sum, bill) => sum + bill.totalAmount);
+    final providerCount =
+        safeServices.where((service) => service.isProvider).length;
+    final consumerCount = safeServices.length - providerCount;
+    final topServices = [...safeServices]
+      ..sort((a, b) => b.price.compareTo(a.price));
+    final recentBills = [...safeBills]..sort((a, b) {
+        final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bDate.compareTo(aDate);
+      });
 
-        if (statsAsync.hasError) {
-          return ErrorRetryView(
-            error: statsAsync.error!,
-            onRetry: () => ref.invalidate(dashboardStatsProvider),
-          );
-        }
+    // Compute monthly totals from bills for trend chart
+    final monthlyTotals = <String, double>{};
+    for (final bill in safeBills) {
+      monthlyTotals[bill.yearMonth] =
+          (monthlyTotals[bill.yearMonth] ?? 0) + bill.totalAmount;
+    }
+    final sortedMonths = monthlyTotals.keys.toList()..sort();
 
-        if (servicesAsync.hasError) {
-          return ErrorRetryView(
-            error: servicesAsync.error!,
-            onRetry: () => ref.invalidate(activeServicesProvider),
-          );
-        }
-
-        if (billsAsync.hasError) {
-          return ErrorRetryView(
-            error: billsAsync.error!,
-            onRetry: () => ref.invalidate(generatedBillsProvider),
-          );
-        }
-
-        final safeStats = stats ?? const DashboardStats.empty();
-        final safeServices = services ?? const [];
-        final safeBills = bills ?? const [];
-
-        final paidBills = safeBills.where((bill) => bill.isPaid).toList();
-        final pendingBills = safeBills.where((bill) => !bill.isPaid).toList();
-        final paidAmount = paidBills.fold<double>(0, (sum, bill) => sum + bill.totalAmount);
-        final pendingAmount = pendingBills.fold<double>(0, (sum, bill) => sum + bill.totalAmount);
-        final providerCount = safeServices.where((service) => service.isProvider).length;
-        final consumerCount = safeServices.length - providerCount;
-        final topServices = [...safeServices]
-          ..sort((a, b) => b.price.compareTo(a.price));
-        final recentBills = [...safeBills]
-          ..sort((a, b) {
-            final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return bDate.compareTo(aDate);
-          });
-
-        // Compute monthly totals from bills for trend chart
-        final monthlyTotals = <String, double>{};
-        for (final bill in safeBills) {
-          monthlyTotals[bill.yearMonth] =
-              (monthlyTotals[bill.yearMonth] ?? 0) + bill.totalAmount;
-        }
-        final sortedMonths = monthlyTotals.keys.toList()..sort();
-
-        return Column(
+    return Column(
+      children: [
+        GridView.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 1.55,
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
           children: [
-            GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 1.55,
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _OverviewStatTile(
-                  label: 'THIS MONTH SPEND',
-                  value: CurrencyFormatter.formatCompact(
-                    safeStats.totalMonthSpend,
-                    currency: safeStats.currency,
-                  ),
-                  icon: LucideIcons.wallet,
-                  subtitle: '${safeStats.deliveredThisMonth} delivered',
-                ),
-                _OverviewStatTile(
-                  label: 'NET BALANCE',
-                  value: CurrencyFormatter.formatCompact(
-                    safeStats.netBalance,
-                    currency: safeStats.currency,
-                  ),
-                  icon: LucideIcons.scale,
-                  subtitle: safeStats.hasProviderServices
-                      ? 'Income minus spend'
-                      : 'No provider income yet',
-                ),
-                _OverviewStatTile(
-                  label: 'DELIVERY RATE',
-                  value: '${safeStats.deliveryRate.toStringAsFixed(1)}%',
-                  icon: LucideIcons.activity,
-                  subtitle: '${safeStats.skippedThisMonth} skipped',
-                ),
-                _OverviewStatTile(
-                  label: 'PAID BILLS',
-                  value: CurrencyFormatter.formatCompact(
-                    paidAmount,
-                    currency: safeStats.currency,
-                  ),
-                  icon: LucideIcons.receipt,
-                  subtitle: '${paidBills.length} paid / ${pendingBills.length} pending',
-                ),
-              ],
-            ),
-            if (sortedMonths.length >= 2) ...[
-              const SizedBox(height: 10),
-              _BillTrendChart(
-                months: sortedMonths,
-                totals: monthlyTotals,
+            _OverviewStatTile(
+              label: 'THIS MONTH SPEND',
+              value: CurrencyFormatter.formatCompact(
+                safeStats.totalMonthSpend,
                 currency: safeStats.currency,
               ),
-            ],
-            const SizedBox(height: 10),
-            _OverviewCard(
-              title: 'Active services',
-              icon: LucideIcons.package,
-              child: Column(
+              icon: LucideIcons.wallet,
+              subtitle: '${safeStats.deliveredThisMonth} delivered',
+            ),
+            _OverviewStatTile(
+              label: 'NET BALANCE',
+              value: CurrencyFormatter.formatCompact(
+                safeStats.netBalance,
+                currency: safeStats.currency,
+              ),
+              icon: LucideIcons.scale,
+              subtitle: safeStats.hasProviderServices
+                  ? 'Income minus spend'
+                  : 'No provider income yet',
+            ),
+            _OverviewStatTile(
+              label: 'DELIVERY RATE',
+              value: '${safeStats.deliveryRate.toStringAsFixed(1)}%',
+              icon: LucideIcons.activity,
+              subtitle: '${safeStats.skippedThisMonth} skipped',
+            ),
+            _OverviewStatTile(
+              label: 'PAID BILLS',
+              value: CurrencyFormatter.formatCompact(
+                paidAmount,
+                currency: safeStats.currency,
+              ),
+              icon: LucideIcons.receipt,
+              subtitle:
+                  '${paidBills.length} paid / ${pendingBills.length} pending',
+            ),
+          ],
+        ),
+        if (sortedMonths.length >= 2) ...[
+          const SizedBox(height: 10),
+          _BillTrendChart(
+            months: sortedMonths,
+            totals: monthlyTotals,
+            currency: safeStats.currency,
+          ),
+        ],
+        const SizedBox(height: 10),
+        _OverviewCard(
+          title: 'Active services',
+          icon: LucideIcons.package,
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MiniMetric(
-                          label: 'Consumer',
-                          value: '$consumerCount',
-                          color: const Color(0xFF4F46E5),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _MiniMetric(
-                          label: 'Provider',
-                          value: '$providerCount',
-                          color: const Color(0xFF059669),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _MiniMetric(
-                          label: 'Pending Bills',
-                          value: CurrencyFormatter.formatCompact(
-                            pendingAmount,
-                            currency: safeStats.currency,
-                          ),
-                          color: const Color(0xFFDC2626),
-                        ),
-                      ),
-                    ],
+                  Expanded(
+                    child: _MiniMetric(
+                      label: 'Consumer',
+                      value: '$consumerCount',
+                      color: const Color(0xFF4F46E5),
+                    ),
                   ),
-                  if (topServices.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    ...topServices.take(4).map(
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _MiniMetric(
+                      label: 'Provider',
+                      value: '$providerCount',
+                      color: const Color(0xFF059669),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _MiniMetric(
+                      label: 'Pending Bills',
+                      value: CurrencyFormatter.formatCompact(
+                        pendingAmount,
+                        currency: safeStats.currency,
+                      ),
+                      color: const Color(0xFFDC2626),
+                    ),
+                  ),
+                ],
+              ),
+              if (topServices.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                ...topServices.take(4).map(
                       (service) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Row(
@@ -457,79 +484,81 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         ),
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            _OverviewCard(
-              title: 'Recent generated bills',
-              icon: LucideIcons.fileText,
-              child: recentBills.isEmpty
-                  ? _EmptyChart(message: 'No bills generated yet')
-                  : Column(
-                      children: recentBills.take(5).map((bill) {
-                        final statusColor =
-                            bill.isPaid ? AppColors.success : AppColors.error;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 34,
-                                height: 34,
-                                decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  bill.isPaid ? LucideIcons.check : LucideIcons.receipt,
-                                  size: 16,
-                                  color: statusColor,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      bill.yearMonth,
-                                      style: AppTextStyles.body.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: cs.onSurface,
-                                      ),
-                                    ),
-                                    Text(
-                                      bill.isPaid ? 'Paid' : 'Pending',
-                                      style: AppTextStyles.bodySm.copyWith(
-                                        color: statusColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                CurrencyFormatter.formatCompact(
-                                  bill.totalAmount,
-                                  currency: bill.currency,
-                                ),
-                                style: AppTextStyles.bodySm.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: cs.onSurface,
-                                ),
-                              ),
-                            ],
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        _OverviewCard(
+          title: 'Recent generated bills',
+          icon: LucideIcons.fileText,
+          child: recentBills.isEmpty
+              ? const _EmptyChart(message: 'No bills generated yet')
+              : Column(
+                  children: recentBills.take(5).map((bill) {
+                    final statusColor =
+                        bill.isPaid ? AppColors.success : AppColors.error;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              bill.isPaid
+                                  ? LucideIcons.check
+                                  : LucideIcons.receipt,
+                              size: 16,
+                              color: statusColor,
+                            ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-          ],
-        );
-      }
-    }
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  bill.yearMonth,
+                                  style: AppTextStyles.body.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: cs.onSurface,
+                                  ),
+                                ),
+                                Text(
+                                  bill.isPaid ? 'Paid' : 'Pending',
+                                  style: AppTextStyles.bodySm.copyWith(
+                                    color: statusColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            CurrencyFormatter.formatCompact(
+                              bill.totalAmount,
+                              currency: bill.currency,
+                            ),
+                            style: AppTextStyles.bodySm.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ),
+      ],
+    );
+  }
+}
 
 // ── Bill Monthly Trend Chart ──────────────────────────────────────────────────
 
@@ -546,9 +575,8 @@ class _BillTrendChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final display = months.length > 12
-        ? months.sublist(months.length - 12)
-        : months;
+    final display =
+        months.length > 12 ? months.sublist(months.length - 12) : months;
 
     final maxAmount =
         display.map((m) => totals[m] ?? 0).fold(0.0, (a, b) => a > b ? a : b);
@@ -562,8 +590,7 @@ class _BillTrendChart extends StatelessWidget {
           BarChartRodData(
             toY: amount,
             width: 14,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(5)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -578,12 +605,23 @@ class _BillTrendChart extends StatelessWidget {
     final gridColor = cs.outlineVariant.withOpacity(0.35);
 
     // Short month labels e.g. "Jan" from "2026-01"
-    String _shortMonth(String ym) {
+    String shortMonth(String ym) {
       final parts = ym.split('-');
       if (parts.length != 2) return ym;
       const months = [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       final m = int.tryParse(parts[1]) ?? 0;
       return months[m];
@@ -620,10 +658,10 @@ class _BillTrendChart extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: Text(
-                        CurrencyFormatter.formatCompact(
-                            value, currency: currency),
-                        style: TextStyle(
-                            fontSize: 9, color: cs.onSurfaceVariant),
+                        CurrencyFormatter.formatCompact(value,
+                            currency: currency),
+                        style:
+                            TextStyle(fontSize: 9, color: cs.onSurfaceVariant),
                       ),
                     );
                   },
@@ -639,17 +677,16 @@ class _BillTrendChart extends StatelessWidget {
                       return const SizedBox.shrink();
                     }
                     return Text(
-                      _shortMonth(display[idx]),
-                      style: TextStyle(
-                          fontSize: 9, color: cs.onSurfaceVariant),
+                      shortMonth(display[idx]),
+                      style: TextStyle(fontSize: 9, color: cs.onSurfaceVariant),
                     );
                   },
                 ),
               ),
-              rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
-              topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
+              rightTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             ),
             barTouchData: BarTouchData(
               touchTooltipData: BarTouchTooltipData(
@@ -666,8 +703,8 @@ class _BillTrendChart extends StatelessWidget {
                         fontSize: 11),
                     children: [
                       TextSpan(
-                        text: CurrencyFormatter.formatCompact(
-                            amount, currency: currency),
+                        text: CurrencyFormatter.formatCompact(amount,
+                            currency: currency),
                         style: const TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w700),
                       ),
@@ -683,164 +720,164 @@ class _BillTrendChart extends StatelessWidget {
   }
 }
 
-    class _OverviewStatTile extends StatelessWidget {
-      const _OverviewStatTile({
-        required this.label,
-        required this.value,
-        required this.icon,
-        required this.subtitle,
-      });
+class _OverviewStatTile extends StatelessWidget {
+  const _OverviewStatTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.subtitle,
+  });
 
-      final String label;
-      final String value;
-      final IconData icon;
-      final String subtitle;
+  final String label;
+  final String value;
+  final IconData icon;
+  final String subtitle;
 
-      @override
-      Widget build(BuildContext context) {
-        final cs = Theme.of(context).colorScheme;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: _analyticsCardColor(context),
-            borderRadius: BorderRadius.circular(16),
-            border: _analyticsCardBorder(context),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0F2D3337),
-                blurRadius: 12,
-                offset: Offset(0, 3),
-              ),
-            ],
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _analyticsCardColor(context),
+        borderRadius: BorderRadius.circular(16),
+        border: _analyticsCardBorder(context),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F2D3337),
+            blurRadius: 12,
+            offset: Offset(0, 3),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.14),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 13, color: AppColors.primary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: AppTextStyles.labelSm.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: AppTextStyles.h4.copyWith(
+              color: cs.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            subtitle,
+            style: AppTextStyles.labelSm.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverviewCard extends StatelessWidget {
+  const _OverviewCard({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _analyticsCardColor(context),
+        borderRadius: BorderRadius.circular(16),
+        border: _analyticsCardBorder(context),
+        boxShadow: AppSurfaces.softShadow(context),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.14),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Icon(icon, size: 13, color: AppColors.primary),
-              ),
-              const SizedBox(height: 6),
+              Icon(icon, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
               Text(
-                label,
-                style: AppTextStyles.labelSm.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
+                title,
                 style: AppTextStyles.h4.copyWith(
                   color: cs.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: AppTextStyles.labelSm.copyWith(
-                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
           ),
-        );
-      }
-    }
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
 
-    class _OverviewCard extends StatelessWidget {
-      const _OverviewCard({
-        required this.title,
-        required this.icon,
-        required this.child,
-      });
+class _MiniMetric extends StatelessWidget {
+  const _MiniMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
-      final String title;
-      final IconData icon;
-      final Widget child;
+  final String label;
+  final String value;
+  final Color color;
 
-      @override
-      Widget build(BuildContext context) {
-        final cs = Theme.of(context).colorScheme;
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _analyticsCardColor(context),
-            borderRadius: BorderRadius.circular(16),
-            border: _analyticsCardBorder(context),
-            boxShadow: AppSurfaces.softShadow(context),
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.labelSm.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, size: 18, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: AppTextStyles.h4.copyWith(
-                      color: cs.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              child,
-            ],
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppTextStyles.body.copyWith(
+              color: cs.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        );
-      }
-    }
-
-    class _MiniMetric extends StatelessWidget {
-      const _MiniMetric({
-        required this.label,
-        required this.value,
-        required this.color,
-      });
-
-      final String label;
-      final String value;
-      final Color color;
-
-      @override
-      Widget build(BuildContext context) {
-        final cs = Theme.of(context).colorScheme;
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.labelSm.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: AppTextStyles.body.copyWith(
-                  color: cs.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-    }
+        ],
+      ),
+    );
+  }
+}
 
 // ── Month Picker ──────────────────────────────────────────────────────────────
 
@@ -940,7 +977,10 @@ class _AnalyticsBody extends StatelessWidget {
         const SizedBox(height: 10),
         _ModelDistributionCard(models: data.modelBreakdown),
         const SizedBox(height: 10),
-        _FeatureBreakdownCard(features: data.featureBreakdown, totalCostUsd: data.totalCostUsd, totalMessages: data.messageCount),
+        _FeatureBreakdownCard(
+            features: data.featureBreakdown,
+            totalCostUsd: data.totalCostUsd,
+            totalMessages: data.messageCount),
       ],
     );
   }
@@ -1070,7 +1110,7 @@ class _DailyTokenChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (daily.isEmpty) {
-      return _ChartCard(
+      return const _ChartCard(
         title: 'Daily Token Usage',
         subtitle: 'Input · Output · Thinking tokens per day',
         child: _EmptyChart(message: 'No data for this period'),
@@ -1079,9 +1119,8 @@ class _DailyTokenChart extends StatelessWidget {
 
     final display =
         daily.length > 14 ? daily.sublist(daily.length - 14) : daily;
-    final maxTokens = display
-        .map((d) => d.totalTokens)
-        .fold(0, (a, b) => a > b ? a : b);
+    final maxTokens =
+        display.map((d) => d.totalTokens).fold(0, (a, b) => a > b ? a : b);
     final maxY = maxTokens == 0 ? 100.0 : (maxTokens * 1.25).toDouble();
 
     final groups = display.asMap().entries.map((e) {
@@ -1096,8 +1135,7 @@ class _DailyTokenChart extends StatelessWidget {
           BarChartRodData(
             toY: d.totalTokens.toDouble(),
             width: 10,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(4)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
             rodStackItems: [
               BarChartRodStackItem(0, inT, AppColors.primaryLight),
               BarChartRodStackItem(inT, inT + outT, AppColors.primary),
@@ -1118,14 +1156,13 @@ class _DailyTokenChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               _ChartLegendDot(color: AppColors.primaryLight, label: 'Input'),
-              const SizedBox(width: 14),
+              SizedBox(width: 14),
               _ChartLegendDot(color: AppColors.primary, label: 'Output'),
-              const SizedBox(width: 14),
-              _ChartLegendDot(
-                  color: const Color(0xFF7C3AED), label: 'Thinking'),
+              SizedBox(width: 14),
+              _ChartLegendDot(color: Color(0xFF7C3AED), label: 'Thinking'),
             ],
           ),
           const SizedBox(height: 14),
@@ -1178,9 +1215,8 @@ class _DailyTokenChart extends StatelessWidget {
                           return const SizedBox.shrink();
                         }
                         final date = display[idx].date;
-                        final day = date.length >= 10
-                            ? date.substring(8)
-                            : date;
+                        final day =
+                            date.length >= 10 ? date.substring(8) : date;
                         return Text(
                           day,
                           style: TextStyle(
@@ -1220,13 +1256,11 @@ class _DailyTokenChart extends StatelessWidget {
                                 text:
                                     'Think: ${_fmtTokens(d.tokensThinking)}\n',
                                 style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w400)),
+                                    fontSize: 10, fontWeight: FontWeight.w400)),
                           TextSpan(
                               text: 'Total: ${_fmtTokens(d.totalTokens)}',
                               style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700)),
+                                  fontSize: 10, fontWeight: FontWeight.w700)),
                         ],
                       );
                     },
@@ -1251,7 +1285,7 @@ class _LatencyTrendChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final withLatency = daily.where((d) => d.avgLatencyMs > 0).toList();
     if (withLatency.isEmpty) {
-      return _ChartCard(
+      return const _ChartCard(
         title: 'Latency Trend',
         subtitle: 'Avg response time per day',
         child: _EmptyChart(message: 'No latency data yet'),
@@ -1261,14 +1295,14 @@ class _LatencyTrendChart extends StatelessWidget {
     final display = withLatency.length > 14
         ? withLatency.sublist(withLatency.length - 14)
         : withLatency;
-    final maxMs = display
-        .map((d) => d.avgLatencyMs)
-        .fold(0, (a, b) => a > b ? a : b);
+    final maxMs =
+        display.map((d) => d.avgLatencyMs).fold(0, (a, b) => a > b ? a : b);
     final maxY = maxMs == 0 ? 10.0 : ((maxMs / 1000) * 1.3);
 
-    final spots = display.asMap().entries
-        .map((e) =>
-            FlSpot(e.key.toDouble(), e.value.avgLatencyMs / 1000))
+    final spots = display
+        .asMap()
+        .entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value.avgLatencyMs / 1000))
         .toList();
 
     final cs = Theme.of(context).colorScheme;
@@ -1305,8 +1339,8 @@ class _LatencyTrendChart extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 4),
                       child: Text(
                         '${value.toStringAsFixed(1)}s',
-                        style: TextStyle(
-                            fontSize: 9, color: cs.onSurfaceVariant),
+                        style:
+                            TextStyle(fontSize: 9, color: cs.onSurfaceVariant),
                       ),
                     );
                   },
@@ -1325,20 +1359,18 @@ class _LatencyTrendChart extends StatelessWidget {
                       return const SizedBox.shrink();
                     }
                     final date = display[idx].date;
-                    final day =
-                        date.length >= 10 ? date.substring(8) : date;
+                    final day = date.length >= 10 ? date.substring(8) : date;
                     return Text(
                       day,
-                      style: TextStyle(
-                          fontSize: 9, color: cs.onSurfaceVariant),
+                      style: TextStyle(fontSize: 9, color: cs.onSurfaceVariant),
                     );
                   },
                 ),
               ),
-              rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
-              topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
+              rightTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             ),
             lineBarsData: [
               LineChartBarData(
@@ -1365,8 +1397,7 @@ class _LatencyTrendChart extends StatelessWidget {
               touchTooltipData: LineTouchTooltipData(
                 getTooltipColor: (_) => AppColors.primaryDark,
                 tooltipRoundedRadius: 10,
-                getTooltipItems: (touchedSpots) =>
-                    touchedSpots.map((s) {
+                getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
                   final d = display[s.x.toInt()];
                   return LineTooltipItem(
                     '${d.date.substring(5)}\n${(d.avgLatencyMs / 1000).toStringAsFixed(2)}s',
@@ -1397,10 +1428,8 @@ class _TokenBreakdownRow extends StatelessWidget {
     final total = data.totalTokens;
     if (total == 0) return const SizedBox.shrink();
 
-    final inPct =
-        total > 0 ? (data.totalTokensIn / total * 100).round() : 0;
-    final outPct =
-        total > 0 ? (data.totalTokensOut / total * 100).round() : 0;
+    final inPct = total > 0 ? (data.totalTokensIn / total * 100).round() : 0;
+    final outPct = total > 0 ? (data.totalTokensOut / total * 100).round() : 0;
     final thinkPct =
         total > 0 ? (data.totalTokensThinking / total * 100).round() : 0;
 
@@ -1417,7 +1446,7 @@ class _TokenBreakdownRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.cpu, size: 16, color: AppColors.primary),
+              const Icon(LucideIcons.cpu, size: 16, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 'Token Breakdown',
@@ -1442,20 +1471,17 @@ class _TokenBreakdownRow extends StatelessWidget {
                 if (data.totalTokensIn > 0)
                   Flexible(
                     flex: data.totalTokensIn,
-                    child: Container(
-                        height: 8, color: AppColors.primaryLight),
+                    child: Container(height: 8, color: AppColors.primaryLight),
                   ),
                 if (data.totalTokensOut > 0)
                   Flexible(
                     flex: data.totalTokensOut,
-                    child:
-                        Container(height: 8, color: AppColors.primary),
+                    child: Container(height: 8, color: AppColors.primary),
                   ),
                 if (data.totalTokensThinking > 0)
                   Flexible(
                     flex: data.totalTokensThinking,
-                    child: Container(
-                        height: 8, color: const Color(0xFF7C3AED)),
+                    child: Container(height: 8, color: const Color(0xFF7C3AED)),
                   ),
               ],
             ),
@@ -1527,13 +1553,13 @@ class _TokenBreakdownChip extends StatelessWidget {
               Container(
                   width: 7,
                   height: 7,
-                  decoration: BoxDecoration(
-                      color: color, shape: BoxShape.circle)),
+                  decoration:
+                      BoxDecoration(color: color, shape: BoxShape.circle)),
               const SizedBox(width: 5),
               Text(
                 label,
-                style: AppTextStyles.labelSm.copyWith(
-                    color: cs.onSurfaceVariant, fontSize: 9),
+                style: AppTextStyles.labelSm
+                    .copyWith(color: cs.onSurfaceVariant, fontSize: 9),
               ),
             ],
           ),
@@ -1541,9 +1567,7 @@ class _TokenBreakdownChip extends StatelessWidget {
           Text(
             value,
             style: AppTextStyles.body.copyWith(
-                color: cs.onSurface,
-                fontWeight: FontWeight.w700,
-                fontSize: 12),
+                color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12),
           ),
           Text(
             pct,
@@ -1566,18 +1590,16 @@ class _ModelDistributionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     if (models.isEmpty) {
-      return _ChartCard(
+      return const _ChartCard(
         title: 'Model Distribution',
         subtitle: 'Cost · tokens · messages per model',
         child: _EmptyChart(message: 'No model usage data yet'),
       );
     }
 
-    final totalMsgs =
-        models.fold(0, (sum, m) => sum + m.messageCount);
-    final maxCost = models
-        .map((m) => m.totalCostUsd)
-        .fold(0.0, (a, b) => a > b ? a : b);
+    final totalMsgs = models.fold(0, (sum, m) => sum + m.messageCount);
+    final maxCost =
+        models.map((m) => m.totalCostUsd).fold(0.0, (a, b) => a > b ? a : b);
     final maxVal = maxCost == 0 ? 1.0 : maxCost;
 
     const colors = [
@@ -1595,14 +1617,12 @@ class _ModelDistributionCard extends StatelessWidget {
         children: models.take(5).toList().asMap().entries.map((entry) {
           final i = entry.key;
           final m = entry.value;
-          final pct = totalMsgs > 0
-              ? ((m.messageCount / totalMsgs) * 100).round()
-              : 0;
+          final pct =
+              totalMsgs > 0 ? ((m.messageCount / totalMsgs) * 100).round() : 0;
           final barFraction = m.totalCostUsd / maxVal;
           final color = colors[i % colors.length];
-          final shortName = m.model.contains('/')
-              ? m.model.split('/').last
-              : m.model;
+          final shortName =
+              m.model.contains('/') ? m.model.split('/').last : m.model;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 14),
@@ -1611,17 +1631,27 @@ class _ModelDistributionCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child:
-                          Icon(LucideIcons.zap, size: 12, color: color),
-                    ),
+                    () {
+                      final provider = _detectProviderFromModel(m.model);
+                      if (provider != null) {
+                        return ProviderBadge(
+                          providerId: provider,
+                          size: 24,
+                          padding: 4,
+                          borderRadius: 6,
+                        );
+                      }
+                      return Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(LucideIcons.zap, size: 12, color: color),
+                      );
+                    }(),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1665,18 +1695,15 @@ class _ModelDistributionCard extends StatelessWidget {
                           width: constraints.maxWidth,
                           decoration: BoxDecoration(
                             color: color.withOpacity(0.12),
-                            borderRadius:
-                                BorderRadius.circular(999),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         ),
                         Container(
                           height: 6,
-                          width:
-                              constraints.maxWidth * barFraction,
+                          width: constraints.maxWidth * barFraction,
                           decoration: BoxDecoration(
                             color: color,
-                            borderRadius:
-                                BorderRadius.circular(999),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         ),
                       ],
@@ -1732,7 +1759,7 @@ class _FeatureBreakdownCard extends StatelessWidget {
       ),
     );
 
-    Widget _featureTile({
+    Widget featureTile({
       required String label,
       required String sublabel,
       required int tokens,
@@ -1825,7 +1852,7 @@ class _FeatureBreakdownCard extends StatelessWidget {
       subtitle: 'Chat AI vs Bill Generation AI',
       child: Column(
         children: [
-          _featureTile(
+          featureTile(
             label: 'Chat AI Usage',
             sublabel: 'Conversational AI messages',
             tokens: chat.totalTokens,
@@ -1836,7 +1863,7 @@ class _FeatureBreakdownCard extends StatelessWidget {
             icon: LucideIcons.messageSquare,
           ),
           const SizedBox(height: 8),
-          _featureTile(
+          featureTile(
             label: 'Bill Generation AI',
             sublabel: 'AI summaries & recommendations',
             tokens: billGen.totalTokens,
@@ -1992,8 +2019,7 @@ class _ChartLegendDot extends StatelessWidget {
         Container(
           width: 8,
           height: 8,
-          decoration:
-              BoxDecoration(color: color, shape: BoxShape.circle),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
         Text(
@@ -2028,10 +2054,7 @@ class _EmptyChart extends StatelessWidget {
   }
 }
 
-Color _analyticsCardColor(BuildContext context) =>
-    AppSurfaces.panel(context);
+Color _analyticsCardColor(BuildContext context) => AppSurfaces.panel(context);
 
 BoxBorder _analyticsCardBorder(BuildContext context) =>
     AppSurfaces.cardBorder(context);
-
-

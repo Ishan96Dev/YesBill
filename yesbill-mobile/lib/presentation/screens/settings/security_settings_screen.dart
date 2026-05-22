@@ -93,8 +93,10 @@ class _SecuritySettingsScreenState
   }
 
   Future<void> _confirmDeleteAccount() async {
-    final servicesCount = ref.read(activeServicesProvider).valueOrNull?.length ?? 0;
-    final billsCount = ref.read(generatedBillsProvider).valueOrNull?.length ?? 0;
+    final servicesCount =
+        ref.read(activeServicesProvider).valueOrNull?.length ?? 0;
+    final billsCount =
+        ref.read(generatedBillsProvider).valueOrNull?.length ?? 0;
     final confirmCtrl = TextEditingController();
     var canDelete = false;
 
@@ -116,7 +118,8 @@ class _SecuritySettingsScreenState
                   ),
                   child: Row(
                     children: [
-                      Icon(LucideIcons.alertTriangle, color: AppColors.error),
+                      const Icon(LucideIcons.alertTriangle,
+                          color: AppColors.error),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
@@ -190,10 +193,12 @@ class _SecuritySettingsScreenState
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(
-                    onPressed: canDelete ? () => Navigator.pop(ctx, true) : null,
+                    onPressed:
+                        canDelete ? () => Navigator.pop(ctx, true) : null,
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.error,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 8),
                     ),
                     child: const FittedBox(
                       fit: BoxFit.scaleDown,
@@ -250,12 +255,11 @@ class _SecuritySettingsScreenState
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
     final identities = user?.identities ?? [];
-    final hasGoogle =
-        identities.any((i) => i.provider == 'google');
+    final hasGoogle = identities.any((i) => i.provider == 'google');
     final activeServicesCount =
-      ref.watch(activeServicesProvider).valueOrNull?.length ?? 0;
+        ref.watch(activeServicesProvider).valueOrNull?.length ?? 0;
     final generatedBillsCount =
-      ref.watch(generatedBillsProvider).valueOrNull?.length ?? 0;
+        ref.watch(generatedBillsProvider).valueOrNull?.length ?? 0;
     final lastSignIn = user?.lastSignInAt != null
         ? _formatDate(user!.lastSignInAt!)
         : 'Unknown';
@@ -274,7 +278,7 @@ class _SecuritySettingsScreenState
             AppSpacing.base, AppSpacing.sm, AppSpacing.base, 120),
         children: [
           // ── CHANGE PASSWORD ────────────────────────────────────────────
-          _SectionLabel(label: 'CHANGE PASSWORD'),
+          const _SectionLabel(label: 'CHANGE PASSWORD'),
           const SizedBox(height: AppSpacing.sm),
           if (!_hasPasswordIdentity)
             Container(
@@ -286,13 +290,13 @@ class _SecuritySettingsScreenState
               ),
               child: Row(
                 children: [
-                  Icon(LucideIcons.info, size: 16, color: AppColors.info),
+                  const Icon(LucideIcons.info, size: 16, color: AppColors.info),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       'You signed in with Google. Password change is not available.',
-                      style: AppTextStyles.bodySm
-                          .copyWith(color: AppColors.info),
+                      style:
+                          AppTextStyles.bodySm.copyWith(color: AppColors.info),
                     ),
                   ),
                 ],
@@ -306,8 +310,7 @@ class _SecuritySettingsScreenState
                   controller: _newPwdCtrl,
                   label: 'New Password',
                   obscure: !_showNewPwd,
-                  onToggle: () =>
-                      setState(() => _showNewPwd = !_showNewPwd),
+                  onToggle: () => setState(() => _showNewPwd = !_showNewPwd),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Required';
                     if (v.trim().length < 8) return 'At least 8 characters';
@@ -328,29 +331,30 @@ class _SecuritySettingsScreenState
                 ),
                 const SizedBox(height: AppSpacing.md),
                 FilledButton(
-                  onPressed:
-                      (!_hasPasswordIdentity || _savingPwd) ? null : _updatePassword,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  minimumSize: const Size.fromHeight(44),
-                  shape: const StadiumBorder(),
+                  onPressed: (!_hasPasswordIdentity || _savingPwd)
+                      ? null
+                      : _updatePassword,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    minimumSize: const Size.fromHeight(44),
+                    shape: const StadiumBorder(),
+                  ),
+                  child: _savingPwd
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('Update Password'),
                 ),
-                child: _savingPwd
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('Update Password'),
-              ),
-            ],
-          ),
+              ],
+            ),
           ).animate().fadeIn(delay: 50.ms),
           const SizedBox(height: AppSpacing.lg),
 
           // ── CHANGE EMAIL ───────────────────────────────────────────────
-          _SectionLabel(label: 'CHANGE EMAIL ADDRESS'),
+          const _SectionLabel(label: 'CHANGE EMAIL ADDRESS'),
           const SizedBox(height: AppSpacing.sm),
           Form(
             key: _emailFormKey,
@@ -400,7 +404,7 @@ class _SecuritySettingsScreenState
           const SizedBox(height: AppSpacing.lg),
 
           // ── CONNECTED ACCOUNTS ────────────────────────────────────────
-          _SectionLabel(label: 'CONNECTED ACCOUNTS'),
+          const _SectionLabel(label: 'CONNECTED ACCOUNTS'),
           const SizedBox(height: AppSpacing.sm),
           _SecurityCard(
             children: [
@@ -410,7 +414,7 @@ class _SecuritySettingsScreenState
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                        color: AppSurfaces.elevated(context),
+                      color: AppSurfaces.elevated(context),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.g_mobiledata_rounded,
@@ -424,15 +428,16 @@ class _SecuritySettingsScreenState
                         Text('Google',
                             style: AppTextStyles.body.copyWith(
                                 fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface)),
+                                color:
+                                    Theme.of(context).colorScheme.onSurface)),
                         Text(
                           hasGoogle ? 'Connected' : 'Not connected',
                           style: AppTextStyles.bodySm.copyWith(
                               color: hasGoogle
                                   ? AppColors.success
-                              : Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant),
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -459,11 +464,11 @@ class _SecuritySettingsScreenState
           const SizedBox(height: AppSpacing.lg),
 
           // ── CURRENT SESSION ───────────────────────────────────────────
-          _SectionLabel(label: 'CURRENT SESSION'),
+          const _SectionLabel(label: 'CURRENT SESSION'),
           const SizedBox(height: AppSpacing.sm),
           _SecurityCard(
             children: [
-              _SessionRow(
+              const _SessionRow(
                 icon: LucideIcons.smartphone,
                 label: 'Device',
                 value: 'Android',
@@ -485,7 +490,7 @@ class _SecuritySettingsScreenState
           const SizedBox(height: AppSpacing.xl),
 
           // ── DANGER ZONE ───────────────────────────────────────────────
-          _SectionLabel(label: 'DANGER ZONE'),
+          const _SectionLabel(label: 'DANGER ZONE'),
           const SizedBox(height: AppSpacing.sm),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -499,8 +504,7 @@ class _SecuritySettingsScreenState
                 Text(
                   'Delete Account',
                   style: AppTextStyles.body.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.error),
+                      fontWeight: FontWeight.w700, color: AppColors.error),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -539,7 +543,8 @@ class _SecuritySettingsScreenState
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(LucideIcons.trash2, size: 16),
-                  label: Text(_deletingAccount ? 'Deleting…' : 'Delete My Account'),
+                  label: Text(
+                      _deletingAccount ? 'Deleting…' : 'Delete My Account'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                     side: BorderSide(color: AppColors.error.withOpacity(0.5)),
@@ -582,8 +587,18 @@ class _SecuritySettingsScreenState
     try {
       final dt = DateTime.parse(iso).toLocal();
       final months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
       ];
       return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
     } catch (_) {
@@ -666,13 +681,15 @@ class _PwdField extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+            color:
+                Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+            color:
+                Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
           ),
         ),
         suffixIcon: IconButton(

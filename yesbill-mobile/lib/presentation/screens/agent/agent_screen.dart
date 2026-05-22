@@ -52,33 +52,24 @@ class _AgentPalette {
     onSurfaceVariant =
         dark ? AppColors.textSecondary : AppColors.textSecondaryLight;
     outline = dark ? AppColors.cardDarkBorder : const Color(0xFFCBD5E1);
-    primaryContainer =
-        dark ? const Color(0xFF1C1C4A) : const Color(0xFFE0E7FF);
+    primaryContainer = dark ? const Color(0xFF1C1C4A) : const Color(0xFFE0E7FF);
     // Confirmation card (warning / amber tone)
     confirmBg = dark ? const Color(0xFF2D2000) : const Color(0xFFFFFBEB);
-    confirmBorder =
-        dark ? const Color(0xFF7A5500) : const Color(0xFFFCD34D);
-    confirmIconBg =
-        dark ? const Color(0xFF3D2D00) : const Color(0xFFFEF3C7);
-    confirmTitle =
-        dark ? const Color(0xFFFFD166) : const Color(0xFF92400E);
-    confirmSubtitle =
-        dark ? const Color(0xFFFFC107) : const Color(0xFFB45309);
-    confirmBody =
-        dark ? const Color(0xFFFFE08A) : const Color(0xFF78350F);
+    confirmBorder = dark ? const Color(0xFF7A5500) : const Color(0xFFFCD34D);
+    confirmIconBg = dark ? const Color(0xFF3D2D00) : const Color(0xFFFEF3C7);
+    confirmTitle = dark ? const Color(0xFFFFD166) : const Color(0xFF92400E);
+    confirmSubtitle = dark ? const Color(0xFFFFC107) : const Color(0xFFB45309);
+    confirmBody = dark ? const Color(0xFFFFE08A) : const Color(0xFF78350F);
     confirmDiffBg = dark
         ? const Color(0xFF1A1500).withValues(alpha: 0.7)
         : Colors.white.withValues(alpha: 0.7);
     confirmDiffBorder =
         dark ? const Color(0xFF5A4000) : const Color(0xFFFDE68A);
-    confirmDiffLabel =
-        dark ? const Color(0xFFFFD166) : const Color(0xFF92400E);
+    confirmDiffLabel = dark ? const Color(0xFFFFD166) : const Color(0xFF92400E);
     // Error banner (red / pink tone)
     errorBg = dark ? const Color(0xFF2D0808) : const Color(0xFFFFF1F2);
-    errorBorder =
-        dark ? const Color(0xFF7A1414) : const Color(0xFFFDA4AF);
-    errorText =
-        dark ? const Color(0xFFFF9999) : const Color(0xFFBE123C);
+    errorBorder = dark ? const Color(0xFF7A1414) : const Color(0xFFFDA4AF);
+    errorText = dark ? const Color(0xFFFF9999) : const Color(0xFFBE123C);
   }
 
   late final Color surface;
@@ -337,8 +328,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                             itemBuilder: (_, index) {
                               if (waitingForConfirmation &&
                                   index == messages.length) {
-                                final awaitingState =
-                                    state as AgentAwaitingConfirmation;
+                                final awaitingState = state;
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 12),
                                   child: _AgentConfirmationCard(
@@ -835,8 +825,7 @@ class _AgentLandingState extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: pal.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: pal.outline.withOpacity(0.4)),
+                    border: Border.all(color: pal.outline.withOpacity(0.4)),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x082D3337),
@@ -1424,8 +1413,7 @@ class _AgentConversationEmptyState extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: pal.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: pal.outline.withOpacity(0.4)),
+                  border: Border.all(color: pal.outline.withOpacity(0.4)),
                 ),
                 child: Row(
                   children: [
@@ -1700,8 +1688,7 @@ class _AgentMessageBubble extends StatelessWidget {
     final isUser = message.isUser;
     final hasThought = (message.reasoning ?? '').trim().isNotEmpty ||
         message.thinkingDurationSeconds != null;
-    final bubbleColor =
-        isUser ? _agentMd3Primary : pal.surface;
+    final bubbleColor = isUser ? _agentMd3Primary : pal.surface;
     final textColor = isUser ? Colors.white : pal.onSurface;
     final radius = isUser
         ? const BorderRadius.only(
@@ -1750,7 +1737,8 @@ class _AgentMessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 6),
                       child: _AgentReasoningPanel(
                         reasoning: message.reasoning ?? '',
-                        thinkingDurationSeconds: message.thinkingDurationSeconds,
+                        thinkingDurationSeconds:
+                            message.thinkingDurationSeconds,
                         autoExpand: message.isStreaming,
                       ),
                     ),
@@ -1765,9 +1753,9 @@ class _AgentMessageBubble extends StatelessWidget {
                       boxShadow: isUser
                           ? const [
                               BoxShadow(
-                                color: const Color(0x404A4BD7),
+                                color: Color(0x404A4BD7),
                                 blurRadius: 24,
-                                offset: const Offset(0, 8),
+                                offset: Offset(0, 8),
                               ),
                             ]
                           : const [
@@ -2013,20 +2001,20 @@ class _AgentComposer extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                  onPressed: onNewConversation,
-                  icon: Icon(
-                    LucideIcons.plusCircle,
-                    size: 20,
-                    color: pal.onSurfaceVariant,
-                  ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: pal.surfaceLow,
-                    fixedSize: const Size(42, 42),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                onPressed: onNewConversation,
+                icon: Icon(
+                  LucideIcons.plusCircle,
+                  size: 20,
+                  color: pal.onSurfaceVariant,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: pal.surfaceLow,
+                  fixedSize: const Size(42, 42),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
@@ -2054,9 +2042,8 @@ class _AgentComposer extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: canSend
-                      ? _agentMd3Primary
-                      : pal.outline.withOpacity(0.3),
+                  color:
+                      canSend ? _agentMd3Primary : pal.outline.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: canSend
                       ? [
@@ -2086,9 +2073,8 @@ class _AgentComposer extends StatelessWidget {
                           : Icon(
                               LucideIcons.send,
                               size: 16,
-                              color: canSend
-                                  ? Colors.white
-                                  : pal.onSurfaceVariant,
+                              color:
+                                  canSend ? Colors.white : pal.onSurfaceVariant,
                             ),
                     ),
                   ),

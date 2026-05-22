@@ -19,7 +19,8 @@ import '../local/secure_storage.dart';
 /// SSE streaming uses [HttpClient] directly (not Dio) because Dio buffers
 /// the full response body, which breaks server-sent events.
 class ChatRemoteDataSource {
-  ChatRemoteDataSource({required Dio dio, required SecureStorageService storage})
+  ChatRemoteDataSource(
+      {required Dio dio, required SecureStorageService storage})
       : _dio = dio,
         _storage = storage;
 
@@ -223,15 +224,15 @@ class ChatRemoteDataSource {
       'model_used': raw['model_used']?.toString(),
       'feedback': raw['feedback']?.toString(),
       'context_tags': contextTags,
-      'metadata': rawMetadata is Map
-          ? Map<String, dynamic>.from(rawMetadata as Map)
-          : null,
+      'metadata':
+          rawMetadata is Map ? Map<String, dynamic>.from(rawMetadata) : null,
     };
   }
 
   Future<String> getAnalyticsSummary({String? yearMonth, int? days}) async {
     try {
-      final resp = await _dio.get(ApiConstants.chatAnalyticsSummary, queryParameters: {
+      final resp =
+          await _dio.get(ApiConstants.chatAnalyticsSummary, queryParameters: {
         if (yearMonth != null) 'year_month': yearMonth,
         if (days != null) 'days': days,
       });

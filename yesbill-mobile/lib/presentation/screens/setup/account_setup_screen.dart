@@ -191,7 +191,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Select Country',
-                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimaryLight),
+                style: AppTextStyles.h3
+                    .copyWith(color: AppColors.textPrimaryLight),
               ),
             ),
             const Gap(12),
@@ -205,8 +206,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 decoration: InputDecoration(
                   hintText: 'Search country…',
                   hintStyle: const TextStyle(color: Colors.black38),
-                  prefixIcon:
-                      const Icon(LucideIcons.search, color: Colors.black38, size: 18),
+                  prefixIcon: const Icon(LucideIcons.search,
+                      color: Colors.black38, size: 18),
                   filled: true,
                   fillColor: Colors.grey.shade100,
                   border: OutlineInputBorder(
@@ -396,10 +397,14 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
         if (_avatarUrl != null) 'avatar_url': _avatarUrl,
         if (_coverUrl != null) 'cover_image_url': _coverUrl,
         if (_phoneCtrl.text.trim().isNotEmpty) 'phone': _phoneCtrl.text.trim(),
-        if (_companyCtrl.text.trim().isNotEmpty) 'company': _companyCtrl.text.trim(),
-        if (_websiteCtrl.text.trim().isNotEmpty) 'website': _websiteCtrl.text.trim(),
-        if (_locationCtrl.text.trim().isNotEmpty) 'location': _locationCtrl.text.trim(),
-        if (_languageCtrl.text.trim().isNotEmpty) 'language': _languageCtrl.text.trim(),
+        if (_companyCtrl.text.trim().isNotEmpty)
+          'company': _companyCtrl.text.trim(),
+        if (_websiteCtrl.text.trim().isNotEmpty)
+          'website': _websiteCtrl.text.trim(),
+        if (_locationCtrl.text.trim().isNotEmpty)
+          'location': _locationCtrl.text.trim(),
+        if (_languageCtrl.text.trim().isNotEmpty)
+          'language': _languageCtrl.text.trim(),
         if (_bioCtrl.text.trim().isNotEmpty) 'bio': _bioCtrl.text.trim(),
       });
     } catch (_) {
@@ -740,7 +745,6 @@ class _OnboardCoverAndAvatar extends StatelessWidget {
   }
 }
 
-
 // ── AI setup step ─────────────────────────────────────────────────────────────
 
 String? _aiProviderLocalAsset(String providerId) {
@@ -765,8 +769,7 @@ class _AiStep extends ConsumerStatefulWidget {
 class _AiStepState extends ConsumerState<_AiStep> {
   String _selectedProviderId = 'openai';
   final _apiKeyCtrl = TextEditingController();
-  final _ollamaUrlCtrl =
-      TextEditingController(text: 'http://localhost:11434');
+  final _ollamaUrlCtrl = TextEditingController(text: 'http://localhost:11434');
   bool _obscureKey = true;
   String? _selectedModel;
   bool _saving = false;
@@ -849,8 +852,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
             apiKey: isOllama ? '' : key,
             selectedModel: _selectedModel,
             enableInsights: _aiInsightsEnabled,
-            ollamaBaseUrl:
-                isOllama ? _ollamaUrlCtrl.text.trim() : null,
+            ollamaBaseUrl: isOllama ? _ollamaUrlCtrl.text.trim() : null,
             isKeyValid: keyIsValid,
           );
       final mutState = ref.read(aiSettingsMutationProvider);
@@ -897,7 +899,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
       if (mounted) {
         setState(() {
           _keyStatus = 'invalid';
-          _keyStatusMessage = 'Could not reach validation server. You can still save and fix the key later.';
+          _keyStatusMessage =
+              'Could not reach validation server. You can still save and fix the key later.';
         });
       }
     }
@@ -1012,7 +1015,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
           children: [
             Text(
               'Configure AI',
-              style: AppTextStyles.h1.copyWith(color: AppColors.textPrimaryLight),
+              style:
+                  AppTextStyles.h1.copyWith(color: AppColors.textPrimaryLight),
             ).animate().fadeIn().slideY(begin: 0.1),
             const Gap(6),
             Text(
@@ -1024,8 +1028,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
             // Provider cards
             Text(
               'CHOOSE PROVIDER',
-              style: AppTextStyles.labelSm.copyWith(
-                  color: Colors.black54, letterSpacing: 1.2),
+              style: AppTextStyles.labelSm
+                  .copyWith(color: Colors.black54, letterSpacing: 1.2),
             ),
             const Gap(12),
             SizedBox(
@@ -1069,7 +1073,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                                 height: 36,
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withAlpha(isSelected ? 200 : 160),
+                                  color: Colors.white
+                                      .withAlpha(isSelected ? 200 : 160),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Image.asset(asset, fit: BoxFit.contain),
@@ -1087,8 +1092,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color:
-                                  isSelected ? color : Colors.black54,
+                              color: isSelected ? color : Colors.black54,
                             ),
                           ),
                           if (isSelected) ...[
@@ -1124,7 +1128,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                     color: _providerColor(_selectedProviderId).withAlpha(20),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: _providerColor(_selectedProviderId).withAlpha(60)),
+                        color:
+                            _providerColor(_selectedProviderId).withAlpha(60)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1138,12 +1143,14 @@ class _AiStepState extends ConsumerState<_AiStep> {
                           borderRadius: BorderRadius.circular(7),
                         ),
                         child: () {
-                          final asset = _aiProviderLocalAsset(_selectedProviderId);
+                          final asset =
+                              _aiProviderLocalAsset(_selectedProviderId);
                           if (asset != null) {
                             return Image.asset(asset, fit: BoxFit.contain);
                           }
                           return Icon(_providerIcon(_selectedProviderId),
-                              size: 16, color: _providerColor(_selectedProviderId));
+                              size: 16,
+                              color: _providerColor(_selectedProviderId));
                         }(),
                       ),
                       const Gap(10),
@@ -1153,7 +1160,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                           children: [
                             Text(
                               selectedProviderInfo.name,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppColors.textPrimaryLight,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -1163,7 +1170,9 @@ class _AiStepState extends ConsumerState<_AiStep> {
                             Text(
                               selectedProviderInfo.description,
                               style: const TextStyle(
-                                  color: Colors.black54, fontSize: 12, height: 1.4),
+                                  color: Colors.black54,
+                                  fontSize: 12,
+                                  height: 1.4),
                             ),
                             if (selectedProviderInfo.docsUrl.isNotEmpty) ...[
                               const Gap(8),
@@ -1184,7 +1193,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                                     ),
                                     Gap(3),
                                     Icon(LucideIcons.externalLink,
-                                        size: 11, color: AppColors.primaryLight),
+                                        size: 11,
+                                        color: AppColors.primaryLight),
                                   ],
                                 ),
                               ),
@@ -1202,14 +1212,16 @@ class _AiStepState extends ConsumerState<_AiStep> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _FieldLabel(text: '${selectedProviderInfo.name} API Key', required: true),
+                  _FieldLabel(
+                      text: '${selectedProviderInfo.name} API Key',
+                      required: true),
                   if (selectedProviderInfo.docsUrl.isNotEmpty)
                     GestureDetector(
                       onTap: () => launchUrl(
                         Uri.parse(selectedProviderInfo.docsUrl),
                         mode: LaunchMode.externalApplication,
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
                           Text(
                             'Get API Key',
@@ -1218,8 +1230,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w600),
                           ),
-                          const Gap(4),
-                          const Icon(LucideIcons.externalLink,
+                          Gap(4),
+                          Icon(LucideIcons.externalLink,
                               size: 12, color: AppColors.primary),
                         ],
                       ),
@@ -1241,17 +1253,25 @@ class _AiStepState extends ConsumerState<_AiStep> {
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        fillColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+                          borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.outline),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                          borderSide: const BorderSide(
+                              color: AppColors.primary, width: 2),
                         ),
-                        prefixIcon: Icon(LucideIcons.key, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 18),
+                        prefixIcon: Icon(LucideIcons.key,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            size: 18),
                         suffixIcon: IconButton(
                           style: IconButton.styleFrom(
                             backgroundColor: Colors.transparent,
@@ -1261,9 +1281,11 @@ class _AiStepState extends ConsumerState<_AiStep> {
                           icon: Icon(
                             _obscureKey ? LucideIcons.eyeOff : LucideIcons.eye,
                             size: 18,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
-                          onPressed: () => setState(() => _obscureKey = !_obscureKey),
+                          onPressed: () =>
+                              setState(() => _obscureKey = !_obscureKey),
                         ),
                       ),
                     ),
@@ -1312,9 +1334,11 @@ class _AiStepState extends ConsumerState<_AiStep> {
                     const Gap(6),
                     Expanded(
                       child: Text(
-                        _keyStatusMessage.isNotEmpty ? _keyStatusMessage : 'Key verified',
-                        style: const TextStyle(
-                            color: Color(0xFF10B981), fontSize: 12)),
+                          _keyStatusMessage.isNotEmpty
+                              ? _keyStatusMessage
+                              : 'Key verified',
+                          style: const TextStyle(
+                              color: Color(0xFF10B981), fontSize: 12)),
                     ),
                   ],
                 ),
@@ -1327,15 +1351,17 @@ class _AiStepState extends ConsumerState<_AiStep> {
                     const Gap(6),
                     Expanded(
                       child: Text(
-                        _keyStatusMessage.isNotEmpty ? _keyStatusMessage : 'Key validation failed',
-                        style: const TextStyle(
-                            color: AppColors.error, fontSize: 12)),
+                          _keyStatusMessage.isNotEmpty
+                              ? _keyStatusMessage
+                              : 'Key validation failed',
+                          style: const TextStyle(
+                              color: AppColors.error, fontSize: 12)),
                     ),
                   ],
                 ),
               ],
             ] else ...[
-              _FieldLabel(text: 'Ollama Base URL', required: true),
+              const _FieldLabel(text: 'Ollama Base URL', required: true),
               const Gap(8),
               _InputField(
                 controller: _ollamaUrlCtrl,
@@ -1365,7 +1391,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
                     .map((m) => AppDropdownItem<String>(
                           value: m.id,
                           label: m.name,
-                          subtitle: m.description.isNotEmpty ? m.description : null,
+                          subtitle:
+                              m.description.isNotEmpty ? m.description : null,
                         ))
                     .toList(),
                 onChanged: (value) {
@@ -1403,8 +1430,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                         Gap(2),
                         Text(
                           'Smart summaries and bill analysis',
-                          style:
-                              TextStyle(color: Colors.black45, fontSize: 11),
+                          style: TextStyle(color: Colors.black45, fontSize: 11),
                         ),
                       ],
                     ),
@@ -1412,7 +1438,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                   Switch(
                     value: _aiInsightsEnabled,
                     onChanged: (v) => setState(() => _aiInsightsEnabled = v),
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: AppColors.primary,
                     inactiveThumbColor: Colors.grey.shade400,
                     inactiveTrackColor: Colors.grey.shade200,
@@ -1426,9 +1452,8 @@ class _AiStepState extends ConsumerState<_AiStep> {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: (_saving || !canSave)
-                    ? null
-                    : () => _save(providers),
+                onPressed:
+                    (_saving || !canSave) ? null : () => _save(providers),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -1452,8 +1477,7 @@ class _AiStepState extends ConsumerState<_AiStep> {
                           Text(
                             'Complete Setup',
                             style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700),
+                                fontSize: 15, fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -1516,79 +1540,76 @@ class _SkipAiModal extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFF59E0B).withAlpha(30),
+              ),
+              child: const Icon(LucideIcons.alertTriangle,
+                  color: Color(0xFFF59E0B), size: 22),
+            ),
+            const Gap(16),
+            Text(
+              'AI features will be limited',
+              style:
+                  AppTextStyles.h3.copyWith(color: AppColors.textPrimaryLight),
+              textAlign: TextAlign.center,
+            ),
+            const Gap(10),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: const TextStyle(
+                    color: Colors.black54, fontSize: 14, height: 1.5),
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFF59E0B).withAlpha(30),
-                    ),
-                    child: const Icon(LucideIcons.alertTriangle,
-                        color: Color(0xFFF59E0B), size: 22),
-                  ),
-                  const Gap(16),
-                  Text(
-                    'AI features will be limited',
-                    style: AppTextStyles.h3.copyWith(color: AppColors.textPrimaryLight),
-                    textAlign: TextAlign.center,
-                  ),
-                  const Gap(10),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: const TextStyle(
-                          color: Colors.black54, fontSize: 14, height: 1.5),
-                      children: [
-                        TextSpan(
-                            text:
-                                'Hey ${userName.isEmpty ? "there" : userName}! '),
-                        const TextSpan(
-                            text:
-                                'Without an AI provider, Bill Generation, Ask AI Chat, and AI Insights will not be available.'),
-                      ],
-                    ),
-                  ),
-                  const Gap(20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: onConfigure,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text('Configure Now'),
-                        ),
-                      ),
-                      const Gap(10),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: onSkip,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.black54,
-                            side: BorderSide(
-                                color: Colors.grey.shade300),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text('Skip'),
-                        ),
-                      ),
-                    ],
-                  ),
+                  TextSpan(
+                      text: 'Hey ${userName.isEmpty ? "there" : userName}! '),
+                  const TextSpan(
+                      text:
+                          'Without an AI provider, Bill Generation, Ask AI Chat, and AI Insights will not be available.'),
                 ],
-          ),
+              ),
+            ),
+            const Gap(20),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onConfigure,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Configure Now'),
+                  ),
+                ),
+                const Gap(10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: onSkip,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.black54,
+                      side: BorderSide(color: Colors.grey.shade300),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Skip'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
+      ),
     );
   }
 }
@@ -1596,7 +1617,7 @@ class _SkipAiModal extends StatelessWidget {
 // ── Shared input widgets ──────────────────────────────────────────────────────
 
 class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.text, this.required = false, this.optional = false});
+  const _FieldLabel({required this.text, this.required = false});
   final String text;
   final bool required;
   final bool optional;
@@ -1615,7 +1636,8 @@ class _FieldLabel extends StatelessWidget {
         ),
         if (required) ...[
           const Gap(4),
-          const Text('*', style: TextStyle(color: AppColors.error, fontSize: 13)),
+          const Text('*',
+              style: TextStyle(color: AppColors.error, fontSize: 13)),
         ],
         if (optional) ...[
           const Gap(4),
@@ -1634,12 +1656,7 @@ class _InputField extends StatelessWidget {
     required this.controller,
     this.hint,
     this.icon,
-    this.errorText,
     this.onChanged,
-    this.obscureText = false,
-    this.suffixIcon,
-    this.keyboardType,
-    this.inputFormatters,
   });
 
   final TextEditingController controller;
@@ -1662,9 +1679,7 @@ class _InputField extends StatelessWidget {
             color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: errorText != null
-                  ? AppColors.error
-                  : Colors.grey.shade300,
+              color: errorText != null ? AppColors.error : Colors.grey.shade300,
             ),
           ),
           child: TextField(
@@ -1673,7 +1688,8 @@ class _InputField extends StatelessWidget {
             obscureText: obscureText,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
-            style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
+            style: const TextStyle(
+                color: AppColors.textPrimaryLight, fontSize: 15),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: const TextStyle(color: Colors.black38, fontSize: 15),
@@ -1689,8 +1705,8 @@ class _InputField extends StatelessWidget {
               disabledBorder: InputBorder.none,
               errorBorder: InputBorder.none,
               focusedErrorBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             ),
           ),
         ),
@@ -1698,8 +1714,7 @@ class _InputField extends StatelessWidget {
           const Gap(6),
           Text(
             errorText!,
-            style:
-                const TextStyle(color: AppColors.error, fontSize: 12),
+            style: const TextStyle(color: AppColors.error, fontSize: 12),
           ),
         ],
       ],
@@ -1710,8 +1725,6 @@ class _InputField extends StatelessWidget {
 class _TextAreaField extends StatelessWidget {
   const _TextAreaField({
     required this.controller,
-    this.hint,
-    this.maxLength,
   });
 
   final TextEditingController controller;
@@ -1730,7 +1743,7 @@ class _TextAreaField extends StatelessWidget {
         controller: controller,
         maxLines: 4,
         maxLength: maxLength,
-        style: TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
+        style: const TextStyle(color: AppColors.textPrimaryLight, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
@@ -1789,8 +1802,7 @@ class AccountSetupScreen extends ConsumerStatefulWidget {
   const AccountSetupScreen({super.key});
 
   @override
-  ConsumerState<AccountSetupScreen> createState() =>
-      _AccountSetupScreenState();
+  ConsumerState<AccountSetupScreen> createState() => _AccountSetupScreenState();
 }
 
 class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
@@ -1821,13 +1833,13 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
         if (userId != null) {
           unawaited(
             ref.read(notificationsProvider.notifier).createIfAbsent(
-              userId: userId,
-              type: 'ai_config_incomplete',
-              title: 'AI not configured',
-              message:
-                  'Add an API key in Settings → AI Configuration to unlock '
-                  'Bill Generation, Ask AI Chat, and AI Insights.',
-            ),
+                  userId: userId,
+                  type: 'ai_config_incomplete',
+                  title: 'AI not configured',
+                  message:
+                      'Add an API key in Settings → AI Configuration to unlock '
+                      'Bill Generation, Ask AI Chat, and AI Insights.',
+                ),
           );
         }
       }
@@ -1846,12 +1858,12 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
     if (_completing) {
       return Theme(
         data: AppTheme.light,
-        child: Scaffold(
+        child: const Scaffold(
           backgroundColor: AppColors.surfaceLight,
           body: Stack(
             children: [
-              const AppBackgroundEffects(),
-              const Center(
+              AppBackgroundEffects(),
+              Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1878,106 +1890,106 @@ class _AccountSetupScreenState extends ConsumerState<AccountSetupScreen> {
           children: [
             const AppBackgroundEffects(),
             SafeArea(
-            child: Column(
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Column(
-                    children: [
-                      // Logo row
-                      Row(
-                        children: [
-                          const AuthBrandLogo(size: 40),
-                          const Gap(10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'YesBill',
-                                style: AppTextStyles.h2.copyWith(
-                                    color: AppColors.textPrimaryLight,
-                                    fontWeight: FontWeight.w800),
-                              ),
-                              const Text(
-                                'OnBoard Profile',
-                                style: TextStyle(
-                                  color: Colors.black45,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.5,
+              child: Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Column(
+                      children: [
+                        // Logo row
+                        Row(
+                          children: [
+                            const AuthBrandLogo(size: 40),
+                            const Gap(10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'YesBill',
+                                  style: AppTextStyles.h2.copyWith(
+                                      color: AppColors.textPrimaryLight,
+                                      fontWeight: FontWeight.w800),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Text(
-                            'Step ${_step + 1} of 2',
-                            style: const TextStyle(
-                                color: Colors.black54, fontSize: 13),
-                          ),
-                        ],
+                                const Text(
+                                  'OnBoard Profile',
+                                  style: TextStyle(
+                                    color: Colors.black45,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              'Step ${_step + 1} of 2',
+                              style: const TextStyle(
+                                  color: Colors.black54, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        const Gap(20),
+                        _StepIndicator(current: _step),
+                      ],
+                    ),
+                  ),
+
+                  const Gap(24),
+
+                  // Step content
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (child, anim) => SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.3, 0),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                            parent: anim, curve: Curves.easeOutCubic)),
+                        child: FadeTransition(opacity: anim, child: child),
                       ),
-                      const Gap(20),
-                      _StepIndicator(current: _step),
-                    ],
-                  ),
-                ),
-
-                const Gap(24),
-
-                // Step content
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    transitionBuilder: (child, anim) => SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0.3, 0),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                          parent: anim, curve: Curves.easeOutCubic)),
-                      child: FadeTransition(opacity: anim, child: child),
-                    ),
-                    child: KeyedSubtree(
-                      key: ValueKey(_step),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-                        child: _step == 0
-                            ? _ProfileStep(
-                                onNext: (name) => setState(() {
-                                  _displayName = name;
-                                  _step = 1;
-                                }),
-                              )
-                            : _AiStep(
-                                userName: _displayName,
-                                onComplete: ({required bool skippedAi}) =>
-                                    _complete(skippedAi: skippedAi),
-                              ),
+                      child: KeyedSubtree(
+                        key: ValueKey(_step),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                          child: _step == 0
+                              ? _ProfileStep(
+                                  onNext: (name) => setState(() {
+                                    _displayName = name;
+                                    _step = 1;
+                                  }),
+                                )
+                              : _AiStep(
+                                  userName: _displayName,
+                                  onComplete: ({required bool skippedAi}) =>
+                                      _complete(skippedAi: skippedAi),
+                                ),
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                // Sign-out option — lets the user switch accounts if needed
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                  child: TextButton.icon(
-                    onPressed: () async {
-                      await ref.read(authProvider.notifier).signOut();
-                      if (mounted) context.go('/login');
-                    },
-                    icon: const Icon(LucideIcons.logOut, size: 16),
-                    label: const Text('Sign out'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.red.shade400,
+                  // Sign-out option — lets the user switch accounts if needed
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        await ref.read(authProvider.notifier).signOut();
+                        if (mounted) context.go('/login');
+                      },
+                      icon: const Icon(LucideIcons.logOut, size: 16),
+                      label: const Text('Sign out'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red.shade400,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ],
         ),
       ),

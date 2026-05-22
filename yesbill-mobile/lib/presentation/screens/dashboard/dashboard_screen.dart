@@ -19,7 +19,6 @@ import '../../../providers/dashboard_provider.dart';
 import '../../../providers/services_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/loading_shimmer.dart';
-import '../../widgets/common/yesbill_loading_widget.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -33,7 +32,8 @@ class DashboardScreen extends ConsumerWidget {
 
     final now = DateTime.now();
     final yearMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
-    final todayKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayKey =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final confirmationsAsync = ref.watch(monthConfirmationsProvider(yearMonth));
     final monthConfirmations =
         confirmationsAsync.valueOrNull ?? const <ServiceConfirmation>[];
@@ -86,7 +86,8 @@ class DashboardScreen extends ConsumerWidget {
           _DashboardHero(
             displayName: displayName,
             email: user?.email,
-            billsDueCount: billsAsync.valueOrNull?.where((bill) => !bill.isPaid).length,
+            billsDueCount:
+                billsAsync.valueOrNull?.where((bill) => !bill.isPaid).length,
             todayLabel: now.toFullDate(),
             activeTodayCount: todayServices.length,
             onAddService: () => context.push('/services/add'),
@@ -96,9 +97,12 @@ class DashboardScreen extends ConsumerWidget {
           _TopStatRow(
             statsAsync: statsAsync,
             onRetry: () => ref.invalidate(dashboardStatsProvider),
-          ).animate(delay: 80.ms).fadeIn(duration: 300.ms).slideY(begin: 0.06, end: 0),
+          )
+              .animate(delay: 80.ms)
+              .fadeIn(duration: 300.ms)
+              .slideY(begin: 0.06, end: 0),
           const SizedBox(height: 8),
-          if (statsAsync.valueOrNull?.hasProviderServices == true) ...[  
+          if (statsAsync.valueOrNull?.hasProviderServices == true) ...[
             _NetBalanceCard(stats: statsAsync.valueOrNull!),
             const SizedBox(height: 8),
           ],
@@ -113,7 +117,10 @@ class DashboardScreen extends ConsumerWidget {
             onOpenAnalytics: () => context.go('/analytics'),
             onGenerateBill: () => context.push('/bills/generate'),
             onOpenAskAi: () => context.go('/chat'),
-          ).animate(delay: 220.ms).fadeIn(duration: 320.ms).slideY(begin: 0.06, end: 0),
+          )
+              .animate(delay: 220.ms)
+              .fadeIn(duration: 320.ms)
+              .slideY(begin: 0.06, end: 0),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -261,7 +268,8 @@ class _DashboardHero extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(999),
@@ -336,9 +344,7 @@ class _HeroActionButton extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: filled
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.12),
+            color: filled ? Colors.white : Colors.white.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(999),
             border: filled
                 ? null
@@ -400,7 +406,8 @@ class _TopStatRow extends StatelessWidget {
         _StatPill(
           title: 'DELIVERY RATE',
           value: '${stats.deliveryRate.toStringAsFixed(1)}%',
-          subtitle: '${stats.deliveredThisMonth + stats.skippedThisMonth} tracked',
+          subtitle:
+              '${stats.deliveredThisMonth + stats.skippedThisMonth} tracked',
           icon: LucideIcons.trendingUp,
           accent: const Color(0xFF22C55E),
         ),
@@ -433,12 +440,21 @@ class _NetBalanceCard extends StatelessWidget {
     final isPositive = stats.netBalance >= 0;
     final isDark = AppSurfaces.isDark(context);
     final bgColor = isPositive
-        ? (isDark ? const Color(0xFF059669).withOpacity(0.12) : const Color(0xFFECFDF5))
-        : (isDark ? const Color(0xFFE11D48).withOpacity(0.12) : const Color(0xFFFFF1F2));
+        ? (isDark
+            ? const Color(0xFF059669).withOpacity(0.12)
+            : const Color(0xFFECFDF5))
+        : (isDark
+            ? const Color(0xFFE11D48).withOpacity(0.12)
+            : const Color(0xFFFFF1F2));
     final borderColor = isPositive
-        ? (isDark ? const Color(0xFF6EE7B7).withOpacity(0.25) : const Color(0xFF6EE7B7))
-        : (isDark ? const Color(0xFFFDA4AF).withOpacity(0.25) : const Color(0xFFFDA4AF));
-    final iconColor = isPositive ? const Color(0xFF059669) : const Color(0xFFE11D48);
+        ? (isDark
+            ? const Color(0xFF6EE7B7).withOpacity(0.25)
+            : const Color(0xFF6EE7B7))
+        : (isDark
+            ? const Color(0xFFFDA4AF).withOpacity(0.25)
+            : const Color(0xFFFDA4AF));
+    final iconColor =
+        isPositive ? const Color(0xFF059669) : const Color(0xFFE11D48);
     final valueColor = isPositive
         ? (isDark ? AppColors.success : const Color(0xFF047857))
         : (isDark ? AppColors.error : const Color(0xFFBE123C));
@@ -457,7 +473,9 @@ class _NetBalanceCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isPositive ? const Color(0xFFD1FAE5) : const Color(0xFFFFE4E6),
+              color: isPositive
+                  ? const Color(0xFFD1FAE5)
+                  : const Color(0xFFFFE4E6),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -668,7 +686,8 @@ class _FeaturedBillingCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(999),
@@ -707,15 +726,14 @@ class _FeaturedBillingCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    service == null
-                        ? 'SERVICE'
-                        : service.name.toUpperCase(),
+                    service.name.toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -726,7 +744,7 @@ class _FeaturedBillingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  CurrencyFormatter.formatCompact(service?.price ?? 142),
+                  CurrencyFormatter.formatCompact(service.price ?? 142),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 29,
@@ -735,9 +753,7 @@ class _FeaturedBillingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  service == null
-                      ? 'Due in 4 hours • Metro Grid Corp'
-                      : 'Due on billing day ${service.billingDay} • ${service.deliveryTypeLabel}',
+                  'Due on billing day ${service.billingDay} • ${service.deliveryTypeLabel}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.92),
                     fontSize: 12.5,
@@ -850,21 +866,31 @@ class _ServicePreview extends StatelessWidget {
             final isSkipped = status == 'skipped';
 
             final isDark = AppSurfaces.isDark(context);
-    final bgColor = isDelivered
-        ? (isDark ? const Color(0xFF059669).withOpacity(0.15) : const Color(0xFFF0FDF4))
-        : isSkipped
-            ? (isDark ? const Color(0xFFE11D48).withOpacity(0.15) : const Color(0xFFFFF1F2))
-            : _dashboardCardColor(context);
-    final borderColor = isDelivered
-        ? (isDark ? const Color(0xFF6EE7B7).withOpacity(0.3) : const Color(0xFF86EFAC))
-        : isSkipped
-            ? (isDark ? const Color(0xFFFCA5A5).withOpacity(0.3) : const Color(0xFFFCA5A5))
-            : (isDark ? AppColors.cardDarkBorder : const Color(0xFFE5E7EB));
-    final statusColor = isDelivered
-        ? AppColors.success
-        : isSkipped
-            ? AppColors.error
-            : Theme.of(context).colorScheme.onSurfaceVariant;
+            final bgColor = isDelivered
+                ? (isDark
+                    ? const Color(0xFF059669).withOpacity(0.15)
+                    : const Color(0xFFF0FDF4))
+                : isSkipped
+                    ? (isDark
+                        ? const Color(0xFFE11D48).withOpacity(0.15)
+                        : const Color(0xFFFFF1F2))
+                    : _dashboardCardColor(context);
+            final borderColor = isDelivered
+                ? (isDark
+                    ? const Color(0xFF6EE7B7).withOpacity(0.3)
+                    : const Color(0xFF86EFAC))
+                : isSkipped
+                    ? (isDark
+                        ? const Color(0xFFFCA5A5).withOpacity(0.3)
+                        : const Color(0xFFFCA5A5))
+                    : (isDark
+                        ? AppColors.cardDarkBorder
+                        : const Color(0xFFE5E7EB));
+            final statusColor = isDelivered
+                ? AppColors.success
+                : isSkipped
+                    ? AppColors.error
+                    : Theme.of(context).colorScheme.onSurfaceVariant;
             final statusLabel = isDelivered
                 ? service.deliveredLabel.toUpperCase()
                 : isSkipped
@@ -986,13 +1012,12 @@ class _UpcomingRenewals extends StatelessWidget {
       loading: () => const ShimmerList(count: 3, itemHeight: 58),
       error: (error, _) => ErrorRetryView(error: error, onRetry: onRetry),
       data: (services) {
-        final billableServices = services
-            .where((s) => s.isMonthly || s.isYearly)
-            .toList()
-          ..sort(
-            (a, b) => _nextBillingDateForService(a)
-                .compareTo(_nextBillingDateForService(b)),
-          );
+        final billableServices =
+            services.where((s) => s.isMonthly || s.isYearly).toList()
+              ..sort(
+                (a, b) => _nextBillingDateForService(a)
+                    .compareTo(_nextBillingDateForService(b)),
+              );
 
         if (billableServices.isEmpty) {
           return Container(
@@ -1021,9 +1046,7 @@ class _UpcomingRenewals extends StatelessWidget {
         return Column(
           children: billableServices.take(3).map((service) {
             final nextBilling = _nextBillingDateForService(service);
-            final daysUntil = nextBilling
-                .difference(DateTime.now())
-                .inDays;
+            final daysUntil = nextBilling.difference(DateTime.now()).inDays;
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -1074,7 +1097,8 @@ class _UpcomingRenewals extends StatelessWidget {
                         Text(
                           '${service.isYearly ? 'YEARLY' : 'MONTHLY'} • ${nextBilling.toShortDate()}',
                           style: AppTextStyles.labelSm.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -1098,9 +1122,7 @@ class _UpcomingRenewals extends StatelessWidget {
                         style: AppTextStyles.labelSm.copyWith(
                           color: daysUntil <= 3
                               ? const Color(0xFFD97706)
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -1598,8 +1620,7 @@ bool _isServiceScheduledOnDate(UserService service, DateTime date) {
   }
   if (service.isMonthly) return dayNum == billingDay;
   if (service.isYearly) {
-    return monthIdx == (service.billingMonth ?? 1) - 1 &&
-        dayNum == billingDay;
+    return monthIdx == (service.billingMonth ?? 1) - 1 && dayNum == billingDay;
   }
   return false;
 }
@@ -1656,7 +1677,8 @@ List<_RecentActivityEntry> _buildRecentActivity({
 
   for (final confirmation in confirmations) {
     final date = DateTime.tryParse(confirmation.date);
-    if (date == null || date.isBefore(DateTime(cutoff.year, cutoff.month, cutoff.day))) {
+    if (date == null ||
+        date.isBefore(DateTime(cutoff.year, cutoff.month, cutoff.day))) {
       continue;
     }
 
@@ -1698,8 +1720,7 @@ class _RecentActivityAccumulator {
   final List<String> skippedNames = [];
 }
 
-  Color _dashboardCardColor(BuildContext context) =>
-    AppSurfaces.panel(context);
+Color _dashboardCardColor(BuildContext context) => AppSurfaces.panel(context);
 
-  BoxBorder _dashboardCardBorder(BuildContext context) =>
+BoxBorder _dashboardCardBorder(BuildContext context) =>
     AppSurfaces.cardBorder(context);

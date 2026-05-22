@@ -54,6 +54,7 @@ import { usePageReady } from "@/hooks/usePageReady";
 import { useUser } from "@/hooks/useUser";
 import { analyticsService } from "@/services/dataService";
 import { aiAnalyticsAPI } from "@/services/api";
+import ModelProviderIcon from "@/components/ui/ModelProviderIcon";
 
 const USD_TO_INR = 85;
 
@@ -405,7 +406,10 @@ function AIUsageTab() {
                 transition={{ delay: i * 0.07 }}
               >
                 <div className="flex items-center justify-between text-sm mb-1.5">
-                  <span className="font-semibold text-gray-700 truncate max-w-[180px]">{m.model}</span>
+                  <span className="flex items-center gap-1.5 font-semibold text-gray-700 truncate max-w-[200px]">
+                    <ModelProviderIcon model={m.model} size={16} />
+                    {m.model}
+                  </span>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-gray-400">{m.messages} msgs</span>
                     <span className="font-bold text-gray-900">₹{m.cost_inr.toFixed(2)}</span>

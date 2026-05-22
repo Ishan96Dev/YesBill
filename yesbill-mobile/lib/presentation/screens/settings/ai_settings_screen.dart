@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -11,6 +10,7 @@ import '../../../core/theme/app_surfaces.dart';
 import '../../../providers/ai_settings_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/gradient_card.dart';
+import '../../widgets/common/provider_badge.dart';
 
 class AiSettingsScreen extends ConsumerWidget {
   const AiSettingsScreen({super.key});
@@ -92,7 +92,7 @@ class AiSettingsScreen extends ConsumerWidget {
                             horizontal: AppSpacing.md,
                             vertical: AppSpacing.xs,
                           ),
-                          leading: _ProviderBadge(providerId: p.id),
+                          leading: ProviderBadge(providerId: p.id, size: 44),
                           title: Text(
                             p.name,
                             style: AppTextStyles.bodyLg.copyWith(
@@ -122,72 +122,6 @@ class AiSettingsScreen extends ConsumerWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-String? _providerLocalAsset(String providerId) {
-  return switch (providerId) {
-    'openai' => 'assets/images/openai.png',
-    'anthropic' => 'assets/images/anthropic.png',
-    'google' => 'assets/images/google-ai.png',
-    'ollama' => 'assets/images/ollama.png',
-    _ => null,
-  };
-}
-
-class _ProviderBadge extends StatelessWidget {
-  const _ProviderBadge({required this.providerId});
-
-  final String providerId;
-
-  @override
-  Widget build(BuildContext context) {
-    final assetPath = _providerLocalAsset(providerId);
-
-    if (assetPath != null) {
-      return Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: AppSurfaces.elevated(context),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: AppSurfaces.softShadow(context),
-        ),
-        padding: const EdgeInsets.all(6),
-        child: Image.asset(
-          assetPath,
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
-        ),
-      );
-    }
-
-    final color = switch (providerId) {
-      'openai' => AppColors.openAiGreen,
-      'anthropic' => AppColors.anthropicOrange,
-      'google' => AppColors.googleBlue,
-      _ => AppColors.primary,
-    };
-    final label = switch (providerId) {
-      'openai' => 'O',
-      'anthropic' => 'A',
-      'google' => 'G',
-      _ => '?',
-    };
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(color: color, fontWeight: FontWeight.w800),
         ),
       ),
     );

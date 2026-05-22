@@ -126,18 +126,29 @@ class PdfService {
                 ],
               ),
               ...bill.items.map((item) {
-                final m = item as Map<String, dynamic>;
+                final m = (item as Map?)?.cast<String, dynamic>() ?? {};
+                // Support both old and new field names from the backend
+                final name = m['service_name'] as String? ??
+                    m['name'] as String? ??
+                    m['service'] as String? ??
+                    '-';
+                final days = ((m['daysDelivered'] as num?)?.toInt() ??
+                        (m['days_delivered'] as num?)?.toInt())
+                    ?.toString() ??
+                    '-';
+                final rate = (m['ratePerDay'] as num?)?.toDouble() ??
+                    (m['rate'] as num?)?.toDouble() ??
+                    0.0;
+                final amount = (m['total'] as num?)?.toDouble() ??
+                    (m['amount'] as num?)?.toDouble() ??
+                    0.0;
                 return pw.TableRow(children: [
-                  _cell(m['name']?.toString() ?? '-'),
-                  _cell(m['days_delivered']?.toString() ?? '-'),
-                  _cell(CurrencyFormatter.format(
-                    (m['rate'] as num?)?.toDouble() ?? 0,
-                    currency: currency,
-                  )),
-                  _cell(CurrencyFormatter.format(
-                    (m['amount'] as num?)?.toDouble() ?? 0,
-                    currency: currency,
-                  )),
+                  _cell(name),
+                  _cell(days),
+                  _cell(rate > 0
+                      ? CurrencyFormatter.format(rate, currency: currency)
+                      : '-'),
+                  _cell(CurrencyFormatter.format(amount, currency: currency)),
                 ]);
               }),
             ],

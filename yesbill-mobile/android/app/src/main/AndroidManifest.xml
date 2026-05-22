@@ -67,6 +67,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="yesbill" />
             </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="yesbill" android:host="app" />
+            </intent-filter>
         </activity>
 
         <!-- FCM Service -->

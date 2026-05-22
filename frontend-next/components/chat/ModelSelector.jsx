@@ -1,10 +1,11 @@
 'use client'
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, Cpu } from "lucide-react";
 import { chatService } from "../../services/chatService";
+import ModelProviderIcon, { detectProvider } from "../ui/ModelProviderIcon";
 
 export default function ModelSelector({ selectedModel, onModelChange, onModelStatusChange, onLoadingChange, initialData }) {
   const [models, setModels] = useState(() =>
@@ -115,8 +116,8 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
   }, [selectedInfo, models, serverSelectedModel, serverSelectedInfo, onModelStatusChange]);
 
   if (loading) return (
-    <div className="flex items-center gap-2 h-8 w-[160px] rounded-xl bg-gray-100 px-3 animate-pulse">
-      <div className="w-3.5 h-3.5 rounded bg-gray-200 flex-shrink-0" />
+    <div className="flex items-center gap-2 h-8 w-[180px] rounded-xl bg-gray-100 px-3 animate-pulse">
+      <div className="w-3.5 h-3.5 rounded-full bg-gray-200 flex-shrink-0" />
       <div className="h-3 w-20 rounded bg-gray-200" />
       <div className="w-3 h-3 rounded bg-gray-200 ml-auto" />
     </div>
@@ -137,13 +138,16 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
     );
   }
 
+
   // User IS configured but backend couldn't provide a model list yet (e.g. cold-start
   // timeout fell back to Supabase which returns models:[]). Show current model as a
   // non-interactive label so the page doesn't falsely claim AI is unconfigured.
   if (models.length === 0) {
     return (
       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-500">
-        <Cpu className="w-3.5 h-3.5 text-gray-400" />
+        {serverSelectedModel
+          ? <ModelProviderIcon model={serverSelectedModel} size={14} />
+          : <Cpu className="w-3.5 h-3.5 text-gray-400" />}
         <span>{serverSelectedModel || "AI Model"}</span>
       </div>
     );
@@ -171,7 +175,9 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all"
       >
-        <Cpu className="w-3.5 h-3.5 text-gray-400" />
+        {current?.id
+          ? <ModelProviderIcon model={current.id} size={14} />
+          : <Cpu className="w-3.5 h-3.5 text-gray-400" />}
         <span>{current?.label || "Model"}</span>
         {current?.is_preview && (
           <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
@@ -208,7 +214,8 @@ export default function ModelSelector({ selectedModel, onModelChange, onModelSta
                       : "text-gray-700 hover:bg-gray-50"
                     }`}
                 >
-                  <span className="truncate">{m.label}</span>
+                  <ModelProviderIcon model={m.id} size={14} className="opacity-90" />
+                  <span className="truncate flex-1">{m.label}</span>
                   {m.is_preview && (
                     <span className="ml-auto rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
                       Preview

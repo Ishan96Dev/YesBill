@@ -1,15 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 
 import '../../../core/extensions/context_extensions.dart';
 import '../../../core/theme/app_colors.dart';
@@ -20,6 +14,7 @@ import '../../../providers/bills_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/loading_shimmer.dart';
 import '../../widgets/common/yesbill_loading_widget.dart';
+import '../../../services/pdf_service.dart';
 
 enum _BillRoleFilter { all, consumer, provider }
 
@@ -39,186 +34,190 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
     final billsAsync = ref.watch(generatedBillsProvider);
 
     return RefreshIndicator(
-        onRefresh: () async => ref.invalidate(generatedBillsProvider),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Bills',
-                    style: AppTextStyles.h1.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w700,
-                    ),
+      onRefresh: () async => ref.invalidate(generatedBillsProvider),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Bills',
+                  style: AppTextStyles.h1.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                Container(
-                  width: 28,
-                  height: 28,
+              ),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  border: _billsCardBorder(context),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A2D3337),
+                      blurRadius: 16,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  LucideIcons.slidersHorizontal,
+                  size: 13,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline,
+                width: 0.25,
+              ),
+            ),
+            child: TextField(
+              onChanged: (value) => setState(() => _query = value),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              decoration: InputDecoration(
+                hintText: 'Search subscriptions...',
+                hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                border: InputBorder.none,
+                prefixIcon: Icon(
+                  LucideIcons.search,
+                  size: 18,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurfaceVariant
+                      .withOpacity(0.8),
+                ),
+                suffixIcon: Container(
+                  margin: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  ),
+                  child: Icon(
+                    LucideIcons.chevronRight,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _BillFilterTabs(
+            selected: _roleFilter,
+            onChanged: (v) => setState(() => _roleFilter = v),
+          ),
+          const SizedBox(height: 16),
+          _GenerateBillPromptCard(
+            onTap: () => context.push('/bills/generate'),
+          ),
+          const SizedBox(height: 16),
+          billsAsync.when(
+            loading: () => const ShimmerList(count: 1, itemHeight: 110),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (bills) => _BillsSummaryCard(bills: bills),
+          ),
+          const SizedBox(height: 12),
+          billsAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (bills) => _StatusDots(bills: bills),
+          ),
+          const SizedBox(height: 16),
+          billsAsync.when(
+            loading: () => const YesBillLoadingWidget(
+              label: 'Loading Bills...',
+              sublabel: 'Fetching your billing history',
+            ),
+            error: (error, _) => ErrorRetryView(
+              error: error,
+              onRetry: () => ref.invalidate(generatedBillsProvider),
+            ),
+            data: (bills) {
+              final roleFiltered = _roleFilter == _BillRoleFilter.all
+                  ? bills
+                  : bills.where((bill) {
+                      final role =
+                          bill.payload['service_role'] as String? ?? 'consumer';
+                      return role == _roleFilter.name;
+                    }).toList();
+
+              final query = _query.trim().toLowerCase();
+              final filtered = roleFiltered.where((bill) {
+                if (query.isEmpty) return true;
+                return bill.yearMonth.toLowerCase().contains(query) ||
+                    bill.id.toLowerCase().contains(query);
+              }).toList();
+
+              if (filtered.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _billsCardColor(context),
+                    borderRadius: BorderRadius.circular(16),
                     border: _billsCardBorder(context),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x0A2D3337),
-                        blurRadius: 16,
-                        offset: Offset(0, 4),
+                        color: Color(0x0F2D3337),
+                        blurRadius: 24,
+                        offset: Offset(0, 8),
                       ),
                     ],
                   ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    LucideIcons.slidersHorizontal,
-                    size: 13,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline,
-                  width: 0.25,
-                ),
-              ),
-              child: TextField(
-                onChanged: (value) => setState(() => _query = value),
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                decoration: InputDecoration(
-                  hintText: 'Search subscriptions...',
-                  hintStyle:
-                      TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  border: InputBorder.none,
-                  prefixIcon: Icon(
-                    LucideIcons.search,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
-                  ),
-                  suffixIcon: Container(
-                    margin: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHigh,
-                    ),
-                    child: Icon(
-                      LucideIcons.chevronRight,
-                      size: 14,
+                  child: Text(
+                    _roleFilter != _BillRoleFilter.all && query.isEmpty
+                        ? _roleFilter == _BillRoleFilter.consumer
+                            ? 'No consumer bills found.'
+                            : 'No invoices found.'
+                        : 'No generated bills found for your query.',
+                    style: AppTextStyles.body.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            _BillFilterTabs(
-              selected: _roleFilter,
-              onChanged: (v) => setState(() => _roleFilter = v),
-            ),
-            const SizedBox(height: 16),
-            _GenerateBillPromptCard(
-              onTap: () => context.push('/bills/generate'),
-            ),
-            const SizedBox(height: 16),
-            billsAsync.when(
-              loading: () => const ShimmerList(count: 1, itemHeight: 110),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (bills) => _BillsSummaryCard(bills: bills),
-            ),
-            const SizedBox(height: 12),
-            billsAsync.when(
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (bills) => _StatusDots(bills: bills),
-            ),
-            const SizedBox(height: 16),
-            billsAsync.when(
-              loading: () => const YesBillLoadingWidget(
-                label: 'Loading Bills...',
-                sublabel: 'Fetching your billing history',
-              ),
-              error: (error, _) => ErrorRetryView(
-                error: error,
-                onRetry: () => ref.invalidate(generatedBillsProvider),
-              ),
-              data: (bills) {
-                final roleFiltered = _roleFilter == _BillRoleFilter.all
-                    ? bills
-                    : bills.where((bill) {
-                        final role =
-                            bill.payload['service_role'] as String? ??
-                                'consumer';
-                        return role == _roleFilter.name;
-                      }).toList();
-
-                final query = _query.trim().toLowerCase();
-                final filtered = roleFiltered.where((bill) {
-                  if (query.isEmpty) return true;
-                  return bill.yearMonth.toLowerCase().contains(query) ||
-                      bill.id.toLowerCase().contains(query);
-                }).toList();
-
-                if (filtered.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: _billsCardColor(context),
-                      borderRadius: BorderRadius.circular(16),
-                      border: _billsCardBorder(context),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x0F2D3337),
-                          blurRadius: 24,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      _roleFilter != _BillRoleFilter.all && query.isEmpty
-                          ? _roleFilter == _BillRoleFilter.consumer
-                              ? 'No consumer bills found.'
-                              : 'No invoices found.'
-                          : 'No generated bills found for your query.',
-                      style: AppTextStyles.body.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-
-                final grouped = <String, List<BillListItem>>{};
-                for (final bill in filtered) {
-                  grouped.putIfAbsent(bill.yearMonth, () => <BillListItem>[]).add(bill);
-                }
-
-                final groups = grouped.entries.toList()
-                  ..sort((a, b) => b.key.compareTo(a.key));
-
-                return Column(
-                  children: groups
-                      .asMap()
-                      .entries
-                      .map(
-                        (e) => _MonthSection(
-                          monthKey: e.value.key,
-                          bills: e.value.value,
-                        ).animate(delay: Duration(milliseconds: 60 * e.key))
-                            .fadeIn(duration: 280.ms)
-                            .slideY(begin: 0.05, end: 0),
-                      )
-                      .toList(),
                 );
-              },
-            ),
-          ],
-        ),
+              }
+
+              final grouped = <String, List<BillListItem>>{};
+              for (final bill in filtered) {
+                grouped
+                    .putIfAbsent(bill.yearMonth, () => <BillListItem>[])
+                    .add(bill);
+              }
+
+              final groups = grouped.entries.toList()
+                ..sort((a, b) => b.key.compareTo(a.key));
+
+              return Column(
+                children: groups
+                    .asMap()
+                    .entries
+                    .map(
+                      (e) => _MonthSection(
+                        monthKey: e.value.key,
+                        bills: e.value.value,
+                      )
+                          .animate(delay: Duration(milliseconds: 60 * e.key))
+                          .fadeIn(duration: 280.ms)
+                          .slideY(begin: 0.05, end: 0),
+                    )
+                    .toList(),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -231,7 +230,8 @@ class _BillsSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final paid = bills.where((bill) => bill.isPaid).toList();
-    final totalPaid = paid.fold<double>(0, (sum, bill) => sum + bill.totalAmount);
+    final totalPaid =
+        paid.fold<double>(0, (sum, bill) => sum + bill.totalAmount);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -544,7 +544,6 @@ class _GenerateBillPromptCard extends StatelessWidget {
 class _BillTile extends ConsumerStatefulWidget {
   const _BillTile({
     required this.bill,
-    this.onMarkPaid,
   });
 
   final BillListItem bill;
@@ -568,9 +567,7 @@ class _BillTileState extends ConsumerState<_BillTile> {
 
   String get _shortName {
     try {
-      return DateFormat('MMMM yyyy').format(
-              DateTime.parse('${widget.bill.yearMonth}-01')) +
-          ' Bill';
+      return '${DateFormat('MMMM yyyy').format(DateTime.parse('${widget.bill.yearMonth}-01'))} Bill';
     } catch (_) {
       return 'Bill ${widget.bill.id.substring(0, 6).toUpperCase()}';
     }
@@ -611,20 +608,18 @@ class _BillTileState extends ConsumerState<_BillTile> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Mark as paid',
-                      style: AppTextStyles.h4),
+                  const Text('Mark as paid', style: AppTextStyles.h4),
                   const SizedBox(height: 4),
                   Text(
                     CurrencyFormatter.formatCompact(
                       widget.bill.totalAmount,
                       currency: widget.bill.currency,
                     ),
-                    style: AppTextStyles.h3.copyWith(
-                        color: AppColors.success),
+                    style: AppTextStyles.h3.copyWith(color: AppColors.success),
                   ),
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
-                    value: _paymentMethod,
+                    initialValue: _paymentMethod,
                     decoration: const InputDecoration(
                       labelText: 'Payment method',
                     ),
@@ -632,17 +627,13 @@ class _BillTileState extends ConsumerState<_BillTile> {
                       DropdownMenuItem(value: 'cash', child: Text('Cash')),
                       DropdownMenuItem(value: 'upi', child: Text('UPI')),
                       DropdownMenuItem(
-                          value: 'bank_transfer',
-                          child: Text('Bank Transfer')),
+                          value: 'bank_transfer', child: Text('Bank Transfer')),
                       DropdownMenuItem(
-                          value: 'credit_card',
-                          child: Text('Credit Card')),
+                          value: 'credit_card', child: Text('Credit Card')),
                       DropdownMenuItem(
-                          value: 'debit_card',
-                          child: Text('Debit Card')),
+                          value: 'debit_card', child: Text('Debit Card')),
                       DropdownMenuItem(
-                          value: 'net_banking',
-                          child: Text('Net Banking')),
+                          value: 'net_banking', child: Text('Net Banking')),
                     ],
                     onChanged: (v) {
                       if (v != null) {
@@ -718,8 +709,8 @@ class _BillTileState extends ConsumerState<_BillTile> {
               const SizedBox(width: 8),
               Expanded(
                 child: FilledButton(
-                  style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.error),
+                  style:
+                      FilledButton.styleFrom(backgroundColor: AppColors.error),
                   onPressed: () => Navigator.pop(ctx, true),
                   child: const Text('Delete'),
                 ),
@@ -745,118 +736,7 @@ class _BillTileState extends ConsumerState<_BillTile> {
   Future<void> _exportPdf(BuildContext context) async {
     setState(() => _exporting = true);
     try {
-      final bill = widget.bill;
-      final monthLabel = () {
-        try {
-          return DateFormat('MMMM yyyy')
-              .format(DateTime.parse('${bill.yearMonth}-01'));
-        } catch (_) {
-          return bill.yearMonth;
-        }
-      }();
-      final pdfDoc = pw.Document();
-      pdfDoc.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        build: (pw.Context ctx) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                bill.billTitle ?? 'YesBill — $monthLabel',
-                style: pw.TextStyle(
-                    fontSize: 22, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Text(monthLabel,
-                  style: const pw.TextStyle(
-                      fontSize: 13, color: PdfColors.grey700)),
-              pw.SizedBox(height: 16),
-              pw.Divider(),
-              pw.SizedBox(height: 12),
-              ...bill.items.map((item) {
-                final row =
-                    (item as Map?)?.cast<String, dynamic>() ?? {};
-                final name = row['service_name'] as String? ??
-                    row['name'] as String? ??
-                    row['service'] as String? ??
-                    'Service';
-                final del = (row['daysDelivered'] as num?)?.toInt();
-                final skip = (row['daysSkipped'] as num?)?.toInt();
-                final rate = (row['ratePerDay'] as num?)?.toDouble();
-                final total = (row['total'] as num?)?.toDouble() ??
-                    (row['amount'] as num?)?.toDouble() ??
-                    0.0;
-                final details = [
-                  if (del != null) '$del days delivered',
-                  if (skip != null && skip > 0) '$skip skipped',
-                  if (rate != null) '₹${rate.toStringAsFixed(2)}/day',
-                ].join(' · ');
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 8),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(name,
-                                style: pw.TextStyle(
-                                    fontWeight: pw.FontWeight.bold)),
-                            if (details.isNotEmpty)
-                              pw.Text(details,
-                                  style: const pw.TextStyle(
-                                      fontSize: 11,
-                                      color: PdfColors.grey600)),
-                          ],
-                        ),
-                      ),
-                      pw.Text('₹${total.toStringAsFixed(2)}',
-                          style: pw.TextStyle(
-                              fontWeight: pw.FontWeight.bold)),
-                    ],
-                  ),
-                );
-              }),
-              pw.Divider(),
-              pw.SizedBox(height: 8),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Total',
-                      style: pw.TextStyle(
-                          fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                  pw.Text(
-                      '₹${bill.totalAmount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              if (bill.isPaid && bill.paidAt != null) ...[
-                pw.SizedBox(height: 8),
-                pw.Text(
-                  'Paid on ${DateFormat('d MMMM yyyy').format(bill.paidAt!)}',
-                  style: const pw.TextStyle(color: PdfColors.green700),
-                ),
-              ],
-              pw.SizedBox(height: 24),
-              pw.Text(
-                bill.aiModelUsed != null
-                    ? 'Generated by YesBill AI'
-                    : 'Generated by YesBill',
-                style: const pw.TextStyle(
-                    fontSize: 10, color: PdfColors.grey500)),
-            ],
-          );
-        },
-      ));
-      final bytes = await pdfDoc.save();
-      final filename = 'yesbill_${bill.yearMonth.replaceAll('-', '_')}.pdf';
-      if (mounted) {
-        await Printing.sharePdf(bytes: bytes, filename: filename);
-      }
+      await PdfService.exportBill(widget.bill);
     } catch (e) {
       if (mounted) context.showErrorSnackBar('Failed to generate PDF');
     } finally {
@@ -991,8 +871,7 @@ class _BillTileState extends ConsumerState<_BillTile> {
                         onPressed: () => _markPaidWithDialog(context),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.success,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           minimumSize: const Size(0, 28),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(
@@ -1099,15 +978,15 @@ class _SmallChip extends StatelessWidget {
   }
 }
 
-  Color _billsCardColor(BuildContext context) =>
+Color _billsCardColor(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
-      ? AppColors.cardDark
-      : Colors.white;
+        ? AppColors.cardDark
+        : Colors.white;
 
-  BoxBorder? _billsCardBorder(BuildContext context) =>
+BoxBorder? _billsCardBorder(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
-      ? Border.all(color: AppColors.cardDarkBorder)
-      : null;
+        ? Border.all(color: AppColors.cardDarkBorder)
+        : null;
 
 // ─── Filter Tabs ────────────────────────────────────────────────────────────
 
@@ -1157,7 +1036,10 @@ class _BillFilterTabs extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primary
-                        : Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                        : Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withValues(alpha: 0.4),
                     width: isSelected ? 1.5 : 0.5,
                   ),
                 ),

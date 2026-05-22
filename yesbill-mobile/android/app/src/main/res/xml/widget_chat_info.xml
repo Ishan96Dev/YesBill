@@ -9,6 +9,5 @@
                     android:previewLayout="@layout/widget_chat"
                     android:resizeMode="none"
                     android:widgetCategory="home_screen"
-                    android:widgetFeatures="reconfigurable"
                     android:previewImage="@mipmap/ic_launcher"
                     android:description="@string/widget_chat_description" />

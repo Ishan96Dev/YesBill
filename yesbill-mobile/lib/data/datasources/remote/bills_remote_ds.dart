@@ -26,7 +26,25 @@ class BillsRemoteDataSource {
           if (customNote != null) 'custom_note': customNote,
         },
       );
-      return GeneratedBill.fromJson(resp.data as Map<String, dynamic>);
+      final data = resp.data;
+      // Backend may return a List when multiple services are selected
+      final Map<String, dynamic> billData;
+      if (data is List && data.isNotEmpty) {
+        billData = (data.first as Map<String, dynamic>).map(
+          (k, v) => MapEntry(k, v),
+        );
+      } else if (data is Map<String, dynamic>) {
+        billData = data;
+      } else {
+        throw const FormatException('Unexpected bill response format');
+      }
+      // Ensure required fields have safe defaults so JSON parsing never throws
+      // a null-cast TypeError when the server omits optional fields.
+      billData.putIfAbsent('id', () => '');
+      billData.putIfAbsent('user_id', () => '');
+      billData.putIfAbsent('year_month', () => yearMonth);
+      billData.putIfAbsent('payload', () => <String, dynamic>{});
+      return GeneratedBill.fromJson(billData);
     } catch (e) {
       throw ErrorHandler.handle(e);
     }

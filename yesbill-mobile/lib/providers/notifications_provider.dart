@@ -181,7 +181,7 @@ class NotificationsNotifier
       // Prepend to local in-memory state so the bell updates immediately.
       final current = state.valueOrNull ?? const <AppNotification>[];
       state = AsyncData([
-        AppNotification.fromMap(data as Map<String, dynamic>),
+        AppNotification.fromMap(data),
         ...current,
       ]);
     } catch (e) {

@@ -245,8 +245,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     List<UserService> services,
   ) {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final todayConfs =
-        confirmations.where((c) => c.date == today).toList();
+    final todayConfs = confirmations.where((c) => c.date == today).toList();
 
     final statusMap = <String, String>{
       for (final c in todayConfs) c.serviceId: c.status,
@@ -461,7 +460,9 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                                         size: 16,
                                       ),
                                       onTap: () {
-                                        if (!isCurrent) router.go(destination.path);
+                                        if (!isCurrent) {
+                                          router.go(destination.path);
+                                        }
                                         Navigator.of(sheetContext).pop();
                                       },
                                     ),
@@ -651,8 +652,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
       monthConfirmationsProvider(currentYearMonth),
       (_, next) {
         if (next.hasValue) {
-          final services =
-              ref.read(activeServicesProvider).valueOrNull ?? [];
+          final services = ref.read(activeServicesProvider).valueOrNull ?? [];
           _pushCalendarWidget(next.value!, services);
         }
       },
@@ -1076,8 +1076,6 @@ class _BadgeBellButton extends StatelessWidget {
     );
   }
 }
-
-
 
 class _ShellBottomArea extends StatelessWidget {
   const _ShellBottomArea({
@@ -1596,8 +1594,8 @@ class _ContextActionFab extends StatelessWidget {
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-      child: const Icon(LucideIcons.plus, size: 18),
       heroTag: heroTag,
+      child: const Icon(LucideIcons.plus, size: 18),
     );
   }
 }

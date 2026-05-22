@@ -59,6 +59,14 @@ class AppDropdown<T> extends StatelessWidget {
     return value.toString();
   }
 
+  AppDropdownItem<T>? get _selectedItem {
+    if (value == null) return null;
+    for (final item in items) {
+      if (item.value == value) return item;
+    }
+    return null;
+  }
+
   Future<void> _openPicker(BuildContext context) async {
     if (!enabled) return;
     final selected = await showModalBottomSheet<T>(
@@ -79,6 +87,7 @@ class AppDropdown<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasValue = value != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedItem = _selectedItem;
 
     return GestureDetector(
       onTap: () => _openPicker(context),
@@ -94,6 +103,10 @@ class AppDropdown<T> extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
+            if (hasValue && selectedItem?.leading != null) ...[
+              selectedItem!.leading!,
+              const SizedBox(width: 12),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,9 +127,7 @@ class AppDropdown<T> extends StatelessWidget {
                     style: AppTextStyles.body.copyWith(
                       color: hasValue
                           ? Theme.of(context).colorScheme.onSurface
-                          : Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -162,22 +173,23 @@ class _AppDropdownSheet<T> extends StatelessWidget {
     // Per-item rendered height: items with a subtitle render taller than bare-label
     // items. Using per-item measurement eliminates the large blank space that
     // appeared when all items are short (no subtitle) or mixed.
-    final double contentH = items.fold(0.0,
-          (sum, item) => sum + (item.subtitle != null ? 65.0 : 50.0))
-        + (items.length > 1 ? (items.length - 1) * 8.0 : 0.0);
+    final double contentH = items.fold(
+            0.0, (sum, item) => sum + (item.subtitle != null ? 65.0 : 50.0)) +
+        (items.length > 1 ? (items.length - 1) * 8.0 : 0.0);
     final bottomPad = 24.0 + MediaQuery.of(context).padding.bottom;
     final needed = headerH + contentH + bottomPad;
     final fitted = (needed / screenH).clamp(0.3, 0.92);
 
     return DraggableScrollableSheet(
       initialChildSize: fitted,
-      minChildSize: fitted,   // prevent blank space below items
-      maxChildSize: fitted,   // prevent blank space above items when dragged up
+      minChildSize: fitted, // prevent blank space below items
+      maxChildSize: fitted, // prevent blank space above items when dragged up
       expand: false,
       builder: (context, scrollCtrl) {
         return Container(
           decoration: BoxDecoration(
-            color: AppSurfaces.panel(context, lightOpacity: 0.96, darkOpacity: 0.96),
+            color: AppSurfaces.panel(context,
+                lightOpacity: 0.96, darkOpacity: 0.96),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: AppSurfaces.cardBorder(context),
           ),
@@ -231,7 +243,8 @@ class _AppDropdownSheet<T> extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   controller: scrollCtrl,
-                  padding: EdgeInsets.fromLTRB(16, 0, 16, 24.0 + MediaQuery.of(context).padding.bottom),
+                  padding: EdgeInsets.fromLTRB(
+                      16, 0, 16, 24.0 + MediaQuery.of(context).padding.bottom),
                   itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
@@ -253,7 +266,8 @@ class _AppDropdownSheet<T> extends StatelessWidget {
                                   width: 1.5,
                                 )
                               : Border.all(
-                                  color: AppSurfaces.cardBorder(context).top.color,
+                                  color:
+                                      AppSurfaces.cardBorder(context).top.color,
                                   width: 1,
                                 ),
                           boxShadow: isSelected
@@ -313,7 +327,7 @@ class _AppDropdownSheet<T> extends StatelessWidget {
                               Container(
                                 width: 24,
                                 height: 24,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                 ),

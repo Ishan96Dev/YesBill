@@ -16,6 +16,7 @@ import '../../../providers/bills_provider.dart';
 import '../../../providers/services_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
 import '../../widgets/common/loading_shimmer.dart';
+import '../../widgets/common/provider_badge.dart';
 
 class GenerateBillScreen extends ConsumerStatefulWidget {
   const GenerateBillScreen({super.key});
@@ -55,6 +56,9 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
 
     // Determine default AI toggle from valid AI settings (only on first build)
     final aiSettings = ref.watch(aiSettingsListProvider);
+    // Determine the active AI provider + model name for display
+    String? activeProvider;
+    String? activeModelName;
     if (!_aiSettingsChecked) {
       aiSettings.whenData((settings) {
         if (!_aiSettingsChecked) {
@@ -65,6 +69,35 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
         }
       });
     }
+    aiSettings.whenData((settings) {
+      if (settings.isEmpty) return;
+      try {
+        final active = settings.firstWhere(
+          (s) => s.isActive,
+          orElse: () => settings.first,
+        );
+        activeProvider = active.provider;
+      } catch (_) {}
+    });
+    // Try to get model name from catalog
+    final catalogAsync = ref.watch(aiProviderCatalogProvider);
+    catalogAsync.whenData((providers) {
+      aiSettings.whenData((settings) {
+        for (final s in settings) {
+          if (s.isActive && s.selectedModel != null) {
+            for (final p in providers) {
+              if (p.id == s.provider) {
+                for (final m in p.models) {
+                  if (m.id == s.selectedModel) {
+                    activeModelName = m.name;
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    });
 
     final monthOptions = [
       DateTime(_selectedMonth.year, _selectedMonth.month - 1),
@@ -191,30 +224,38 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: _useAi
-                                ? AppColors.primary.withValues(alpha: 0.12)
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(10),
+                        // Provider logo badge or fallback sparkles icon
+                        if (_useAi && activeProvider != null)
+                          ProviderBadge(
+                            providerId: activeProvider,
+                            size: 40,
+                            padding: 7,
+                          )
+                        else
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: _useAi
+                                  ? AppColors.primary.withValues(alpha: 0.12)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              _useAi
+                                  ? LucideIcons.sparkles
+                                  : LucideIcons.database,
+                              size: 18,
+                              color: _useAi
+                                  ? AppColors.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                            ),
                           ),
-                          alignment: Alignment.center,
-                          child: Icon(
-                            _useAi
-                                ? LucideIcons.sparkles
-                                : LucideIcons.database,
-                            size: 18,
-                            color: _useAi
-                                ? AppColors.primary
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                          ),
-                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -229,7 +270,9 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 _useAi
-                                    ? 'AI will analyse your data and write a summary'
+                                    ? activeModelName != null
+                                        ? '$activeModelName will analyse your data and write a summary'
+                                        : 'AI will analyse your data and write a summary'
                                     : 'Bill generated directly from your service data',
                                 style: AppTextStyles.bodySm.copyWith(
                                   color: Theme.of(context)

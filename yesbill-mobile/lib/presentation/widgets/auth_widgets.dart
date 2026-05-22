@@ -20,9 +20,8 @@ class AuthBrandLogo extends StatelessWidget {
         color: Colors.white.withOpacity(isDark ? 0.96 : 1),
         shape: BoxShape.circle,
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : const Color(0xFFE2E8F0),
+          color:
+              isDark ? Colors.white.withOpacity(0.12) : const Color(0xFFE2E8F0),
           width: 1.5,
         ),
         boxShadow: [
@@ -130,7 +129,7 @@ class AuthInputField extends StatelessWidget {
     final borderColor = isDark
         ? cs.outline.withOpacity(0.35)
         : const Color(0xFFACB3B7).withOpacity(0.25);
-    final focusBorder = AppColors.primary;
+    const focusBorder = AppColors.primary;
 
     return TextFormField(
       controller: controller,
@@ -172,7 +171,7 @@ class AuthInputField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: focusBorder, width: 1.5),
+          borderSide: const BorderSide(color: focusBorder, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -236,7 +235,8 @@ class AuthPrimaryButton extends StatelessWidget {
 
 // ── Google sign-in button ─────────────────────────────────────────────────────
 class AuthGoogleButton extends StatelessWidget {
-  const AuthGoogleButton({super.key, required this.onPressed, this.isLoading = false});
+  const AuthGoogleButton(
+      {super.key, required this.onPressed, this.isLoading = false});
 
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -276,7 +276,8 @@ class AuthGoogleButton extends StatelessWidget {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/google.png', width: 20, height: 20),
+                  Image.asset('assets/images/google.png',
+                      width: 20, height: 20),
                   const SizedBox(width: 10),
                   const Text('Continue with Google'),
                 ],
@@ -323,7 +324,8 @@ class PasswordStrengthIndicator extends StatelessWidget {
           child: LinearProgressIndicator(
             value: fraction,
             minHeight: 4,
-            backgroundColor: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+            backgroundColor:
+                Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
             valueColor: AlwaysStoppedAnimation(barColor),
           ),
         ),
@@ -392,10 +394,8 @@ class ApiKeyStrengthIndicator extends StatelessWidget {
             : 'Expected format starts with $expectedPrefix.',
         style: TextStyle(
           fontSize: 12,
-          color: Theme.of(context)
-              .colorScheme
-              .onSurfaceVariant
-              .withOpacity(0.8),
+          color:
+              Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
         ),
       );
     }
@@ -418,7 +418,7 @@ class ApiKeyStrengthIndicator extends StatelessWidget {
         _RequirementDot(met: lengthOk || hasStoredValidKey, label: '20+ chars'),
         _RequirementDot(
           met: prefixOk || expectedPrefix == null || hasStoredValidKey,
-          label: expectedPrefix == null ? 'Provider format' : expectedPrefix,
+          label: expectedPrefix ?? 'Provider format',
         ),
         _RequirementDot(
           met: whitespaceOk,
@@ -442,7 +442,12 @@ class _RequirementDot extends StatelessWidget {
         Icon(
           met ? LucideIcons.check : LucideIcons.x,
           size: 10,
-          color: met ? const Color(0xFF10B981) : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.45),
+          color: met
+              ? const Color(0xFF10B981)
+              : Theme.of(context)
+                  .colorScheme
+                  .onSurfaceVariant
+                  .withOpacity(0.45),
         ),
         const SizedBox(width: 3),
         Text(
@@ -451,7 +456,10 @@ class _RequirementDot extends StatelessWidget {
             fontSize: 10,
             color: met
                 ? const Color(0xFF10B981)
-                : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                : Theme.of(context)
+                    .colorScheme
+                    .onSurfaceVariant
+                    .withOpacity(0.6),
           ),
         ),
       ],

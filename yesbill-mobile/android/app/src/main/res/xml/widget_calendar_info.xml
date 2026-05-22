@@ -9,6 +9,5 @@
                     android:previewLayout="@layout/widget_calendar"
                     android:resizeMode="horizontal|vertical"
                     android:widgetCategory="home_screen"
-                    android:widgetFeatures="reconfigurable"
                     android:previewImage="@mipmap/ic_launcher"
                     android:description="@string/widget_calendar_description" />

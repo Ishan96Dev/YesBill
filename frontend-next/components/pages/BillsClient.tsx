@@ -49,6 +49,7 @@ import EnhancedCheckbox from "@/components/ui/enhanced-checkbox";
 import ServiceDateTable from "@/components/ServiceDateTable";
 import DeleteBillModal from "@/components/DeleteBillModal";
 import PayBillModal from "@/components/PayBillModal";
+import ModelProviderIcon, { detectProvider } from "@/components/ui/ModelProviderIcon";
 
 // Map service name to lucide-react icon component (for UI)
 const getServiceIcon = (serviceName) => {
@@ -102,6 +103,7 @@ export default function Bills() {
   const [historyLoading, setHistoryLoading] = useState(true);
 
   const [selectedModelName, setSelectedModelName] = useState(null);
+  const [selectedModelProvider, setSelectedModelProvider] = useState(null);
   const [aiInsightsEnabled, setAiInsightsEnabled] = useState(true);
   const [useAiInsights, setUseAiInsights] = useState(true);
 
@@ -139,11 +141,15 @@ export default function Bills() {
     Promise.all([
       aiSettingsService.getSelectedModelDisplayName(user.id),
       aiSettingsService.getInsightsEnabled(user.id),
-    ]).then(([name, insightsOn]) => {
+      aiSettingsService.getAllSettings(user.id),
+    ]).then(([name, insightsOn, allSettings]) => {
       if (!cancelled) {
         setSelectedModelName(name);
         setAiInsightsEnabled(insightsOn);
         setUseAiInsights(insightsOn);
+        // Determine provider from the first setting with a selected_model
+        const activeSetting = allSettings.find((s) => s.selected_model);
+        if (activeSetting) setSelectedModelProvider(activeSetting.provider);
       }
     });
     return () => { cancelled = true; };
@@ -453,7 +459,12 @@ export default function Bills() {
               <p className="text-gray-600 mb-4">
                 {useAiInsights
                   ? selectedModelName
-                    ? `${selectedModelName}-powered AI analyzes your calendar confirmations, calculates itemized totals, and delivers insights on your spending patterns.`
+                    ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <ModelProviderIcon provider={selectedModelProvider} model={selectedModelName} size={15} style={{ borderRadius: '4px' }} />
+                        <span>{selectedModelName}-powered AI analyzes your calendar confirmations, calculates itemized totals, and delivers insights on your spending patterns.</span>
+                      </span>
+                    )
                     : "AI analyzes your calendar confirmations, calculates itemized totals, and delivers insights on your spending patterns."
                   : "Bill generated directly from your calendar and service data — no AI processing."
                 }
@@ -553,7 +564,12 @@ export default function Bills() {
                         <p className="text-xs text-gray-500 mt-0.5">
                           {useAiInsights
                             ? selectedModelName
-                              ? `${selectedModelName} will analyse your data and write a summary`
+                              ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <ModelProviderIcon provider={selectedModelProvider} model={selectedModelName} size={12} style={{ borderRadius: '3px' }} />
+                                  <span>{selectedModelName} will analyse your data and write a summary</span>
+                                </span>
+                              )
                               : "AI will analyse your data and write a summary"
                             : "Bill generated directly from your service data"
                           }
@@ -561,11 +577,39 @@ export default function Bills() {
                       </div>
                       <button
                         type="button"
+                        role="switch"
+                        aria-checked={useAiInsights}
                         title={useAiInsights ? "Disable AI Insights" : "Enable AI Insights"}
                         onClick={() => setUseAiInsights(v => !v)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 ${useAiInsights ? "bg-violet-600" : "bg-gray-300"}`}
+                        style={{
+                          position: "relative",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          width: "44px",
+                          height: "24px",
+                          borderRadius: "9999px",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          flexShrink: 0,
+                          transition: "background-color 0.2s ease",
+                          backgroundColor: useAiInsights ? "#7c3aed" : "#d1d5db",
+                          outline: "none",
+                          boxShadow: useAiInsights ? "0 0 0 0px #7c3aed40" : "none",
+                        }}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${useAiInsights ? "translate-x-6" : "translate-x-1"}`} />
+                        <span
+                          style={{
+                            display: "block",
+                            width: "18px",
+                            height: "18px",
+                            borderRadius: "9999px",
+                            backgroundColor: "#ffffff",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+                            transition: "transform 0.2s ease",
+                            transform: useAiInsights ? "translateX(23px)" : "translateX(3px)",
+                          }}
+                        />
                       </button>
                     </div>
                   </div>
@@ -886,8 +930,9 @@ export default function Bills() {
                                 </span>
                               )}
                               {bill.ai_model_used && (
-                                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">
-                                  AI: {bill.ai_model_used.split("/").pop()}
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">
+                                  <ModelProviderIcon model={bill.ai_model_used} size={12} style={{ borderRadius: '2px' }} />
+                                  {bill.ai_model_used.split("/").pop()}
                                 </span>
                               )}
                             </div>

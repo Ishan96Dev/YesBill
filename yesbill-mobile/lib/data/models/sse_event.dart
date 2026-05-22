@@ -69,11 +69,10 @@ class SseEvent with _$SseEvent {
               ((firstAction?['action_id'] ?? json['action_id']) as String?)
                       ?.trim() ??
                   '';
-          final description =
-              (json['summary_text'] as String?)?.trim() ??
-                  (firstAction?['summary_text'] as String?)?.trim() ??
-                  (json['description'] as String?)?.trim() ??
-                  '';
+          final description = (json['summary_text'] as String?)?.trim() ??
+              (firstAction?['summary_text'] as String?)?.trim() ??
+              (json['description'] as String?)?.trim() ??
+              '';
           final payload =
               firstAction ?? (json['payload'] as Map<String, dynamic>? ?? {});
           if (actionId.isEmpty) return null;
@@ -91,7 +90,8 @@ class SseEvent with _$SseEvent {
         case 'thinking':
           final thinkingContent = json['content'] as String?;
           if (thinkingContent == null || thinkingContent.trim().isEmpty) {
-            return SseEvent.thinkingStarted(); // Signals that thinking began
+            return const SseEvent
+                .thinkingStarted(); // Signals that thinking began
           }
           return SseEvent.reasoning(content: thinkingContent);
         case 'thinking_wait':

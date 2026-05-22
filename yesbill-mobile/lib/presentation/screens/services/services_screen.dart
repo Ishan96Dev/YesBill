@@ -11,7 +11,6 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../data/models/user_service.dart';
 import '../../../providers/services_provider.dart';
 import '../../widgets/common/error_retry_view.dart';
-import '../../widgets/common/loading_shimmer.dart';
 import '../../widgets/common/yesbill_loading_widget.dart';
 
 class ServicesScreen extends ConsumerWidget {
@@ -22,69 +21,72 @@ class ServicesScreen extends ConsumerWidget {
     final servicesAsync = ref.watch(userServicesProvider);
 
     return RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(userServicesProvider);
-          ref.invalidate(activeServicesProvider);
-        },
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 132),
-          children: [
-            Text(
-              'YOUR ECOSYSTEM',
-              style: AppTextStyles.labelSm.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.4,
-              ),
-            ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
-            const SizedBox(height: 4),
-            Text(
-              'Services',
-              style: AppTextStyles.h1.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
-              ),
-            ).animate(delay: 60.ms).fadeIn(duration: 280.ms).slideY(begin: 0.05, end: 0),
-            Text(
-              'Manage and track all your active services.',
-              style: AppTextStyles.bodySm.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ).animate(delay: 100.ms).fadeIn(duration: 260.ms),
-            const SizedBox(height: 16),
-            servicesAsync.when(
-              loading: () => const YesBillLoadingWidget(
-                label: 'Loading Services...',
-                sublabel: 'Fetching your subscriptions',
-              ),
-              error: (error, _) => ErrorRetryView(
-                error: error,
-                onRetry: () => ref.invalidate(userServicesProvider),
-              ),
-              data: (services) {
-                if (services.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: _servicesCardColor(context),
-                      borderRadius: BorderRadius.circular(16),
-                      border: _servicesCardBorder(context),
-                      boxShadow: AppSurfaces.softShadow(context),
-                    ),
-                    child: Text(
-                      'No services found yet. Tap + to add your first one.',
-                      style: AppTextStyles.body.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  );
-                }
-
-                return _ServicesBody(services: services);
-              },
+      onRefresh: () async {
+        ref.invalidate(userServicesProvider);
+        ref.invalidate(activeServicesProvider);
+      },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 132),
+        children: [
+          Text(
+            'YOUR ECOSYSTEM',
+            style: AppTextStyles.labelSm.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
             ),
-          ],
-        ),
+          ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 4),
+          Text(
+            'Services',
+            style: AppTextStyles.h1.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          )
+              .animate(delay: 60.ms)
+              .fadeIn(duration: 280.ms)
+              .slideY(begin: 0.05, end: 0),
+          Text(
+            'Manage and track all your active services.',
+            style: AppTextStyles.bodySm.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ).animate(delay: 100.ms).fadeIn(duration: 260.ms),
+          const SizedBox(height: 16),
+          servicesAsync.when(
+            loading: () => const YesBillLoadingWidget(
+              label: 'Loading Services...',
+              sublabel: 'Fetching your subscriptions',
+            ),
+            error: (error, _) => ErrorRetryView(
+              error: error,
+              onRetry: () => ref.invalidate(userServicesProvider),
+            ),
+            data: (services) {
+              if (services.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _servicesCardColor(context),
+                    borderRadius: BorderRadius.circular(16),
+                    border: _servicesCardBorder(context),
+                    boxShadow: AppSurfaces.softShadow(context),
+                  ),
+                  child: Text(
+                    'No services found yet. Tap + to add your first one.',
+                    style: AppTextStyles.body.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                );
+              }
+
+              return _ServicesBody(services: services);
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -101,7 +103,8 @@ class _ServicesBody extends StatelessWidget {
       orElse: () => services.first,
     );
 
-    final remaining = services.where((service) => service.id != primary.id).toList();
+    final remaining =
+        services.where((service) => service.id != primary.id).toList();
 
     return Column(
       children: [
@@ -168,9 +171,7 @@ class _RoleBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: isProvider
-            ? const Color(0xFFD1FAE5)
-            : const Color(0xFFDDE9FF),
+        color: isProvider ? const Color(0xFFD1FAE5) : const Color(0xFFDDE9FF),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -199,7 +200,7 @@ class _PrimaryServiceCard extends StatelessWidget {
         color: _servicesCardColor(context),
         borderRadius: BorderRadius.circular(20),
         border: _servicesCardBorder(context),
-          boxShadow: AppSurfaces.softShadow(context),
+        boxShadow: AppSurfaces.softShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,7 +234,8 @@ class _PrimaryServiceCard extends StatelessWidget {
                 child: Text(
                   service.active ? '● ACTIVE' : 'PAUSED',
                   style: AppTextStyles.labelSm.copyWith(
-                    color: service.active ? AppColors.success : AppColors.warning,
+                    color:
+                        service.active ? AppColors.success : AppColors.warning,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -428,7 +430,8 @@ class _ServiceRow extends StatelessWidget {
                 Text(
                   service.active ? 'ACTIVE' : 'PAUSED',
                   style: AppTextStyles.labelSm.copyWith(
-                    color: service.active ? AppColors.success : AppColors.warning,
+                    color:
+                        service.active ? AppColors.success : AppColors.warning,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -498,8 +501,7 @@ class _RecommendationCard extends StatelessWidget {
   }
 }
 
-  Color _servicesCardColor(BuildContext context) =>
-    AppSurfaces.panel(context);
+Color _servicesCardColor(BuildContext context) => AppSurfaces.panel(context);
 
-  BoxBorder _servicesCardBorder(BuildContext context) =>
+BoxBorder _servicesCardBorder(BuildContext context) =>
     AppSurfaces.cardBorder(context);
