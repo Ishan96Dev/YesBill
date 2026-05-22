@@ -939,6 +939,8 @@ class _AnalyticsBody extends StatelessWidget {
         _LatencyTrendChart(daily: data.dailyBreakdown),
         const SizedBox(height: 10),
         _ModelDistributionCard(models: data.modelBreakdown),
+        const SizedBox(height: 10),
+        _FeatureBreakdownCard(features: data.featureBreakdown, totalCostUsd: data.totalCostUsd, totalMessages: data.messageCount),
       ],
     );
   }
@@ -1686,6 +1688,239 @@ class _ModelDistributionCard extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+  }
+}
+
+// ── Feature Breakdown Card ───────────────────────────────────────────────────
+
+class _FeatureBreakdownCard extends StatelessWidget {
+  const _FeatureBreakdownCard({
+    required this.features,
+    required this.totalCostUsd,
+    required this.totalMessages,
+  });
+
+  final List<FeatureUsageData> features;
+  final double totalCostUsd;
+  final int totalMessages;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    final chat = features.firstWhere(
+      (f) => f.feature == 'chat',
+      orElse: () => const FeatureUsageData(
+        feature: 'chat',
+        tokensIn: 0,
+        tokensOut: 0,
+        tokensThinking: 0,
+        totalCostUsd: 0,
+        messageCount: 0,
+      ),
+    );
+    final billGen = features.firstWhere(
+      (f) => f.feature == 'bill_gen',
+      orElse: () => const FeatureUsageData(
+        feature: 'bill_gen',
+        tokensIn: 0,
+        tokensOut: 0,
+        tokensThinking: 0,
+        totalCostUsd: 0,
+        messageCount: 0,
+      ),
+    );
+
+    Widget _featureTile({
+      required String label,
+      required String sublabel,
+      required int tokens,
+      required double costUsd,
+      required int count,
+      required String countLabel,
+      required Color color,
+      required IconData icon,
+    }) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: 14, color: color),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: AppTextStyles.body.copyWith(
+                          color: cs.onSurface,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        sublabel,
+                        style: AppTextStyles.labelSm.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _FeatureStat(
+                    label: 'Tokens',
+                    value: _fmtTokens(tokens),
+                    color: color,
+                  ),
+                ),
+                Expanded(
+                  child: _FeatureStat(
+                    label: 'Cost',
+                    value: '₹${(costUsd * _usdToInr).toStringAsFixed(2)}',
+                    color: color,
+                  ),
+                ),
+                Expanded(
+                  child: _FeatureStat(
+                    label: countLabel,
+                    value: '$count',
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _ChartCard(
+      title: 'Usage by Feature',
+      subtitle: 'Chat AI vs Bill Generation AI',
+      child: Column(
+        children: [
+          _featureTile(
+            label: 'Chat AI Usage',
+            sublabel: 'Conversational AI messages',
+            tokens: chat.totalTokens,
+            costUsd: chat.totalCostUsd,
+            count: chat.messageCount,
+            countLabel: 'Messages',
+            color: const Color(0xFF3B82F6),
+            icon: LucideIcons.messageSquare,
+          ),
+          const SizedBox(height: 8),
+          _featureTile(
+            label: 'Bill Generation AI',
+            sublabel: 'AI summaries & recommendations',
+            tokens: billGen.totalTokens,
+            costUsd: billGen.totalCostUsd,
+            count: billGen.messageCount,
+            countLabel: 'Bills',
+            color: const Color(0xFFF59E0B),
+            icon: LucideIcons.receipt,
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Total AI Usage',
+                  style: AppTextStyles.body.copyWith(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${_fmtTokens(chat.totalTokens + billGen.totalTokens)} tokens',
+                  style: AppTextStyles.labelSm.copyWith(
+                    color: cs.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '₹${((totalCostUsd) * _usdToInr).toStringAsFixed(2)}',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureStat extends StatelessWidget {
+  const _FeatureStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppTextStyles.body.copyWith(
+            color: cs.onSurface,
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+        Text(
+          label,
+          style: AppTextStyles.labelSm.copyWith(
+            color: cs.onSurfaceVariant,
+            fontSize: 9,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,162 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Services Widget — 4×2 — Shows active services with rates -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_svc_root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
-    android:orientation="vertical"
-    android:padding="14dp">
-
+              android:id="@+id/widget_svc_root"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/widget_background"
+              android:orientation="vertical"
+              android:padding="14dp">
     <!-- Header: title + count -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="YesBill Services"
-            android:textColor="#FFFFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/widget_svc_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 active"
-            android:textColor="#AA818CF8"
-            android:textSize="11sp" />
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical">
+        <TextView android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:text="YesBill Services"
+                  android:textColor="#FFFFFFFF"
+                  android:textSize="12sp"
+                  android:textStyle="bold" />
+        <TextView android:id="@+id/widget_svc_count"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="0 active"
+                  android:textColor="#AA818CF8"
+                  android:textSize="11sp" />
     </LinearLayout>
-
     <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="8dp"
-        android:background="#33FFFFFF" />
-
-    <!-- Service rows (up to 4) distributed evenly -->
-
-    <LinearLayout
-        android:id="@+id/widget_svc_row1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/widget_svc_s1_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text=""
-            android:textColor="#CCFFFFFF"
-            android:textSize="11sp"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/widget_svc_s1_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#80818CF8"
-            android:textSize="10sp" />
+    <View android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginTop="6dp"
+          android:layout_marginBottom="8dp"
+          android:background="#33FFFFFF" />
+    <!-- Placeholder shown when no services are loaded yet -->
+    <TextView android:id="@+id/widget_svc_placeholder"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center"
+              android:text="Open YesBill to load"
+              android:textColor="#80FFFFFF"
+              android:textSize="10sp"
+              android:layout_marginTop="8dp"
+              android:visibility="visible" />
+    <!-- Service rows (up to 4) -->
+    <LinearLayout android:id="@+id/widget_svc_row1"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:minHeight="20dp"
+                  android:layout_marginBottom="4dp"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical"
+                  android:visibility="gone">
+        <TextView android:id="@+id/widget_svc_s1_name"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:text=""
+                  android:textColor="#CCFFFFFF"
+                  android:textSize="11sp"
+                  android:maxLines="1"
+                  android:ellipsize="end" />
+        <TextView android:id="@+id/widget_svc_s1_detail"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text=""
+                  android:textColor="#80818CF8"
+                  android:textSize="10sp" />
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/widget_svc_row2"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/widget_svc_s2_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text=""
-            android:textColor="#CCFFFFFF"
-            android:textSize="11sp"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/widget_svc_s2_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#80818CF8"
-            android:textSize="10sp" />
+    <LinearLayout android:id="@+id/widget_svc_row2"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:minHeight="20dp"
+                  android:layout_marginBottom="4dp"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical"
+                  android:visibility="gone">
+        <TextView android:id="@+id/widget_svc_s2_name"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:text=""
+                  android:textColor="#CCFFFFFF"
+                  android:textSize="11sp"
+                  android:maxLines="1"
+                  android:ellipsize="end" />
+        <TextView android:id="@+id/widget_svc_s2_detail"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text=""
+                  android:textColor="#80818CF8"
+                  android:textSize="10sp" />
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/widget_svc_row3"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/widget_svc_s3_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text=""
-            android:textColor="#CCFFFFFF"
-            android:textSize="11sp"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/widget_svc_s3_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#80818CF8"
-            android:textSize="10sp" />
+    <LinearLayout android:id="@+id/widget_svc_row3"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:minHeight="20dp"
+                  android:layout_marginBottom="4dp"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical"
+                  android:visibility="gone">
+        <TextView android:id="@+id/widget_svc_s3_name"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:text=""
+                  android:textColor="#CCFFFFFF"
+                  android:textSize="11sp"
+                  android:maxLines="1"
+                  android:ellipsize="end" />
+        <TextView android:id="@+id/widget_svc_s3_detail"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text=""
+                  android:textColor="#80818CF8"
+                  android:textSize="10sp" />
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/widget_svc_row4"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/widget_svc_s4_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text=""
-            android:textColor="#CCFFFFFF"
-            android:textSize="11sp"
-            android:singleLine="true"
-            android:ellipsize="end" />
-
-        <TextView
-            android:id="@+id/widget_svc_s4_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#80818CF8"
-            android:textSize="10sp" />
+    <LinearLayout android:id="@+id/widget_svc_row4"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:minHeight="20dp"
+                  android:orientation="horizontal"
+                  android:gravity="center_vertical"
+                  android:visibility="gone">
+        <TextView android:id="@+id/widget_svc_s4_name"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:text=""
+                  android:textColor="#CCFFFFFF"
+                  android:textSize="11sp"
+                  android:maxLines="1"
+                  android:ellipsize="end" />
+        <TextView android:id="@+id/widget_svc_s4_detail"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text=""
+                  android:textColor="#80818CF8"
+                  android:textSize="10sp" />
     </LinearLayout>
-
 </LinearLayout>

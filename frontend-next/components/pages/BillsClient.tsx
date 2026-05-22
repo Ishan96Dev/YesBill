@@ -363,7 +363,7 @@ export default function Bills() {
           }
           // Ensure there is always clearance below the last element so the
           // page slicer never cuts through the total row.
-          clonedEl.style.paddingBottom = "100px";
+          clonedEl.style.paddingBottom = "20px";
         },
       },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
@@ -419,7 +419,6 @@ export default function Bills() {
           className="mb-8"
         >
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Monthly{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-500 to-purple-600">
               Bills
             </span>
@@ -454,9 +453,14 @@ export default function Bills() {
                 )}
               </p>
 
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4 items-start flex-wrap">
-                  <div className="flex-1 min-w-[200px]">
+              <div className="space-y-6">
+                {/* Section: Billing Period */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-4 bg-primary rounded-full" />
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">Billing Period</span>
+                  </div>
+                  <div className="flex-1 min-w-[200px] max-w-xs">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Select Month
                     </label>
@@ -483,24 +487,31 @@ export default function Bills() {
                       </p>
                     )}
                   </div>
-                  <div className="flex-1 min-w-[200px]">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Select Service(s)
-                    </label>
-                    {activeServices.length === 0 ? (
-                      <p className="text-sm text-gray-500 py-2">No active services. Add one in Services.</p>
-                    ) : (
-                      <div className="flex flex-wrap gap-4 py-2 border border-gray-200 rounded-xl px-3 bg-white/80">
-                        {activeServices.map((svc) => (
-                          <EnhancedCheckbox
-                            key={svc.id}
-                            label={`${svc.name} (₹${Number(svc.price).toFixed(0)}/day)`}
-                            checked={selectedServiceIds.includes(svc.id)}
-                            onChange={() => toggleService(svc.id)}
-                          />
-                        ))}
-                      </div>
-                    )}
+                </div>
+
+                {/* Section: Include Services */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-4 bg-indigo-500 rounded-full" />
+                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Include Services</span>
+                  </div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Select Service(s)
+                  </label>
+                  {activeServices.length === 0 ? (
+                    <p className="text-sm text-gray-500 py-2">No active services. Add one in Services.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-4 py-2 border border-gray-200 rounded-xl px-3 bg-white/80">
+                      {activeServices.map((svc) => (
+                        <EnhancedCheckbox
+                          key={svc.id}
+                          label={`${svc.name} (₹${Number(svc.price).toFixed(0)}/day)`}
+                          checked={selectedServiceIds.includes(svc.id)}
+                          onChange={() => toggleService(svc.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
                     {activeServices.length > 0 && !servicesSelected && (
                       <p className="mt-1.5 text-xs text-amber-600 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" /> Select at least one service
@@ -512,11 +523,14 @@ export default function Bills() {
                         {selectedServiceIds.length} services selected — {selectedServiceIds.length} separate bills will be generated
                       </p>
                     )}
-                  </div>
                 </div>
 
-                {/* Bill Notes Field */}
-                <div className="mt-4">
+                {/* Section: Bill Notes */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-4 bg-purple-500 rounded-full" />
+                    <span className="text-xs font-bold text-purple-600 uppercase tracking-wider">Bill Notes</span>
+                  </div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Bill Notes <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
@@ -701,19 +715,21 @@ export default function Bills() {
                 border: "border-amber-200/60",
               },
             ].map(({ label, value, icon: Icon, color, bg, border }) => (
-              <div
-                key={label}
-                className={`rounded-2xl border ${border} ${bg} p-5 flex items-center gap-4`}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg} border ${border}`}>
-                  <Icon className={`w-5 h-5 ${color}`} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
-                  <p className={`text-2xl font-bold ${color}`}>{value}</p>
-                </div>
+            <motion.div
+              key={label}
+              className={`rounded-2xl border ${border} ${bg} p-5 flex items-center gap-4 cursor-pointer`}
+              whileHover={{ scale: 1.03, y: -3 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bg} border ${border}`}>
+                <Icon className={`w-5 h-5 ${color}`} />
               </div>
-            ))}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+                <p className={`text-2xl font-bold ${color}`}>{value}</p>
+              </div>
+            </motion.div>
+          ))}
           </motion.div>
         )}
 
@@ -973,6 +989,17 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
     >
       {/* Bill Content (for PDF export) */}
       <div id={`bill-content-${index}`}>
+        {/* YesBill branding header for PDF */}
+        <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-primary/20">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center">
+              <span className="text-white text-xs font-black">Y</span>
+            </div>
+            <span className="text-lg font-black text-primary">YesBill</span>
+            <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">AI-Powered</span>
+          </div>
+          <span className="text-xs text-gray-400">{new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+        </div>
         {/* Bill Header */}
         <div className="flex flex-col md:flex-row justify-between items-start mb-6 pb-6 border-b border-gray-200">
           <div>
@@ -1150,7 +1177,7 @@ function BillCard({ billData, index, onDownloadPDF, onDownloadCSV }) {
         )}
 
         {/* Total */}
-        <div className="bill-total-section flex justify-between items-center pt-6 mt-4 border-t-2 border-gray-300" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
+        <div className="bill-total-section flex justify-between items-center pt-6 mt-4 border-t-2 border-gray-300 break-inside-avoid">
           <span className="text-xl font-bold text-gray-900">Total Amount</span>
           <span className="text-3xl font-bold text-primary">
             ₹{billData.total.toFixed(2)}

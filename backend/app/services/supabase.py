@@ -1217,7 +1217,7 @@ class SupabaseService:
 
     async def save_message_analytics(
         self,
-        message_id: str,
+        message_id: Optional[str],
         user_id: str,
         tokens_in: int,
         tokens_out: int,
@@ -1227,30 +1227,41 @@ class SupabaseService:
         ttft_ms: Optional[int],
         chunks_count: int,
         model_used: Optional[str] = None,
+        feature: str = "chat",
     ) -> None:
         """Save analytics for an assistant message. Silently ignores duplicates."""
         try:
             data: dict = {
-                "message_id": message_id,
                 "user_id": user_id,
                 "tokens_in": tokens_in,
                 "tokens_out": tokens_out,
                 "cost_usd": float(cost_usd),
                 "latency_ms": latency_ms,
                 "chunks_count": chunks_count,
+                "feature": feature,
                 "created_at": datetime.now(timezone.utc).isoformat(),
             }
+            if message_id is not None:
+                data["message_id"] = message_id
             if tokens_thinking is not None:
                 data["tokens_thinking"] = tokens_thinking
             if ttft_ms is not None:
                 data["ttft_ms"] = ttft_ms
             if model_used is not None:
                 data["model_used"] = model_used
-            result = (
-                self.client.table("message_analytics")
-                .upsert(data, on_conflict="message_id")
-                .execute()
-            )
+            # For chat messages, upsert to avoid duplicates; for bill_gen, always insert
+            if message_id is not None:
+                result = (
+                    self.client.table("message_analytics")
+                    .upsert(data, on_conflict="message_id")
+                    .execute()
+                )
+            else:
+                result = (
+                    self.client.table("message_analytics")
+                    .insert(data)
+                    .execute()
+                )
             if not result.data:
                 logger.warning("[ANALYTICS] save_message_analytics returned no data")
         except Exception as e:
@@ -1281,7 +1292,7 @@ class SupabaseService:
                 self.client.table("message_analytics")
                 .select(
                     "tokens_in, tokens_out, tokens_thinking, cost_usd, "
-                    "latency_ms, created_at, model_used"
+                    "latency_ms, created_at, model_used, feature"
                 )
                 .eq("user_id", user_id)
             )
@@ -1346,6 +1357,29 @@ class SupabaseService:
                 m["total_cost_usd"] = round(m["total_cost_usd"] + float(r.get("cost_usd", 0) or 0), 8)
                 m["message_count"] += 1
 
+            # Feature breakdown (chat vs bill_gen)
+            feature_map: Dict[str, dict] = {}
+            for r in rows:
+                feat = r.get("feature") or "chat"
+                if feat not in feature_map:
+                    feature_map[feat] = {
+                        "feature": feat, "tokens_in": 0, "tokens_out": 0,
+                        "tokens_thinking": 0, "total_cost_usd": 0.0, "message_count": 0,
+                    }
+                f = feature_map[feat]
+                f["tokens_in"] += r.get("tokens_in", 0) or 0
+                f["tokens_out"] += r.get("tokens_out", 0) or 0
+                f["tokens_thinking"] += r.get("tokens_thinking", 0) or 0
+                f["total_cost_usd"] = round(f["total_cost_usd"] + float(r.get("cost_usd", 0) or 0), 8)
+                f["message_count"] += 1
+            # Ensure both features always present in response
+            for feat_key in ("chat", "bill_gen"):
+                if feat_key not in feature_map:
+                    feature_map[feat_key] = {
+                        "feature": feat_key, "tokens_in": 0, "tokens_out": 0,
+                        "tokens_thinking": 0, "total_cost_usd": 0.0, "message_count": 0,
+                    }
+
             return {
                 "total_tokens_in": total_tokens_in,
                 "total_tokens_out": total_tokens_out,
@@ -1357,6 +1391,7 @@ class SupabaseService:
                 "model_breakdown": sorted(
                     model_map.values(), key=lambda x: x["total_cost_usd"], reverse=True
                 ),
+                "feature_breakdown": list(feature_map.values()),
             }
         except Exception as e:
             logger.error("[ANALYTICS] get_analytics_summary failed: %s", e)
@@ -1364,6 +1399,10 @@ class SupabaseService:
                 "total_tokens_in": 0, "total_tokens_out": 0, "total_tokens_thinking": 0,
                 "total_cost_usd": 0.0, "message_count": 0, "avg_latency_ms": 0,
                 "daily_breakdown": [], "model_breakdown": [],
+                "feature_breakdown": [
+                    {"feature": "chat", "tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0, "total_cost_usd": 0.0, "message_count": 0},
+                    {"feature": "bill_gen", "tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0, "total_cost_usd": 0.0, "message_count": 0},
+                ],
             }
 
     async def get_message(

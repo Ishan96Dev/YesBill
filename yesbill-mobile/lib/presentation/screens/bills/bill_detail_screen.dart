@@ -246,12 +246,13 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetCtx) {
-        return StatefulBuilder(
+        return SafeArea(
+          top: false,
+          child: StatefulBuilder(
           builder: (ctx, setSheetState) {
             return Padding(
               padding: EdgeInsets.only(
@@ -329,6 +330,7 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
                 ),
               );
           },
+        ),
         );
       },
     );
@@ -344,6 +346,7 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
 
     if (!mounted) return;
     if (ok) {
+      ref.invalidate(billDetailProvider(widget.billId));
       context.showSnackBar('Bill marked as paid ✓');
     } else {
       context.showErrorSnackBar('Failed to update bill');
@@ -355,110 +358,314 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
     try {
       final pdfDoc = pw.Document();
       final monthLabel = _monthLabel(bill.yearMonth);
+      const primary = PdfColor.fromInt(0xFF4F46E5);
+      const primaryLight = PdfColor.fromInt(0x1A4F46E5);
+      const success = PdfColor.fromInt(0xFF10B981);
+      const successLight = PdfColor.fromInt(0x1A10B981);
+      const white = PdfColors.white;
 
       pdfDoc.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
+        margin: const pw.EdgeInsets.all(0),
         build: (pw.Context ctx) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                bill.billTitle ?? 'YesBill — $monthLabel',
-                style: pw.TextStyle(
-                    fontSize: 22, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Text(monthLabel,
-                  style: const pw.TextStyle(
-                      fontSize: 13, color: PdfColors.grey700)),
-              pw.SizedBox(height: 16),
-              pw.Divider(),
-              pw.SizedBox(height: 12),
-              ...bill.items.map((item) {
-                final row =
-                    (item as Map?)?.cast<String, dynamic>() ?? {};
-                final name = row['service_name'] as String? ??
-                    row['name'] as String? ??
-                    row['service'] as String? ??
-                    'Service';
-                final del = (row['daysDelivered'] as num?)?.toInt();
-                final skip = (row['daysSkipped'] as num?)?.toInt();
-                final rate = (row['ratePerDay'] as num?)?.toDouble();
-                final total = (row['total'] as num?)?.toDouble() ??
-                    (row['amount'] as num?)?.toDouble() ??
-                    0.0;
-                final details = [
-                  if (del != null) '$del days delivered',
-                  if (skip != null && skip > 0) '$skip skipped',
-                  if (rate != null) '₹${rate.toStringAsFixed(2)}/day',
-                ].join(' · ');
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 8),
-                  child: pw.Row(
-                    mainAxisAlignment:
-                        pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment:
-                              pw.CrossAxisAlignment.start,
+              // ── Header gradient card ──────────────────────────────
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.fromLTRB(32, 28, 32, 28),
+                decoration: const pw.BoxDecoration(
+                  color: primary,
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Logo row
+                    pw.Row(
+                      children: [
+                        pw.Container(
+                          padding: const pw.EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: pw.BoxDecoration(
+                            color: white.shade(0.15),
+                            borderRadius: pw.BorderRadius.circular(6),
+                          ),
+                          child: pw.Text(
+                            'YesBill',
+                            style: pw.TextStyle(
+                              fontSize: 14,
+                              fontWeight: pw.FontWeight.bold,
+                              color: white,
+                            ),
+                          ),
+                        ),
+                        pw.SizedBox(width: 8),
+                        pw.Text(
+                          'AI-Powered Bill',
+                          style: pw.TextStyle(
+                              fontSize: 11,
+                              color: white.shade(0.75)),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 16),
+                    pw.Text(
+                      bill.billTitle ?? 'YesBill — $monthLabel',
+                      style: pw.TextStyle(
+                          fontSize: 22,
+                          fontWeight: pw.FontWeight.bold,
+                          color: white),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      monthLabel,
+                      style: pw.TextStyle(
+                          fontSize: 13, color: white.shade(0.75)),
+                    ),
+                    pw.SizedBox(height: 16),
+                    // Amount + status row
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(name,
+                            pw.Text('Total Amount',
                                 style: pw.TextStyle(
-                                    fontWeight: pw.FontWeight.bold)),
-                            if (details.isNotEmpty)
-                              pw.Text(details,
-                                  style: const pw.TextStyle(
-                                      fontSize: 11,
-                                      color: PdfColors.grey600)),
+                                    fontSize: 10, color: white.shade(0.75))),
+                            pw.Text(
+                              '₹${bill.totalAmount.toStringAsFixed(2)}',
+                              style: pw.TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: white),
+                            ),
+                          ],
+                        ),
+                        pw.Container(
+                          padding: const pw.EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 6),
+                          decoration: pw.BoxDecoration(
+                            color: bill.isPaid
+                                ? const PdfColor.fromInt(0xFF10B981)
+                                : const PdfColor.fromInt(0xFFF59E0B),
+                            borderRadius: pw.BorderRadius.circular(20),
+                          ),
+                          child: pw.Text(
+                            bill.isPaid ? '✓ Paid' : '⏳ Pending',
+                            style: pw.TextStyle(
+                                fontSize: 12,
+                                fontWeight: pw.FontWeight.bold,
+                                color: white),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (bill.isPaid && bill.paidAt != null) ...[
+                      pw.SizedBox(height: 8),
+                      pw.Text(
+                        'Paid on ${DateFormat('d MMMM yyyy').format(bill.paidAt!)}${bill.paymentMethod != null ? ' via ${_paymentMethodLabel(bill.paymentMethod!)}' : ''}',
+                        style: pw.TextStyle(
+                            fontSize: 10, color: white.shade(0.85)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // ── Body ─────────────────────────────────────────────
+              pw.Padding(
+                padding: const pw.EdgeInsets.fromLTRB(32, 24, 32, 32),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Stats row
+                    if (bill.items.isNotEmpty) ...[
+                      pw.Row(
+                        children: [
+                          _pdfStatBox('Days Tracked',
+                              '${bill.items.fold<int>(0, (s, i) { final row = (i as Map?)?.cast<String,dynamic>() ?? {}; return s + ((row['daysDelivered'] as num?)?.toInt() ?? 0) + ((row['daysSkipped'] as num?)?.toInt() ?? 0); })}',
+                              const PdfColor.fromInt(0xFF3B82F6)),
+                          pw.SizedBox(width: 8),
+                          _pdfStatBox('Services',
+                              '${bill.items.length}',
+                              const PdfColor.fromInt(0xFF8B5CF6)),
+                          pw.SizedBox(width: 8),
+                          _pdfStatBox('Generated',
+                              DateFormat('d MMM yy').format(bill.createdAt ?? DateTime.now()),
+                              primary),
+                        ],
+                      ),
+                      pw.SizedBox(height: 20),
+                    ],
+
+                    // AI Summary
+                    if (bill.summary.trim().isNotEmpty) ...[
+                      pw.Container(
+                        width: double.infinity,
+                        padding: const pw.EdgeInsets.all(14),
+                        decoration: pw.BoxDecoration(
+                          color: const PdfColor.fromInt(0xFFEEF2FF),
+                          borderRadius: pw.BorderRadius.circular(10),
+                          border: pw.Border(
+                            left: pw.BorderSide(color: primary, width: 3),
+                          ),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text('AI Summary',
+                                style: pw.TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primary)),
+                            pw.SizedBox(height: 4),
+                            pw.Text(bill.summary,
+                                style: const pw.TextStyle(
+                                    fontSize: 10, color: PdfColors.grey800)),
                           ],
                         ),
                       ),
-                      pw.Text('₹${total.toStringAsFixed(2)}',
-                          style: pw.TextStyle(
-                              fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 20),
                     ],
-                  ),
-                );
-              }),
-              pw.Divider(),
-              pw.SizedBox(height: 8),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Total',
-                      style: pw.TextStyle(
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold)),
-                  pw.Text('₹${bill.totalAmount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              if (bill.isPaid && bill.paidAt != null) ...[
-                pw.SizedBox(height: 8),
-                pw.Text(
-                  'Paid on ${DateFormat('d MMMM yyyy').format(bill.paidAt!)}${bill.paymentMethod != null ? ' via ${_paymentMethodLabel(bill.paymentMethod!)}' : ''}',
-                  style: const pw.TextStyle(color: PdfColors.green700),
+
+                    // Itemized breakdown
+                    pw.Text('Itemized Breakdown',
+                        style: pw.TextStyle(
+                            fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 10),
+                    ...bill.items.asMap().entries.map((entry) {
+                      final isEven = entry.key.isEven;
+                      final item = entry.value;
+                      final row =
+                          (item as Map?)?.cast<String, dynamic>() ?? {};
+                      final name = row['service_name'] as String? ??
+                          row['name'] as String? ??
+                          row['service'] as String? ??
+                          'Service';
+                      final del =
+                          (row['daysDelivered'] as num?)?.toInt();
+                      final skip =
+                          (row['daysSkipped'] as num?)?.toInt();
+                      final rate =
+                          (row['ratePerDay'] as num?)?.toDouble();
+                      final total =
+                          (row['total'] as num?)?.toDouble() ??
+                              (row['amount'] as num?)?.toDouble() ??
+                              0.0;
+                      final details = [
+                        if (del != null) '$del delivered',
+                        if (skip != null && skip > 0) '$skip skipped',
+                        if (rate != null)
+                          '₹${rate.toStringAsFixed(2)}/day',
+                      ].join(' · ');
+                      return pw.Container(
+                        margin: const pw.EdgeInsets.only(bottom: 6),
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: pw.BoxDecoration(
+                          color: isEven
+                              ? const PdfColor.fromInt(0xFFF8F9FF)
+                              : PdfColors.white,
+                          borderRadius: pw.BorderRadius.circular(8),
+                          border: pw.Border.all(
+                            color: const PdfColor.fromInt(0xFFE5E7EB),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: pw.Row(
+                          children: [
+                            pw.Expanded(
+                              child: pw.Column(
+                                crossAxisAlignment:
+                                    pw.CrossAxisAlignment.start,
+                                children: [
+                                  pw.Text(name,
+                                      style: pw.TextStyle(
+                                          fontWeight:
+                                              pw.FontWeight.bold,
+                                          fontSize: 11)),
+                                  if (details.isNotEmpty)
+                                    pw.Text(details,
+                                        style: const pw.TextStyle(
+                                            fontSize: 9,
+                                            color: PdfColors.grey600)),
+                                ],
+                              ),
+                            ),
+                            pw.Container(
+                              padding: const pw.EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: pw.BoxDecoration(
+                                color: primaryLight,
+                                borderRadius:
+                                    pw.BorderRadius.circular(6),
+                              ),
+                              child: pw.Text(
+                                '₹${total.toStringAsFixed(2)}',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 11,
+                                    color: primary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+
+                    pw.SizedBox(height: 12),
+                    // Total row
+                    pw.Container(
+                      width: double.infinity,
+                      padding: const pw.EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: pw.BoxDecoration(
+                        color: primary,
+                        borderRadius: pw.BorderRadius.circular(10),
+                      ),
+                      child: pw.Row(
+                        mainAxisAlignment:
+                            pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text('Total Amount',
+                              style: pw.TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: white)),
+                          pw.Text(
+                            '₹${bill.totalAmount.toStringAsFixed(2)}',
+                            style: pw.TextStyle(
+                                fontSize: 16,
+                                fontWeight: pw.FontWeight.bold,
+                                color: white),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    pw.SizedBox(height: 24),
+                    // Footer
+                    pw.Divider(color: PdfColors.grey300),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment:
+                          pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Generated by YesBill AI',
+                            style: const pw.TextStyle(
+                                fontSize: 9, color: PdfColors.grey500)),
+                        pw.Text(
+                            DateFormat('d MMMM yyyy')
+                                .format(DateTime.now()),
+                            style: const pw.TextStyle(
+                                fontSize: 9, color: PdfColors.grey500)),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-              if (bill.summary.trim().isNotEmpty) ...[
-                pw.SizedBox(height: 16),
-                pw.Divider(),
-                pw.SizedBox(height: 8),
-                pw.Text('Summary',
-                    style:
-                        pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 4),
-                pw.Text(bill.summary,
-                    style: const pw.TextStyle(fontSize: 11)),
-              ],
-              pw.SizedBox(height: 24),
-              pw.Text('Generated by YesBill',
-                  style: const pw.TextStyle(
-                      fontSize: 10, color: PdfColors.grey500)),
+              ),
             ],
           );
         },
@@ -477,26 +684,96 @@ class _BillDetailScreenState extends ConsumerState<BillDetailScreen> {
     }
   }
 
+  static pw.Widget _pdfStatBox(String label, String value, PdfColor color) {
+    return pw.Expanded(
+      child: pw.Container(
+        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: pw.BoxDecoration(
+          color: color.shade(0.1),
+          borderRadius: pw.BorderRadius.circular(8),
+          border: pw.Border.all(color: color.shade(0.3), width: 0.5),
+        ),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(value,
+                style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                    color: color)),
+            pw.SizedBox(height: 2),
+            pw.Text(label,
+                style: pw.TextStyle(fontSize: 9, color: color.shade(0.7))),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _shareText(GeneratedBill bill) async {
     final monthLabel = _monthLabel(bill.yearMonth);
     final sb = StringBuffer();
     sb.writeln('*${bill.billTitle ?? 'YesBill — $monthLabel'}*');
-    sb.writeln('Month: $monthLabel');
-    sb.writeln('Amount: ${CurrencyFormatter.formatCompact(bill.totalAmount, currency: bill.currency)}');
-    sb.writeln('Status: ${bill.isPaid ? '✓ Paid' : '⏳ Pending'}');
+    sb.writeln('📅 Period: $monthLabel');
+    sb.writeln('💰 Amount: ${CurrencyFormatter.formatCompact(bill.totalAmount, currency: bill.currency)}');
+    sb.writeln('📌 Status: ${bill.isPaid ? '✅ Paid' : '⏳ Pending'}');
+    if (bill.isPaid && bill.paidAt != null) {
+      sb.writeln(
+          '   Paid on ${DateFormat('d MMMM yyyy').format(bill.paidAt!)}${bill.paymentMethod != null ? ' via ${_paymentMethodLabel(bill.paymentMethod!)}' : ''}');
+    }
+
     if (bill.items.isNotEmpty) {
-      sb.writeln('\n*Breakdown:*');
+      // Aggregate stats
+      int totalDelivered = 0;
+      int totalSkipped = 0;
       for (final item in bill.items) {
         final row = (item as Map?)?.cast<String, dynamic>() ?? {};
-        final name =
-            row['service_name'] as String? ?? row['name'] as String? ?? row['service'] as String? ?? 'Service';
+        totalDelivered += (row['daysDelivered'] as num?)?.toInt() ?? 0;
+        totalSkipped += (row['daysSkipped'] as num?)?.toInt() ?? 0;
+      }
+      final totalDays = totalDelivered + totalSkipped;
+      final rate = totalDays > 0
+          ? (totalDelivered / totalDays * 100).toStringAsFixed(0)
+          : '—';
+      sb.writeln('\n📊 *Overall Stats*');
+      sb.writeln('• Delivery rate: $rate%');
+      sb.writeln('• Days tracked: $totalDays ($totalDelivered delivered, $totalSkipped skipped)');
+      sb.writeln('• Services: ${bill.items.length}');
+
+      sb.writeln('\n📋 *Service Breakdown*');
+      for (final item in bill.items) {
+        final row = (item as Map?)?.cast<String, dynamic>() ?? {};
+        final name = row['service_name'] as String? ??
+            row['name'] as String? ??
+            row['service'] as String? ??
+            'Service';
         final total = (row['total'] as num?)?.toDouble() ??
             (row['amount'] as num?)?.toDouble() ??
             0.0;
-        sb.writeln('• $name: ${CurrencyFormatter.formatCompact(total, currency: bill.currency)}');
+        final del = (row['daysDelivered'] as num?)?.toInt();
+        final skip = (row['daysSkipped'] as num?)?.toInt();
+        final ratePerDay = (row['ratePerDay'] as num?)?.toDouble();
+        sb.write('• $name: ${CurrencyFormatter.formatCompact(total, currency: bill.currency)}');
+        if (del != null) sb.write(' ($del delivered');
+        if (skip != null && skip > 0) sb.write(', $skip skipped');
+        if (del != null) sb.write(')');
+        if (ratePerDay != null)
+          sb.write(' @ ₹${ratePerDay.toStringAsFixed(2)}/day');
+        sb.writeln();
       }
     }
-    sb.writeln('\n_Generated by YesBill_');
+
+    if (bill.summary.trim().isNotEmpty) {
+      sb.writeln('\n🤖 *AI Summary*');
+      sb.writeln(bill.summary.trim());
+    }
+
+    if (bill.recommendations.isNotEmpty) {
+      sb.writeln('\n💡 *Recommendations*');
+      sb.writeln('• ${bill.recommendations}');
+    }
+
+    sb.writeln('\n_Generated by YesBill AI_');
     await Share.share(sb.toString(),
         subject: bill.billTitle ?? 'YesBill — $monthLabel');
   }
@@ -661,32 +938,34 @@ class _StatsRow extends StatelessWidget {
         ? CurrencyFormatter.formatCompact(saved, currency: currency)
         : '₹0';
 
-    return Row(
-      children: [
-        _StatTile(
-            label: 'Delivery\nrate',
-            value: rateDisplay,
-            icon: LucideIcons.trendingUp,
-            color: AppColors.success),
-        const SizedBox(width: 8),
-        _StatTile(
-            label: 'Days\ntracked',
-            value: '$daysTracked',
-            icon: LucideIcons.calendarDays,
-            color: AppColors.primary),
-        const SizedBox(width: 8),
-        _StatTile(
-            label: 'Services',
-            value: '$servicesCount',
-            icon: LucideIcons.package,
-            color: const Color(0xFF8B5CF6)),
-        const SizedBox(width: 8),
-        _StatTile(
-            label: 'Saved',
-            value: savedDisplay,
-            icon: LucideIcons.piggyBank,
-            color: AppColors.warning),
-      ],
+    return IntrinsicHeight(
+      child: Row(
+        children: [
+          _StatTile(
+              label: 'Delivery\nrate',
+              value: rateDisplay,
+              icon: LucideIcons.trendingUp,
+              color: AppColors.success),
+          const SizedBox(width: 8),
+          _StatTile(
+              label: 'Days\ntracked',
+              value: '$daysTracked',
+              icon: LucideIcons.calendarDays,
+              color: AppColors.primary),
+          const SizedBox(width: 8),
+          _StatTile(
+              label: 'Services',
+              value: '$servicesCount',
+              icon: LucideIcons.package,
+              color: const Color(0xFF8B5CF6)),
+          const SizedBox(width: 8),
+          _StatTile(
+              label: 'Saved',
+              value: savedDisplay,
+              icon: LucideIcons.piggyBank,
+              color: AppColors.warning),
+        ],
+      ),
     );
   }
 }

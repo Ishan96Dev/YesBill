@@ -177,15 +177,38 @@ Now produce output for the data above. Reply in JSON only — no markdown, no ex
     _t0 = time.monotonic()
     try:
         if provider == "openai":
-            summary, rec, refined_note = await _call_openai(api_key, model, prompt)
+            summary, rec, refined_note, _tok_in, _tok_out = await _call_openai(api_key, model, prompt)
         elif provider == "anthropic":
-            summary, rec, refined_note = await _call_anthropic(api_key, model, prompt)
+            summary, rec, refined_note, _tok_in, _tok_out = await _call_anthropic(api_key, model, prompt)
         elif provider == "google":
-            summary, rec, refined_note = await _call_google(api_key, model, prompt)
+            summary, rec, refined_note, _tok_in, _tok_out = await _call_google(api_key, model, prompt)
         else:
             return "", "", None, custom_note
+        _latency_ms = int((time.monotonic() - _t0) * 1000)
         _preview = summary[:80] + "..." if len(summary) > 80 else summary
         logger.info("[BILL-LLM] DONE — summary=%r took=%.1fs", _preview, time.monotonic() - _t0)
+        # Save analytics for bill generation (best-effort, non-blocking)
+        try:
+            from app.services.pricing import calculate_cost
+            _cost = calculate_cost(provider, model, _tok_in, _tok_out)
+            import asyncio
+            asyncio.ensure_future(
+                supabase_service.save_message_analytics(
+                    message_id=None,
+                    user_id=user_id,
+                    tokens_in=_tok_in,
+                    tokens_out=_tok_out,
+                    tokens_thinking=None,
+                    cost_usd=_cost,
+                    latency_ms=_latency_ms,
+                    ttft_ms=None,
+                    chunks_count=0,
+                    model_used=ai_model_used,
+                    feature="bill_gen",
+                )
+            )
+        except Exception as _ae:
+            logger.debug("[BILL-LLM] analytics save deferred: %s", _ae)
         return summary, rec, ai_model_used, refined_note
     except Exception as exc:
         logger.warning("[BILL-LLM] FAILED — provider=%s model=%s error=%s took=%.1fs",
@@ -193,7 +216,7 @@ Now produce output for the data above. Reply in JSON only — no markdown, no ex
         return "", "", ai_model_used, custom_note
 
 
-async def _call_openai(api_key: str, model: str, prompt: str) -> tuple[str, str, str | None]:
+async def _call_openai(api_key: str, model: str, prompt: str) -> tuple[str, str, str | None, int, int]:
     async with httpx.AsyncClient(timeout=30.0) as client:
         r = await client.post(
             OPENAI_CHAT_URL,
@@ -207,10 +230,14 @@ async def _call_openai(api_key: str, model: str, prompt: str) -> tuple[str, str,
         r.raise_for_status()
         data = r.json()
         content = (data.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
-        return _parse_llm_response(content)
+        usage = data.get("usage") or {}
+        tokens_in = usage.get("prompt_tokens", 0)
+        tokens_out = usage.get("completion_tokens", 0)
+        summary, rec, refined_note = _parse_llm_response(content)
+        return summary, rec, refined_note, tokens_in, tokens_out
 
 
-async def _call_anthropic(api_key: str, model: str, prompt: str) -> tuple[str, str, str | None]:
+async def _call_anthropic(api_key: str, model: str, prompt: str) -> tuple[str, str, str | None, int, int]:
     async with httpx.AsyncClient(timeout=30.0) as client:
         r = await client.post(
             ANTHROPIC_MESSAGES_URL,
@@ -231,7 +258,11 @@ async def _call_anthropic(api_key: str, model: str, prompt: str) -> tuple[str, s
         for block in data.get("content", []):
             if block.get("type") == "text":
                 content += block.get("text", "")
-        return _parse_llm_response(content)
+        usage = data.get("usage") or {}
+        tokens_in = usage.get("input_tokens", 0)
+        tokens_out = usage.get("output_tokens", 0)
+        summary, rec, refined_note = _parse_llm_response(content)
+        return summary, rec, refined_note, tokens_in, tokens_out
 
 
 # Models using thinkingLevel (Gemini 3.x family)
@@ -241,7 +272,7 @@ _GOOGLE_THINKING_LEVEL_MODELS_BILL = {
 # Models that cannot disable thinking (floor = "low")
 _GOOGLE_NO_MINIMAL_MODELS_BILL = {"gemini-3.1-pro-preview", "gemini-3-pro-preview"}
 
-async def _call_google(api_key: str, model: str, prompt: str) -> tuple[str, str, str | None]:
+async def _call_google(api_key: str, model: str, prompt: str) -> tuple[str, str, str | None, int, int]:
     url = GOOGLE_GENERATE_URL.format(model=model)
     # CRITICAL FIX: For Gemini 3.x level models, thinking tokens consume maxOutputTokens.
     # With maxOutputTokens=400 and ~200 thinking tokens → only ~200 remaining for JSON output.
@@ -283,5 +314,9 @@ async def _call_google(api_key: str, model: str, prompt: str) -> tuple[str, str,
         if not content:
             # Fallback: include all parts if only thought parts were returned
             content = "".join(p.get("text", "") for p in parts)
-        return _parse_llm_response(content)
+        usage = data.get("usageMetadata") or {}
+        tokens_in = usage.get("promptTokenCount", 0)
+        tokens_out = usage.get("candidatesTokenCount", 0)
+        summary, rec, refined_note = _parse_llm_response(content)
+        return summary, rec, refined_note, tokens_in, tokens_out
 

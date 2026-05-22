@@ -1655,6 +1655,7 @@ async def stream_response(
                     ttft_ms=_ttft_ms,
                     chunks_count=_chunks_count,
                     model_used=f"{provider}/{model}",
+                    feature="chat",
                 )
             except Exception as _ae:
                 logger.warning("[CHAT] analytics save failed: %s", _ae)

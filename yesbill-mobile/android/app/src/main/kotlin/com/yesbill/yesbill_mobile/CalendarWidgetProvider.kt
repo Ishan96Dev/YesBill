@@ -56,7 +56,7 @@ class CalendarWidgetProvider : HomeWidgetProvider() {
         // Tap → open calendar screen
         val tapIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse("yesbill://calendar")
+            data = Uri.parse("yesbill://app/calendar")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val tapPending = PendingIntent.getActivity(
@@ -69,6 +69,13 @@ class CalendarWidgetProvider : HomeWidgetProvider() {
                 setTextViewText(R.id.widget_cal_date, date)
                 setTextViewText(R.id.widget_cal_count, delivered)
                 setTextViewText(R.id.widget_cal_total, "/$total")
+
+                val hasData = names.any { it != null }
+                // Hide placeholder once real data is available
+                setViewVisibility(
+                    R.id.widget_cal_placeholder,
+                    if (hasData) View.GONE else View.VISIBLE,
+                )
 
                 names.forEachIndexed { i, name ->
                     if (name != null) {

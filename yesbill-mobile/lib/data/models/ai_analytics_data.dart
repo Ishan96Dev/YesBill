@@ -8,6 +8,7 @@ class AiAnalyticsData {
   final int avgLatencyMs;
   final List<DailyTokenData> dailyBreakdown;
   final List<ModelUsageData> modelBreakdown;
+  final List<FeatureUsageData> featureBreakdown;
 
   const AiAnalyticsData({
     required this.totalTokensIn,
@@ -18,6 +19,7 @@ class AiAnalyticsData {
     required this.avgLatencyMs,
     required this.dailyBreakdown,
     required this.modelBreakdown,
+    this.featureBreakdown = const [],
   });
 
   int get totalTokens =>
@@ -41,6 +43,10 @@ class AiAnalyticsData {
           .cast<Map<String, dynamic>>()
           .map(ModelUsageData.fromJson)
           .toList(),
+      featureBreakdown: ((json['feature_breakdown'] as List?) ?? [])
+          .cast<Map<String, dynamic>>()
+          .map(FeatureUsageData.fromJson)
+          .toList(),
     );
   }
 
@@ -53,6 +59,7 @@ class AiAnalyticsData {
         avgLatencyMs: 0,
         dailyBreakdown: [],
         modelBreakdown: [],
+        featureBreakdown: [],
       );
 }
 
@@ -112,6 +119,37 @@ class ModelUsageData {
   factory ModelUsageData.fromJson(Map<String, dynamic> json) {
     return ModelUsageData(
       model: json['model'] as String? ?? 'unknown',
+      tokensIn: (json['tokens_in'] as num?)?.toInt() ?? 0,
+      tokensOut: (json['tokens_out'] as num?)?.toInt() ?? 0,
+      tokensThinking: (json['tokens_thinking'] as num?)?.toInt() ?? 0,
+      totalCostUsd: (json['total_cost_usd'] as num?)?.toDouble() ?? 0.0,
+      messageCount: (json['message_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class FeatureUsageData {
+  final String feature; // 'chat' | 'bill_gen'
+  final int tokensIn;
+  final int tokensOut;
+  final int tokensThinking;
+  final double totalCostUsd;
+  final int messageCount;
+
+  const FeatureUsageData({
+    required this.feature,
+    required this.tokensIn,
+    required this.tokensOut,
+    required this.tokensThinking,
+    required this.totalCostUsd,
+    required this.messageCount,
+  });
+
+  int get totalTokens => tokensIn + tokensOut + tokensThinking;
+
+  factory FeatureUsageData.fromJson(Map<String, dynamic> json) {
+    return FeatureUsageData(
+      feature: json['feature'] as String? ?? 'chat',
       tokensIn: (json['tokens_in'] as num?)?.toInt() ?? 0,
       tokensOut: (json['tokens_out'] as num?)?.toInt() ?? 0,
       tokensThinking: (json['tokens_thinking'] as num?)?.toInt() ?? 0,

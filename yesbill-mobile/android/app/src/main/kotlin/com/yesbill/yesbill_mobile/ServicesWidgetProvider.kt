@@ -52,7 +52,7 @@ class ServicesWidgetProvider : HomeWidgetProvider() {
         // Tap → open services screen
         val tapIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse("yesbill://services")
+            data = Uri.parse("yesbill://app/services")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val tapPending = PendingIntent.getActivity(
@@ -64,6 +64,13 @@ class ServicesWidgetProvider : HomeWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_services).apply {
                 val label = if (count == "1") "1 active" else "$count active"
                 setTextViewText(R.id.widget_svc_count, label)
+
+                val hasServices = names.any { it != null }
+                // Hide placeholder when services are available
+                setViewVisibility(
+                    R.id.widget_svc_placeholder,
+                    if (hasServices) View.GONE else View.VISIBLE,
+                )
 
                 names.forEachIndexed { i, name ->
                     if (name != null) {

@@ -167,6 +167,12 @@ function AIUsageTab() {
       "Avg (s)": parseFloat((d.avg_latency_ms / 1000).toFixed(2)),
     }));
 
+  const featureBreakdown = summaryData?.feature_breakdown || [];
+  const chatFeature = featureBreakdown.find((f) => f.feature === "chat") ||
+    { tokens_in: 0, tokens_out: 0, tokens_thinking: 0, total_cost_usd: 0, message_count: 0 };
+  const billGenFeature = featureBreakdown.find((f) => f.feature === "bill_gen") ||
+    { tokens_in: 0, tokens_out: 0, tokens_thinking: 0, total_cost_usd: 0, message_count: 0 };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -234,6 +240,76 @@ function AIUsageTab() {
         </motion.div>
       </div>
 
+      {/* Token Breakdown */}
+      {totalTokens > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className={CARD}
+        >
+          <SectionHeader
+            icon={Layers}
+            title="Token Breakdown"
+            subtitle="Distribution of input, output and thinking tokens this month"
+          />
+          {/* Segmented progress bar */}
+          <div className="flex h-5 rounded-full overflow-hidden mb-5 gap-px">
+            {totalTokensIn > 0 && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${((totalTokensIn / totalTokens) * 100).toFixed(1)}%` }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+                className="bg-indigo-500 first:rounded-l-full"
+              />
+            )}
+            {totalTokensOut > 0 && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${((totalTokensOut / totalTokens) * 100).toFixed(1)}%` }}
+                transition={{ duration: 0.9, delay: 0.1, ease: "easeOut" }}
+                className="bg-violet-500"
+              />
+            )}
+            {totalTokensThinking > 0 && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${((totalTokensThinking / totalTokens) * 100).toFixed(1)}%` }}
+                transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
+                className="bg-purple-300 last:rounded-r-full"
+              />
+            )}
+          </div>
+          {/* Per-type breakdown */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-indigo-50 rounded-2xl p-4 text-center">
+              <div className="w-3 h-3 rounded-full bg-indigo-500 mx-auto mb-2" />
+              <p className="text-xs text-gray-500 mb-1">Input</p>
+              <p className="text-xl font-bold text-gray-900">{formatK(totalTokensIn)}</p>
+              <p className="text-xs text-indigo-600 font-semibold mt-1">
+                {totalTokens > 0 ? `${((totalTokensIn / totalTokens) * 100).toFixed(0)}%` : "0%"}
+              </p>
+            </div>
+            <div className="bg-violet-50 rounded-2xl p-4 text-center">
+              <div className="w-3 h-3 rounded-full bg-violet-500 mx-auto mb-2" />
+              <p className="text-xs text-gray-500 mb-1">Output</p>
+              <p className="text-xl font-bold text-gray-900">{formatK(totalTokensOut)}</p>
+              <p className="text-xs text-violet-600 font-semibold mt-1">
+                {totalTokens > 0 ? `${((totalTokensOut / totalTokens) * 100).toFixed(0)}%` : "0%"}
+              </p>
+            </div>
+            <div className="bg-purple-50 rounded-2xl p-4 text-center">
+              <div className="w-3 h-3 rounded-full bg-purple-300 mx-auto mb-2" />
+              <p className="text-xs text-gray-500 mb-1">Thinking</p>
+              <p className="text-xl font-bold text-gray-900">{formatK(totalTokensThinking)}</p>
+              <p className="text-xs text-purple-600 font-semibold mt-1">
+                {totalTokens > 0 ? `${((totalTokensThinking / totalTokens) * 100).toFixed(0)}%` : "0%"}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Daily Token Usage Chart */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={CARD}>
         <div className="flex items-start justify-between mb-6">
@@ -269,7 +345,7 @@ function AIUsageTab() {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dailyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+            <BarChart data={dailyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} maxBarSize={40} barCategoryGap="30%">
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis
                 dataKey="date"
@@ -344,6 +420,90 @@ function AIUsageTab() {
             ))}
           </div>
         )}
+      </motion.div>
+
+      {/* Feature Usage Breakdown */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className={CARD}
+      >
+        <SectionHeader
+          icon={GitCompare}
+          title="Usage by Feature"
+          subtitle="Chat AI vs Bill Generation AI token consumption"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Chat AI */}
+          <div className="bg-blue-50 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <Hash className="w-4 h-4 text-white" />
+              </div>
+              <p className="font-bold text-gray-800">Chat AI Usage</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <p className="text-lg font-bold text-gray-900">
+                  {formatK(chatFeature.tokens_in + chatFeature.tokens_out + (chatFeature.tokens_thinking || 0))}
+                </p>
+                <p className="text-xs text-gray-500">tokens</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-900">₹{(chatFeature.total_cost_usd * USD_TO_INR).toFixed(2)}</p>
+                <p className="text-xs text-gray-500">cost</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-900">{chatFeature.message_count}</p>
+                <p className="text-xs text-gray-500">messages</p>
+              </div>
+            </div>
+          </div>
+          {/* Bill Generation AI */}
+          <div className="bg-amber-50 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                <Receipt className="w-4 h-4 text-white" />
+              </div>
+              <p className="font-bold text-gray-800">Bill Generation AI</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <p className="text-lg font-bold text-gray-900">
+                  {formatK(billGenFeature.tokens_in + billGenFeature.tokens_out + (billGenFeature.tokens_thinking || 0))}
+                </p>
+                <p className="text-xs text-gray-500">tokens</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-900">₹{(billGenFeature.total_cost_usd * USD_TO_INR).toFixed(2)}</p>
+                <p className="text-xs text-gray-500">cost</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-900">{billGenFeature.message_count}</p>
+                <p className="text-xs text-gray-500">bills</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Total row */}
+        <div className="mt-4 bg-gray-50 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-gray-700">Total AI Usage</p>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">{formatK(totalTokens)}</p>
+              <p className="text-xs text-gray-500">tokens</p>
+            </div>
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">₹{totalCostInr.toFixed(2)}</p>
+              <p className="text-xs text-gray-500">cost</p>
+            </div>
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900">{messageCount}</p>
+              <p className="text-xs text-gray-500">total AI calls</p>
+            </div>
+          </div>
+        </div>
       </motion.div>
 
       {/* Latency Trend */}

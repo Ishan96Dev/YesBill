@@ -31,7 +31,7 @@ class ChatWidgetProvider : HomeWidgetProvider() {
         // Tap → open chat screen
         val tapIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse("yesbill://chat")
+            data = Uri.parse("yesbill://app/chat")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val tapPending = PendingIntent.getActivity(
