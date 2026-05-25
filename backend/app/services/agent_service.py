@@ -630,7 +630,6 @@ async def _stream_anthropic_final(
             headers={
                 "x-api-key": api_key,
                 "anthropic-version": "2023-06-01",
-                "anthropic-beta": "interleaved-thinking-2025-05-14",
                 "content-type": "application/json",
             },
             json=request_body,

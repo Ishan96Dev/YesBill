@@ -610,28 +610,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
               message_analytics: event.analytics ? [event.analytics] : undefined,
             },
           ]);
-          // Eagerly pre-fetch reasoning summary in background
-          if (event.reasoning?.supported && finalMessageId && activeConvId) {
-            chatService.getReasoningSummary(String(finalMessageId), activeConvId)
-              .then((result) => {
-                if (result?.summary) {
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === finalMessageId
-                        ? {
-                          ...m,
-                          metadata: {
-                            ...m.metadata,
-                            reasoning: { ...m.metadata?.reasoning, summary: result.summary },
-                          },
-                        }
-                        : m
-                    )
-                  );
-                }
-              })
-              .catch(() => { });
-          }
+
         } else if (event.type === "title") {
           onTitleUpdate?.(activeConvId, event.title);
           // Also update local history state so the title shows immediately in the history panel

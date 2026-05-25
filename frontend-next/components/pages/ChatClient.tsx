@@ -343,28 +343,7 @@ export default function ChatPage() {
               },
             ];
           });
-          // Eagerly pre-fetch reasoning summary in background (no loading state on expand)
-          if (event.reasoning?.supported && finalMessageId) {
-            chatService.getReasoningSummary(finalMessageId, convId)
-              .then((result) => {
-                if (result?.summary) {
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === finalMessageId
-                        ? {
-                            ...m,
-                            metadata: {
-                              ...m.metadata,
-                              reasoning: { ...m.metadata?.reasoning, summary: result.summary },
-                            },
-                          }
-                        : m
-                    )
-                  );
-                }
-              })
-              .catch(() => {}); // silent fail — summary is optional
-          }
+
         } else if (event.type === "error") {
           if (event.code === "MODEL_UNAVAILABLE_PRECHECK" || event.code === "MODEL_UNAVAILABLE_RUNTIME") {
             setModelBlockedReason(event.message || "Selected model is unavailable.");
