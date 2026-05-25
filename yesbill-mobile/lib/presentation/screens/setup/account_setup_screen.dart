@@ -1617,7 +1617,11 @@ class _SkipAiModal extends StatelessWidget {
 // ── Shared input widgets ──────────────────────────────────────────────────────
 
 class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.text, this.required = false});
+  const _FieldLabel({
+    required this.text,
+    this.required = false,
+    this.optional = false,
+  });
   final String text;
   final bool required;
   final bool optional;
@@ -1656,7 +1660,12 @@ class _InputField extends StatelessWidget {
     required this.controller,
     this.hint,
     this.icon,
+    this.errorText,
     this.onChanged,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.keyboardType,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
@@ -1725,6 +1734,8 @@ class _InputField extends StatelessWidget {
 class _TextAreaField extends StatelessWidget {
   const _TextAreaField({
     required this.controller,
+    this.hint,
+    this.maxLength,
   });
 
   final TextEditingController controller;

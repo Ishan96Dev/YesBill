@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_surfaces.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_surfaces.dart';
 
 /// Returns the local asset path for a given AI provider ID.
 String? providerLocalAsset(String? providerId) {

@@ -4,6 +4,7 @@
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { flushSync } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Plus, History, MessageSquare, ChevronDown, Copy, Check, Settings, AlertCircle, Sparkles, Trash2 } from "lucide-react";
 import Link from 'next/link';
@@ -330,6 +331,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
   const bottomRef = useRef(null);
   const skipConvFetchRef = useRef(false); // prevents useEffect overwriting in-progress messages when handleSend creates a new conv
   const lastAnalyticsRef = useRef(null); // stores analytics from last done event (for action_required flow)
+  const lastThinkingRef = useRef(null);  // stores thinking data from streaming phase for action_required flow
   const isSubmittingRef = useRef(false); // blocks re-entry during the async gap before setStreaming(true)
   const { displayName, avatarUrl } = useUser();
 
@@ -464,6 +466,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
     let hadWaitMessage = false;
     let hadThinkingEvent = false;
     let thinkingStartTime = null;
+    let thinkingDeactivated = false;
     let pendingFlush = false;
     let flushFrame = null;
     const flushChunk = () => {
@@ -505,17 +508,23 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
             )
           );
         } else if (event.type === "chunk") {
-          if (fullThinking || hadWaitMessage || hadThinkingEvent) {
+          if ((fullThinking || hadWaitMessage || hadThinkingEvent) && !thinkingDeactivated) {
+            thinkingDeactivated = true;
+            // flushSync ensures React commits the "thought complete" state synchronously
+            // before any response text is scheduled — fixing the race where React 18
+            // batching would show thinking-done and response content in the same render.
             const thinkingDuration = thinkingStartTime
               ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
               : undefined;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === STREAMING_ID && m.thinkingActive
-                  ? { ...m, thinkingActive: false, waitMessage: undefined, thinkingDuration }
-                  : m
-              )
-            );
+            flushSync(() => {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === STREAMING_ID && m.thinkingActive
+                    ? { ...m, thinkingActive: false, waitMessage: undefined, thinkingDuration }
+                    : m
+                )
+              );
+            });
           }
           fullContent += event.content || "";
           scheduleFlush();
@@ -524,6 +533,15 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
           // Capture analytics NOW — the frontend returns early here so the done
           // event after action_required is never read; analytics come via this event.
           if (event.analytics) lastAnalyticsRef.current = event.analytics;
+          // Save thinking data so it can be shown on the confirmed "Done!" message
+          if (hadThinkingEvent && fullThinking) {
+            const savedThinkingDuration = thinkingStartTime
+              ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
+              : undefined;
+            lastThinkingRef.current = { thinkingContent: fullThinking, thinkingDuration: savedThinkingDuration };
+          } else {
+            lastThinkingRef.current = null;
+          }
           // Normalize to always use actions list (supports both single and batch)
           const actions = event.actions || [{
             action_id: event.action_id,
@@ -630,6 +648,8 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
     setWaitingForConfirm(false);
     const analytics = lastAnalyticsRef.current;
     lastAnalyticsRef.current = null;
+    const thinking = lastThinkingRef.current;
+    lastThinkingRef.current = null;
     setMessages((prev) => [
       ...prev.filter((m) => m.type !== "action_required"),
       {
@@ -638,6 +658,8 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
         id: messageId || Date.now(),
         model_used: analytics?.model_used || undefined,
         message_analytics: analytics ? [analytics] : undefined,
+        thinkingContent: thinking?.thinkingContent || undefined,
+        thinkingDuration: thinking?.thinkingDuration || undefined,
       },
     ]);
   };

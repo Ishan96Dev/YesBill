@@ -5,6 +5,7 @@ import { assetUrl } from "@/lib/utils";
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { flushSync } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Brain, ChevronDown, Check } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
@@ -233,6 +234,7 @@ export default function ChatPage() {
     let hadWaitMessage = false;
     let hadThinkingEvent = false;
     let thinkingStartTime = isThinking ? Date.now() : null;
+    let thinkingDeactivated = false;
     let pendingFlush = false;
     let flushFrame = null;
     const flushChunk = () => {
@@ -285,18 +287,24 @@ export default function ChatPage() {
             )
           );
         } else if (event.type === "chunk") {
-          if (fullThinking || hadWaitMessage || hadThinkingEvent) {
-            // Thinking done — mark inactive and clear wait message when content starts arriving
+          if ((fullThinking || hadWaitMessage || hadThinkingEvent) && !thinkingDeactivated) {
+            thinkingDeactivated = true;
+            // Thinking done — use flushSync so React commits the "thought complete" state
+            // synchronously before any response text is scheduled to appear. Without this,
+            // React 18 automatic batching can merge the thinkingActive:false update with
+            // the first content flush into a single render, making both appear together.
             const thinkingDuration = thinkingStartTime
               ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
               : undefined;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === STREAM_PLACEHOLDER_ID && m.thinkingActive
-                  ? { ...m, thinkingActive: false, waitMessage: undefined, thinkingDuration, progressElapsed: undefined }
-                  : m
-              )
-            );
+            flushSync(() => {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === STREAM_PLACEHOLDER_ID && m.thinkingActive
+                    ? { ...m, thinkingActive: false, waitMessage: undefined, thinkingDuration, progressElapsed: undefined }
+                    : m
+                )
+              );
+            });
           }
           fullContent += event.content || "";
           scheduleFlush();

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BarChart2 } from "lucide-react";
 import { WithTooltip } from "../ui/tooltip";
+import ModelProviderIcon from "../ui/ModelProviderIcon";
 
 const USD_TO_INR = 85;
 
@@ -156,8 +157,9 @@ export default function AnalyticsPopover({ analyticsData, model }) {
                 <BarChart2 className="w-3 h-3 text-primary" />
                 Analytics
               </span>
-              <span className="text-[11px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md truncate max-w-[155px]">
-                {modelLabel}
+              <span className="inline-flex items-center gap-1 text-[11px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md max-w-[155px] overflow-hidden">
+                <ModelProviderIcon model={model} size={12} style={{ borderRadius: '2px', flexShrink: 0 }} />
+                <span className="truncate">{modelLabel}</span>
               </span>
             </div>
 

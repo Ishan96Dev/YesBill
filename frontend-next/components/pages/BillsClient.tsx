@@ -583,31 +583,32 @@ export default function Bills() {
                         onClick={() => setUseAiInsights(v => !v)}
                         style={{
                           position: "relative",
-                          display: "inline-flex",
-                          alignItems: "center",
+                          display: "inline-block",
                           width: "44px",
                           height: "24px",
-                          borderRadius: "9999px",
+                          minWidth: "44px",
+                          borderRadius: "12px",
                           border: "none",
                           cursor: "pointer",
                           padding: 0,
                           flexShrink: 0,
                           transition: "background-color 0.2s ease",
-                          backgroundColor: useAiInsights ? "#7c3aed" : "#d1d5db",
+                          backgroundColor: useAiInsights ? "hsl(var(--primary))" : "#d1d5db",
                           outline: "none",
-                          boxShadow: useAiInsights ? "0 0 0 0px #7c3aed40" : "none",
+                          verticalAlign: "middle",
                         }}
                       >
                         <span
                           style={{
-                            display: "block",
+                            position: "absolute",
+                            top: "3px",
+                            left: useAiInsights ? "23px" : "3px",
                             width: "18px",
                             height: "18px",
-                            borderRadius: "9999px",
+                            borderRadius: "50%",
                             backgroundColor: "#ffffff",
                             boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
-                            transition: "transform 0.2s ease",
-                            transform: useAiInsights ? "translateX(23px)" : "translateX(3px)",
+                            transition: "left 0.2s ease",
                           }}
                         />
                       </button>

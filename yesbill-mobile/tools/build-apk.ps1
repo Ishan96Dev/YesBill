@@ -15,7 +15,8 @@ $ErrorActionPreference = 'Stop'
 
 # ── Resolve Flutter executable (prefers bundled SDK) ──────────────────────────
 $localFlutter = [IO.Path]::Combine($PSScriptRoot, '..', '..', 'flutter_windows_3.41.6-stable', 'flutter', 'bin', 'flutter.bat')
-$flutter = if (Test-Path $localFlutter) { $localFlutter } else { 'flutter' }
+$systemFlutter = 'E:\flutter\bin\flutter.bat'
+$flutter = if (Test-Path $localFlutter) { $localFlutter } elseif (Test-Path $systemFlutter) { $systemFlutter } else { 'flutter' }
 
 # ── Locate the .env file ───────────────────────────────────────────────────────
 $projectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
