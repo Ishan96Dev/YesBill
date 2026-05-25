@@ -27,6 +27,7 @@ class PillSelectorChip<T> extends StatelessWidget {
     required this.onSelected,
     this.maxLabelWidth = 168,
     this.sheetTitle = 'Choose an option',
+    this.imageAsset,
   });
 
   final IconData icon;
@@ -36,6 +37,7 @@ class PillSelectorChip<T> extends StatelessWidget {
   final ValueChanged<T> onSelected;
   final double maxLabelWidth;
   final String sheetTitle;
+  final String? imageAsset;
 
   Future<void> _openPicker(BuildContext context) async {
     final selected = await showModalBottomSheet<T>(
@@ -44,6 +46,7 @@ class PillSelectorChip<T> extends StatelessWidget {
       isScrollControlled: true,
       builder: (_) => _PillSelectorSheet<T>(
         icon: icon,
+        imageAsset: imageAsset,
         title: sheetTitle,
         options: options,
         currentValue: value,
@@ -72,7 +75,20 @@ class PillSelectorChip<T> extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 14, color: AppColors.primary),
+              if (imageAsset != null)
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: Image.asset(
+                    imageAsset!,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.medium,
+                    errorBuilder: (_, __, ___) =>
+                        Icon(icon, size: 14, color: AppColors.primary),
+                  ),
+                )
+              else
+                Icon(icon, size: 14, color: AppColors.primary),
               const SizedBox(width: 8),
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: maxLabelWidth),
@@ -106,12 +122,14 @@ class _PillSelectorSheet<T> extends StatelessWidget {
     required this.title,
     required this.options,
     required this.currentValue,
+    this.imageAsset,
   });
 
   final IconData icon;
   final String title;
   final List<PillSelectorOption<T>> options;
   final T? currentValue;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +187,17 @@ class _PillSelectorSheet<T> extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       alignment: Alignment.center,
-                      child: Icon(icon, size: 16, color: AppColors.primary),
+                      child: imageAsset != null
+                          ? Image.asset(
+                              imageAsset!,
+                              width: 18,
+                              height: 18,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.medium,
+                              errorBuilder: (_, __, ___) =>
+                                  Icon(icon, size: 16, color: AppColors.primary),
+                            )
+                          : Icon(icon, size: 16, color: AppColors.primary),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

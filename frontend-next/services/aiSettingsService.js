@@ -400,19 +400,22 @@ export const aiSettingsService = {
         aiSettingsService.getAllSettings(userId),
         aiSettingsService.getProviders(),
       ])
-      for (const setting of allSettings) {
-        const modelId = setting?.selected_model
-        if (!modelId) continue
-        const provider = providers.find((p) => p.id === setting.provider)
-        const model = provider?.models?.find((m) => m.id === modelId)
-        if (model?.name) return model.name
-        // Unknown model id: format nicely (e.g. gpt-4o -> GPT-4o)
-        return modelId
-          .split(/[-_\s]+/)
-          .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
-          .join(' ')
-      }
-      return null
+      // Prefer the provider with a valid key — same heuristic as getInsightsEnabled.
+      // Falling back to the first setting with any model avoids returning null when
+      // the key hasn't been validated yet.
+      const activeSetting =
+        allSettings.find((s) => s.is_key_valid && s.selected_model) ||
+        allSettings.find((s) => s.selected_model)
+      if (!activeSetting) return null
+      const modelId = activeSetting.selected_model
+      const provider = providers.find((p) => p.id === activeSetting.provider)
+      const model = provider?.models?.find((m) => m.id === modelId)
+      if (model?.name) return model.name
+      // Unknown model id: format nicely (e.g. gpt-4o -> GPT-4o)
+      return modelId
+        .split(/[-_\s]+/)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+        .join(' ')
     } catch (err) {
       console.warn('Could not resolve selected model display name:', err.message)
       return null

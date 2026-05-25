@@ -235,6 +235,7 @@ export default function ChatPage() {
     let hadThinkingEvent = false;
     let thinkingStartTime = isThinking ? Date.now() : null;
     let thinkingDeactivated = false;
+    let savedThinkingDuration: number | undefined = undefined;
     let pendingFlush = false;
     let flushFrame = null;
     const flushChunk = () => {
@@ -296,6 +297,7 @@ export default function ChatPage() {
             const thinkingDuration = thinkingStartTime
               ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
               : undefined;
+            savedThinkingDuration = thinkingDuration;
             flushSync(() => {
               setMessages((prev) =>
                 prev.map((m) =>
@@ -317,9 +319,9 @@ export default function ChatPage() {
         } else if (event.type === "done") {
           if (flushFrame) cancelAnimationFrame(flushFrame);
           if (pendingFlush) flushChunk();
-          const thinkingDuration = thinkingStartTime
-            ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
-            : undefined;
+          // Use the duration captured at first-chunk time (when thinking actually ended).
+          // Re-calculating here would measure total stream time, not just the thinking phase.
+          const thinkingDuration = savedThinkingDuration;
           const finalMessageId = event.message_id || Date.now().toString();
           setMessages((prev) => {
             const filtered = prev.filter((m) => m.id !== STREAM_PLACEHOLDER_ID);

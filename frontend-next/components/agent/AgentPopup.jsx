@@ -73,6 +73,15 @@ function relativeTime(dateStr) {
 /** Compact unified ThoughtBlock for agent popup — same logic as main chat, smaller sizing. */
 function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration }) {
   const [expanded, setExpanded] = useState(false);
+  const prevActiveRef = useRef(thinkingActive);
+
+  // Auto-expand the chip when thinking transitions from active → complete (same as main chat).
+  useEffect(() => {
+    if (prevActiveRef.current && !thinkingActive) {
+      setExpanded(true);
+    }
+    prevActiveRef.current = thinkingActive;
+  }, [thinkingActive]);
 
   // State 1: Gemini 3.1 Pro wait banner
   if (waitMessage && thinkingActive) {
@@ -340,8 +349,15 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
     chatService.getModels()
       .then((data) => {
         setAiConfigured(data?.configured ?? false);
-        // Respect the user's global default — e.g. "none" means no thinking tokens
-        setDefaultReasoningEffort(data?.default_reasoning_effort || "none");
+        const modelInfo = data?.selected_model_info;
+        // Respect user's global preference first; then fall back to the model's own default
+        // effort level; then for reasoning-capable models default to "low" so the agent
+        // always has some thinking (avoids "no thought block" when user never set a preference).
+        const effort =
+          data?.default_reasoning_effort ||
+          modelInfo?.default_effort_level ||
+          (modelInfo?.reasoning_supported ? "low" : "none");
+        setDefaultReasoningEffort(effort);
       })
       .catch(() => setAiConfigured(false));
   }, []);
@@ -467,6 +483,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
     let hadThinkingEvent = false;
     let thinkingStartTime = null;
     let thinkingDeactivated = false;
+    let savedThinkingDuration = undefined;
     let pendingFlush = false;
     let flushFrame = null;
     const flushChunk = () => {
@@ -516,6 +533,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
             const thinkingDuration = thinkingStartTime
               ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
               : undefined;
+            savedThinkingDuration = thinkingDuration;
             flushSync(() => {
               setMessages((prev) =>
                 prev.map((m) =>
@@ -566,9 +584,9 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
           if (pendingFlush) flushChunk();
           // Capture analytics for use in handleConfirmed (action_required path)
           if (event.analytics) lastAnalyticsRef.current = event.analytics;
-          const thinkingDuration = thinkingStartTime
-            ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
-            : undefined;
+          // Use duration captured at first-chunk time — re-calculating here would include
+          // all response streaming time, not just the thinking phase.
+          const thinkingDuration = savedThinkingDuration;
           const finalMessageId = event.message_id || Date.now();
           setMessages((prev) => [
             ...prev.filter((m) => m.id !== STREAMING_ID),

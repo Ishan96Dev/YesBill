@@ -18,6 +18,16 @@ import '../../../services/pdf_service.dart';
 
 enum _BillRoleFilter { all, consumer, provider }
 
+// Payment method options: (id, label, icon)
+const _kPaymentOptions = [
+  ('cash', 'Cash', LucideIcons.banknote),
+  ('upi', 'UPI', LucideIcons.smartphone),
+  ('bank_transfer', 'Bank Transfer', LucideIcons.building2),
+  ('credit_card', 'Credit Card', LucideIcons.creditCard),
+  ('debit_card', 'Debit Card', LucideIcons.wallet),
+  ('net_banking', 'Net Banking', LucideIcons.globe),
+];
+
 class BillsScreen extends ConsumerStatefulWidget {
   const BillsScreen({super.key});
 
@@ -572,18 +582,6 @@ class _BillTileState extends ConsumerState<_BillTile> {
     }
   }
 
-  static String _paymentMethodLabel(String method) {
-    const labels = {
-      'cash': 'Cash',
-      'upi': 'UPI',
-      'bank_transfer': 'Bank Transfer',
-      'credit_card': 'Credit Card',
-      'debit_card': 'Debit Card',
-      'net_banking': 'Net Banking',
-    };
-    return labels[method] ?? method;
-  }
-
   Future<void> _markPaidWithDialog(BuildContext context) async {
     _paymentNoteCtrl.clear();
     _paymentMethod = 'cash';
@@ -617,28 +615,74 @@ class _BillTileState extends ConsumerState<_BillTile> {
                     style: AppTextStyles.h3.copyWith(color: AppColors.success),
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    initialValue: _paymentMethod,
-                    decoration: const InputDecoration(
-                      labelText: 'Payment method',
+                  Text(
+                    'Payment Method',
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                      DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                      DropdownMenuItem(
-                          value: 'bank_transfer', child: Text('Bank Transfer')),
-                      DropdownMenuItem(
-                          value: 'credit_card', child: Text('Credit Card')),
-                      DropdownMenuItem(
-                          value: 'debit_card', child: Text('Debit Card')),
-                      DropdownMenuItem(
-                          value: 'net_banking', child: Text('Net Banking')),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) {
-                        setSheetState(() => _paymentMethod = v);
-                      }
-                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _kPaymentOptions.map((opt) {
+                      final selected = _paymentMethod == opt.$1;
+                      return GestureDetector(
+                        onTap: () => setSheetState(() => _paymentMethod = opt.$1),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? AppColors.primary.withOpacity(0.1)
+                                : Theme.of(ctx)
+                                    .colorScheme
+                                    .surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.primary
+                                  : Theme.of(ctx)
+                                      .colorScheme
+                                      .outline
+                                      .withOpacity(0.3),
+                              width: selected ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                opt.$3,
+                                size: 14,
+                                color: selected
+                                    ? AppColors.primary
+                                    : Theme.of(ctx)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                opt.$2,
+                                style: AppTextStyles.bodySm.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: selected
+                                      ? AppColors.primary
+                                      : Theme.of(ctx).colorScheme.onSurface,
+                                ),
+                              ),
+                              if (selected) ...[
+                                const SizedBox(width: 5),
+                                Icon(LucideIcons.check,
+                                    size: 13, color: AppColors.primary),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

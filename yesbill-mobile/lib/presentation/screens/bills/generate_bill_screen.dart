@@ -423,7 +423,7 @@ class _GenerateBillScreenState extends ConsumerState<GenerateBillScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          _useAi ? 'Generate with AI' : 'Generate from Data',
+                          _useAi ? 'Generate Bill with AI' : 'Generate Bill',
                           style: AppTextStyles.body.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,

@@ -147,8 +147,10 @@ export default function Bills() {
         setSelectedModelName(name);
         setAiInsightsEnabled(insightsOn);
         setUseAiInsights(insightsOn);
-        // Determine provider from the first setting with a selected_model
-        const activeSetting = allSettings.find((s) => s.selected_model);
+        // Prefer the provider with a valid key — mirrors getSelectedModelDisplayName logic
+        const activeSetting =
+          allSettings.find((s) => s.is_key_valid && s.selected_model) ||
+          allSettings.find((s) => s.selected_model);
         if (activeSetting) setSelectedModelProvider(activeSetting.provider);
       }
     });

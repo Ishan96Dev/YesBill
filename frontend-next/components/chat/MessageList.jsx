@@ -101,6 +101,17 @@ function formatDuration(seconds) {
  */
 function ThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration, progressElapsed = 0 }) {
   const [expanded, setExpanded] = useState(false);
+  const prevActiveRef = useRef(thinkingActive);
+
+  // Auto-expand the chip the moment thinking transitions from active → complete.
+  // This runs only once per stream, so historical messages (thinkingActive already
+  // false on mount) never trigger it.
+  useEffect(() => {
+    if (prevActiveRef.current && !thinkingActive) {
+      setExpanded(true);
+    }
+    prevActiveRef.current = thinkingActive;
+  }, [thinkingActive]);
 
   // State 1: Gemini 3.1 Pro wait banner — shimmer while silent thinking
   if (waitMessage && thinkingActive) {

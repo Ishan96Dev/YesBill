@@ -236,8 +236,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     if (configured)
                       _ChatControlBar(
                         providerId: activeSetting.provider,
-                        providerName:
-                            activeProvider?.name ?? activeSetting.provider,
                         selectedModelLabel: selectedModel?.name ??
                             selectedModelId ??
                             'Default model',
@@ -287,8 +285,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   if (configured)
                     _ChatControlBar(
                       providerId: activeSetting.provider,
-                      providerName:
-                          activeProvider?.name ?? activeSetting.provider,
                       selectedModelLabel: selectedModel?.name ??
                           selectedModelId ??
                           'Default model',
@@ -1032,7 +1028,6 @@ String? _aiProviderAsset(String? id) => switch (id) {
 class _ChatControlBar extends StatelessWidget {
   const _ChatControlBar({
     required this.providerId,
-    required this.providerName,
     required this.selectedModelLabel,
     required this.selectedReasoningLabel,
     required this.showReasoning,
@@ -1044,7 +1039,6 @@ class _ChatControlBar extends StatelessWidget {
   });
 
   final String providerId;
-  final String providerName;
   final String selectedModelLabel;
   final String selectedReasoningLabel;
   final bool showReasoning;
@@ -1062,13 +1056,9 @@ class _ChatControlBar extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
-          _StaticInfoChip(
-            icon: LucideIcons.brain,
-            label: providerName,
-            imageAsset: _aiProviderAsset(providerId),
-          ),
           PillSelectorChip<String>(
             icon: LucideIcons.settings2,
+            imageAsset: _aiProviderAsset(providerId),
             label: selectedModelLabel,
             value: selectedModelId,
             sheetTitle: 'Choose AI model',
@@ -1101,57 +1091,6 @@ class _ChatControlBar extends StatelessWidget {
                   .toList(),
               onSelected: onSelectReasoning,
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StaticInfoChip extends StatelessWidget {
-  const _StaticInfoChip({
-    required this.icon,
-    required this.label,
-    this.imageAsset,
-  });
-
-  final IconData icon;
-  final String label;
-  final String? imageAsset;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: _chatMd3SurfaceContainerLowest(context),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: _chatMd3OutlineVariant(context).withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (imageAsset != null)
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: Image.asset(
-                imageAsset!,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.medium,
-                errorBuilder: (_, __, ___) =>
-                    Icon(icon, size: 14, color: _chatMd3Primary),
-              ),
-            )
-          else
-            Icon(icon, size: 14, color: _chatMd3Primary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: AppTextStyles.bodySm.copyWith(
-              fontWeight: FontWeight.w600,
-              color: _chatMd3OnSurface(context),
-            ),
-          ),
         ],
       ),
     );
