@@ -71,11 +71,12 @@ function relativeTime(dateStr) {
 }
 
 /** Compact unified ThoughtBlock for agent popup — same logic as main chat, smaller sizing. */
-function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration }) {
-  const [expanded, setExpanded] = useState(false);
+function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration, defaultExpanded = false }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const prevActiveRef = useRef(thinkingActive);
 
-  // Auto-expand the chip when thinking transitions from active → complete (same as main chat).
+  // Auto-expand during streaming (placeholder still mounted, same key).
+  // defaultExpanded handles the remount after done() swaps the message id.
   useEffect(() => {
     if (prevActiveRef.current && !thinkingActive) {
       setExpanded(true);
@@ -277,6 +278,7 @@ const AgentMessage = memo(function AgentMessage({ msg, onConfirmed, onCancelled,
             waitMessage={msg.waitMessage}
             reasoningSummary={msg.metadata?.reasoning?.summary}
             thinkingDuration={msg.thinkingDuration}
+            defaultExpanded={!!msg.thinkingAutoExpand}
           />
         )}
 
@@ -349,14 +351,17 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
     chatService.getModels()
       .then((data) => {
         setAiConfigured(data?.configured ?? false);
+        const userPref = data?.default_reasoning_effort;
         const modelInfo = data?.selected_model_info;
-        // Respect user's global preference first; then fall back to the model's own default
-        // effort level; then for reasoning-capable models default to "low" so the agent
-        // always has some thinking (avoids "no thought block" when user never set a preference).
-        const effort =
-          data?.default_reasoning_effort ||
-          modelInfo?.default_effort_level ||
-          (modelInfo?.reasoning_supported ? "low" : "none");
+        // `default_reasoning_effort` is always "none" when the user never set a preference
+        // (the DB default / backend fallback both return "none"). Since "none" is truthy,
+        // a plain `||` chain would always stop there, never reaching model defaults.
+        // Treat "none" as "not explicitly set" and fall through to the model default:
+        // reasoning-capable models (e.g. Claude Sonnet 4.6) default to "low" so the
+        // agent always has some thinking to reason about user intent and plan actions.
+        const effort = (userPref && userPref !== 'none')
+          ? userPref
+          : (modelInfo?.reasoning_supported ? 'low' : 'none');
         setDefaultReasoningEffort(effort);
       })
       .catch(() => setAiConfigured(false));
@@ -600,6 +605,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
               // Using hadThinkingEvent as guard prevents storing undefined on non-thinking responses.
               thinkingContent: hadThinkingEvent ? fullThinking : undefined,
               thinkingDuration,
+              thinkingAutoExpand: hadThinkingEvent ? true : undefined,
               model_used: event.model || undefined,
               message_analytics: event.analytics ? [event.analytics] : undefined,
             },
@@ -678,6 +684,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
         message_analytics: analytics ? [analytics] : undefined,
         thinkingContent: thinking?.thinkingContent || undefined,
         thinkingDuration: thinking?.thinkingDuration || undefined,
+        thinkingAutoExpand: thinking?.thinkingContent ? true : undefined,
       },
     ]);
   };

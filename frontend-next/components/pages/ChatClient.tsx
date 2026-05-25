@@ -335,6 +335,9 @@ export default function ChatPage() {
                 metadata: event.reasoning ? { reasoning: event.reasoning } : undefined,
                 thinkingContent: fullThinking || undefined,
                 thinkingDuration,
+                // Flag the thought chip to start expanded — this survives the remount that
+                // happens when done() replaces the streaming placeholder with the final msg.
+                thinkingAutoExpand: hadThinkingEvent ? true : undefined,
                 model_used: event.model || undefined,
                 message_analytics: event.analytics ? [event.analytics] : undefined,
               },

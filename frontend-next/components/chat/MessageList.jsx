@@ -99,13 +99,17 @@ function formatDuration(seconds) {
  *  2. thinkingActive (no waitMessage) → 3 pulsing dots "Thinking..."
  *  3. complete → collapsible chip "💡 Thought · Xs" with thinking tokens + summary inside
  */
-function ThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration, progressElapsed = 0 }) {
-  const [expanded, setExpanded] = useState(false);
+function ThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration, progressElapsed = 0, defaultExpanded = false }) {
+  // defaultExpanded is true when this component is freshly mounted after a just-completed
+  // stream (done handler sets thinkingAutoExpand on the message). Historical messages
+  // loaded from DB never have this flag, so they stay collapsed.
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const prevActiveRef = useRef(thinkingActive);
 
-  // Auto-expand the chip the moment thinking transitions from active → complete.
-  // This runs only once per stream, so historical messages (thinkingActive already
-  // false on mount) never trigger it.
+  // Auto-expand during the STREAMING phase: thinkingActive transitions true → false
+  // while the placeholder message is still mounted (same React key). This handles the
+  // case where the chip appears mid-stream. The defaultExpanded path above handles the
+  // remount that occurs when done() replaces the placeholder with the final message.
   useEffect(() => {
     if (prevActiveRef.current && !thinkingActive) {
       setExpanded(true);
@@ -243,6 +247,7 @@ const AssistantMessage = memo(function AssistantMessage({
   isError,
   analyticsData,
   modelUsed,
+  thinkingAutoExpand,
 }) {
   const isErrorMsg = isError || metadata?.type === "error";
   const reasoningSummary = metadata?.reasoning?.summary;
@@ -273,6 +278,7 @@ const AssistantMessage = memo(function AssistantMessage({
             reasoningSummary={reasoningSummary}
             thinkingDuration={thinkingDuration}
             progressElapsed={progressElapsed || 0}
+            defaultExpanded={!!thinkingAutoExpand}
           />
         )}
 
@@ -357,6 +363,7 @@ const MessageRow = memo(function MessageRow({ msg, idx, total, streaming, convId
         isError={msg.isError}
         analyticsData={analyticsData}
         modelUsed={msg.model_used || analyticsData?.model_used}
+        thinkingAutoExpand={msg.thinkingAutoExpand}
       />
     );
   }
