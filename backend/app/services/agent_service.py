@@ -33,6 +33,7 @@ from app.services.chat_service import (
     OPENAI_REASONING_EFFORT_MODELS,
     GOOGLE_THINKING_BUDGET_MODELS,
     GOOGLE_THINKING_LEVEL_MODELS,
+    _ANTHROPIC_EFFORT_BUDGET,
     _GOOGLE_EFFORT_TO_LEVEL,
     _GOOGLE_EFFORT_TO_BUDGET,
     _GOOGLE_EFFORT_TO_READ_TIMEOUT,
@@ -592,7 +593,8 @@ async def _stream_openai_final(
 
 
 async def _stream_anthropic_final(
-    api_key: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT
+    api_key: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT,
+    reasoning_effort: str = "none",
 ) -> AsyncGenerator[dict, None]:
     """Stream the final text response from Anthropic (no tools). Yields dicts {type, content}.
     Yields final {"type": "_usage", ...} with token counts."""
@@ -610,14 +612,16 @@ async def _stream_anthropic_final(
         )
         for m in messages
     )
+    _budget = _ANTHROPIC_EFFORT_BUDGET.get(reasoning_effort, 0)
     request_body: dict = {
         "model": model,
         "max_tokens": 16000,
-        "thinking": {"type": "enabled", "budget_tokens": 5000},
         "system": system_prompt,
         "messages": messages,
         "stream": True,
     }
+    if _budget > 0:
+        request_body["thinking"] = {"type": "enabled", "budget_tokens": _budget}
     if _has_tool_use:
         request_body["tools"] = _anthropic_tools()
         # tool_choice "auto" lets the model respond with text (which is its intent here).
@@ -630,6 +634,7 @@ async def _stream_anthropic_final(
             headers={
                 "x-api-key": api_key,
                 "anthropic-version": "2023-06-01",
+                "anthropic-beta": "interleaved-thinking-2025-05-14",
                 "content-type": "application/json",
             },
             json=request_body,
@@ -1731,9 +1736,13 @@ async def stream_agent_response(
                 if provider == "openai":
                     stream_fn = _stream_openai_final(api_key, model, messages, agent_system_prompt, reasoning_effort)
                 elif provider == "anthropic":
-                    stream_fn = _stream_anthropic_final(api_key, model, messages, agent_system_prompt)
+                    stream_fn = _stream_anthropic_final(api_key, model, messages, agent_system_prompt, reasoning_effort)
                 elif provider == "google":
                     stream_fn = _stream_google_final(api_key, model, messages, agent_system_prompt, reasoning_effort)
+                    # Wrap Google level-thinking models (Gemini 3.x) with a progress emitter
+                    # so the UI shows a live elapsed-time counter during silent thinking.
+                    if model_info and model_info.get("thinking_param_type") == "level":
+                        stream_fn = _with_thinking_progress(stream_fn, interval=3.0)
                 elif provider == "ollama":
                     # api_key carries the base_url for Ollama
                     stream_fn = _with_thinking_progress(

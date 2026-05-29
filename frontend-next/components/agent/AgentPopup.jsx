@@ -71,7 +71,7 @@ function relativeTime(dateStr) {
 }
 
 /** Compact unified ThoughtBlock for agent popup — same logic as main chat, smaller sizing. */
-function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration, defaultExpanded = false }) {
+function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reasoningSummary, thinkingDuration, progressElapsed = 0, defaultExpanded = false }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const prevActiveRef = useRef(thinkingActive);
 
@@ -94,6 +94,9 @@ function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reaso
       >
         <span className="text-xs">⏳</span>
         <span className="font-medium">{waitMessage}</span>
+        {progressElapsed > 0 && (
+          <span className="ml-auto text-violet-400 tabular-nums">{progressElapsed}s</span>
+        )}
       </motion.div>
     );
   }
@@ -110,7 +113,9 @@ function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reaso
             transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
           />
         ))}
-        <span className="text-[10px] text-gray-400 ml-0.5">Thinking...</span>
+        <span className="text-[10px] text-gray-400 ml-0.5">
+          {progressElapsed > 0 ? `Thinking · ${progressElapsed}s` : "Thinking..."}
+        </span>
       </div>
     );
   }
@@ -278,6 +283,7 @@ const AgentMessage = memo(function AgentMessage({ msg, onConfirmed, onCancelled,
             waitMessage={msg.waitMessage}
             reasoningSummary={msg.metadata?.reasoning?.summary}
             thinkingDuration={msg.thinkingDuration}
+            progressElapsed={msg.progressElapsed || 0}
             defaultExpanded={!!msg.thinkingAutoExpand}
           />
         )}
@@ -529,6 +535,15 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
                 : m
             )
           );
+        } else if (event.type === "thinking_progress") {
+          const elapsed = event.elapsed ?? 0;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === STREAMING_ID
+                ? { ...m, progressElapsed: elapsed }
+                : m
+            )
+          );
         } else if (event.type === "chunk") {
           if ((fullThinking || hadWaitMessage || hadThinkingEvent) && !thinkingDeactivated) {
             thinkingDeactivated = true;
@@ -543,7 +558,7 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === STREAMING_ID && m.thinkingActive
-                    ? { ...m, thinkingActive: false, waitMessage: undefined, thinkingDuration }
+                    ? { ...m, thinkingActive: false, waitMessage: undefined, thinkingDuration, progressElapsed: undefined }
                     : m
                 )
               );
