@@ -4,6 +4,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Smartphone, RefreshCw, CheckCircle2, Calendar, Bot, Download, ArrowRight } from 'lucide-react'
 
 const APK_URL =
@@ -16,60 +17,32 @@ const highlights = [
   { icon: RefreshCw,    label: 'Real-time sync',     color: 'text-violet-500',  bg: 'bg-violet-50'  },
 ]
 
-function MiniPhoneSVG() {
+function MiniPhoneReal() {
   return (
-    <svg viewBox="0 0 200 380" fill="none" xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full drop-shadow-xl" aria-hidden="true">
-      <rect x="6" y="4" width="188" height="372" rx="32" fill="#1a1a2e" />
-      <rect x="12" y="10" width="176" height="360" rx="28" fill="#F8F9FF" />
-      {/* Status bar */}
-      <rect x="12" y="10" width="176" height="36" rx="28" fill="#6366F1" />
-      <rect x="12" y="34" width="176" height="12" fill="#6366F1" />
-      <text x="28" y="34" fontSize="9" fill="rgba(255,255,255,0.8)" fontFamily="system-ui">9:41</text>
-      <text x="120" y="30" fontSize="10" fontWeight="700" fill="white" fontFamily="system-ui">YesBill</text>
-      {/* Dynamic island */}
-      <rect x="68" y="13" width="64" height="16" rx="8" fill="#0f0f1a" />
-      {/* Calendar grid */}
-      {['S','M','T','W','T','F','S'].map((d, i) => (
-        <text key={d+i} x={26 + i * 22} y={75} fontSize="7" fill="#9CA3AF" fontFamily="system-ui" textAnchor="middle">{d}</text>
-      ))}
-      {[0,1,2,3,4].map(row =>
-        [0,1,2,3,4,5,6].map(col => {
-          const day = row * 7 + col - 1
-          if (day < 1 || day > 31) return null
-          const isToday = day === 14
-          return (
-            <g key={`${row}-${col}`}>
-              {isToday && <circle cx={26 + col * 22} cy={92 + row * 22} r="9" fill="#6366F1" />}
-              <text x={26 + col * 22} y={96 + row * 22} fontSize="8"
-                fill={isToday ? 'white' : '#374151'} fontFamily="system-ui" textAnchor="middle">{day}</text>
-              {!isToday && [3,5,7,8,9,10,11,12,13,15].includes(day) &&
-                <circle cx={26 + col * 22} cy={101 + row * 22} r="2" fill="#6366F1" />
-              }
-            </g>
-          )
-        })
-      )}
-      {/* Bill card */}
-      <rect x="18" y="210" width="164" height="48" rx="12" fill="white" stroke="#E5E7EB" strokeWidth="1" />
-      <rect x="26" y="220" width="24" height="24" rx="7" fill="#EEF2FF" />
-      <text x="38" y="236" fontSize="11" textAnchor="middle" fill="#6366F1">₹</text>
-      <text x="60" y="230" fontSize="9" fontWeight="600" fill="#111827" fontFamily="system-ui">July 2025</text>
-      <text x="60" y="243" fontSize="8" fill="#6B7280" fontFamily="system-ui">3 active services</text>
-      <text x="170" y="236" fontSize="11" fontWeight="700" fill="#111827" fontFamily="system-ui" textAnchor="end">₹2,450</text>
-      {/* AI bubble */}
-      <rect x="18" y="268" width="164" height="40" rx="12" fill="#F5F3FF" stroke="#DDD6FE" strokeWidth="1" />
-      <rect x="26" y="276" width="22" height="22" rx="6" fill="#6366F1" />
-      <text x="37" y="291" fontSize="9" textAnchor="middle" fill="white">AI</text>
-      <text x="56" y="285" fontSize="9" fontWeight="600" fill="#6366F1" fontFamily="system-ui">Ask AI anything...</text>
-      {/* Bottom nav */}
-      <rect x="12" y="332" width="176" height="38" fill="white" />
-      <rect x="12" y="332" width="176" height="1" fill="#F3F4F6" />
-      {['🏠','📅','₹','🤖','⚙️'].map((icon, i) => (
-        <text key={i} x={30 + i * 36} y={356} fontSize="13" textAnchor="middle" fontFamily="system-ui">{icon}</text>
-      ))}
-      <rect x="78" y="366" width="44" height="3" rx="1.5" fill="#D1D5DB" />
-    </svg>
+    <div className="relative w-[220px] mx-auto">
+      {/* Phone shell */}
+      <div className="relative bg-gray-900 rounded-[44px] p-[10px] shadow-2xl ring-1 ring-white/10">
+        {/* Screen area */}
+        <div className="relative bg-black rounded-[36px] overflow-hidden">
+          {/* Dynamic island */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex justify-center pt-[10px]">
+            <div className="w-[88px] h-[26px] bg-black rounded-full border-2 border-gray-900" />
+          </div>
+          {/* Real screenshot */}
+          <Image
+            src="/screenshots/calendar.jpeg"
+            alt="YesBill calendar screen"
+            width={200}
+            height={400}
+            className="w-full rounded-[36px]"
+          />
+        </div>
+        {/* Home indicator */}
+        <div className="flex justify-center mt-2">
+          <div className="w-14 h-[5px] bg-gray-600 rounded-full" />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -90,8 +63,8 @@ export default function MobileAppSection() {
             <div className="relative">
               {/* Decorative rings */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-200 to-violet-200 blur-3xl opacity-40 scale-110" />
-              <div className="relative w-[220px] h-[420px] mx-auto">
-                <MiniPhoneSVG />
+              <div className="relative w-[220px] mx-auto">
+                <MiniPhoneReal />
               </div>
               {/* Floating badges */}
               <motion.div
@@ -163,7 +136,7 @@ export default function MobileAppSection() {
             </div>
 
             {/* Download button */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 items-stretch">
               <motion.a
                 href={APK_URL}
                 onClick={(e) => { e.preventDefault(); window.location.href = APK_URL }}
@@ -186,10 +159,11 @@ export default function MobileAppSection() {
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="self-stretch flex"
               >
                 <Link
                   href="/mobile"
-                  className="inline-flex items-center gap-2 px-6 py-4 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-colors duration-150 border border-indigo-200"
+                  className="flex items-center gap-2 px-6 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-colors duration-150 border border-indigo-200"
                 >
                   Learn more <ArrowRight className="w-4 h-4" />
                 </Link>

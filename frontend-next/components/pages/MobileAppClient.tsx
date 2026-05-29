@@ -3,6 +3,7 @@
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import {
@@ -17,108 +18,34 @@ import Background from '@/components/landing/Background'
 const APK_URL =
   'https://github.com/Ishan96Dev/YesBill/releases/latest/download/YesBill.apk'
 
-// ─── Phone mockup SVG ──────────────────────────────────────────────────────────
+// ─── Phone mockup with real screenshot ────────────────────────────────────────
 function PhoneMockup() {
   return (
-    <svg
-      viewBox="0 0 320 620"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full max-w-[300px] drop-shadow-2xl"
-      aria-hidden="true"
-    >
+    <div className="relative w-full max-w-[300px] mx-auto">
       {/* Phone shell */}
-      <rect x="10" y="8" width="300" height="604" rx="42" fill="#1a1a2e" />
-      <rect x="16" y="14" width="288" height="592" rx="38" fill="#0f0f1a" />
-
-      {/* Screen */}
-      <rect x="20" y="18" width="280" height="584" rx="36" fill="#F8F9FF" />
-
-      {/* Status bar */}
-      <rect x="20" y="18" width="280" height="44" rx="36" fill="#F8F9FF" />
-      <rect x="20" y="44" width="280" height="4" fill="#F8F9FF" />
-      <text x="42" y="42" fontSize="11" fill="#6B7280" fontFamily="system-ui">9:41</text>
-      <rect x="252" y="30" width="20" height="12" rx="3" fill="#E5E7EB" />
-      <rect x="253" y="31" width="14" height="10" rx="2" fill="#6366F1" />
-
-      {/* Dynamic island */}
-      <rect x="112" y="22" width="96" height="24" rx="12" fill="#0f0f1a" />
-
-      {/* App header */}
-      <rect x="20" y="62" width="280" height="54" fill="#6366F1" />
-      <text x="36" y="93" fontSize="16" fontWeight="700" fill="white" fontFamily="system-ui">YesBill</text>
-      <text x="36" y="107" fontSize="10" fill="rgba(255,255,255,0.7)" fontFamily="system-ui">July 2025</text>
-      <rect x="262" y="78" width="24" height="24" rx="12" fill="rgba(255,255,255,0.2)" />
-
-      {/* Calendar grid header */}
-      {['S','M','T','W','T','F','S'].map((d, i) => (
-        <text key={d+i} x={36 + i * 36} y="138" fontSize="9" fill="#9CA3AF" fontFamily="system-ui" textAnchor="middle">{d}</text>
-      ))}
-
-      {/* Calendar grid rows */}
-      {[0, 1, 2, 3, 4].map((row) =>
-        [0, 1, 2, 3, 4, 5, 6].map((col) => {
-          const day = row * 7 + col - 1
-          if (day < 1 || day > 31) return null
-          const isToday = day === 14
-          const hasService = [2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(day)
-          return (
-            <g key={`${row}-${col}`}>
-              {isToday && <circle cx={36 + col * 36} cy={165 + row * 36} r="14" fill="#6366F1" />}
-              <text
-                x={36 + col * 36}
-                y={170 + row * 36}
-                fontSize="11"
-                fill={isToday ? 'white' : '#374151'}
-                fontFamily="system-ui"
-                textAnchor="middle"
-              >{day}</text>
-              {hasService && !isToday && (
-                <circle cx={36 + col * 36} cy={178 + row * 36} r="2.5" fill="#6366F1" />
-              )}
-            </g>
-          )
-        })
-      )}
-
-      {/* Bill card */}
-      <rect x="28" y="348" width="264" height="72" rx="14" fill="white" filter="url(#shadow)" />
-      <rect x="28" y="348" width="264" height="72" rx="14" stroke="#E5E7EB" strokeWidth="1" />
-      <rect x="40" y="362" width="32" height="32" rx="10" fill="#EEF2FF" />
-      <text x="56" y="383" fontSize="16" textAnchor="middle" fill="#6366F1">₹</text>
-      <text x="84" y="375" fontSize="12" fontWeight="600" fill="#111827" fontFamily="system-ui">Monthly Bill</text>
-      <text x="84" y="392" fontSize="10" fill="#6B7280" fontFamily="system-ui">July 2025 • 3 services</text>
-      <text x="264" y="383" fontSize="15" fontWeight="700" fill="#111827" fontFamily="system-ui" textAnchor="end">₹2,450</text>
-
-      {/* AI chat bubble */}
-      <rect x="28" y="432" width="264" height="64" rx="14" fill="#F5F3FF" stroke="#DDD6FE" strokeWidth="1" />
-      <rect x="40" y="444" width="28" height="28" rx="8" fill="#6366F1" />
-      <text x="54" y="463" fontSize="12" textAnchor="middle" fill="white">AI</text>
-      <text x="80" y="457" fontSize="11" fontWeight="600" fill="#6366F1" fontFamily="system-ui">Ask YesBill AI</text>
-      <text x="80" y="472" fontSize="10" fill="#7C3AED" fontFamily="system-ui">"What did I spend last month?"</text>
-
-      {/* Bottom nav bar */}
-      <rect x="20" y="530" width="280" height="72" rx="0" fill="white" />
-      <rect x="20" y="530" width="280" height="1" fill="#F3F4F6" />
-      <rect x="20" y="566" width="280" height="26" rx="0" fill="white" />
-
-      {['🏠','📅','₹','🤖','⚙️'].map((icon, i) => (
-        <g key={i}>
-          {i === 1 && <rect x={24 + i * 56} y="534" width="48" height="42" rx="10" fill="#EEF2FF" />}
-          <text x={48 + i * 56} y="562" fontSize="18" textAnchor="middle" fontFamily="system-ui">{icon}</text>
-        </g>
-      ))}
-
-      {/* Bottom safe area */}
-      <rect x="124" y="590" width="72" height="5" rx="2.5" fill="#D1D5DB" />
-
-      {/* Drop shadow filter */}
-      <defs>
-        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#6366F1" floodOpacity="0.15" />
-        </filter>
-      </defs>
-    </svg>
+      <div className="relative bg-gray-900 rounded-[50px] p-[12px] shadow-2xl ring-1 ring-white/10">
+        {/* Screen area */}
+        <div className="relative bg-black rounded-[40px] overflow-hidden">
+          {/* Dynamic island */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex justify-center pt-[12px]">
+            <div className="w-[100px] h-[28px] bg-black rounded-full border-2 border-gray-900" />
+          </div>
+          {/* Real screenshot */}
+          <Image
+            src="/screenshots/dashboard.jpeg"
+            alt="YesBill dashboard screen"
+            width={300}
+            height={600}
+            className="w-full rounded-[40px]"
+            priority
+          />
+        </div>
+        {/* Home indicator */}
+        <div className="flex justify-center mt-2.5">
+          <div className="w-16 h-[5px] bg-gray-600 rounded-full" />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -273,16 +200,17 @@ export default function MobileAppClient() {
               Track daily household services, view your billing calendar, chat with AI, and manage payments — all from your Android phone. Perfectly synced with the web.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-10">
+            <div className="flex flex-wrap gap-4 mb-10 items-stretch">
               <DownloadButton size="lg" version={latestVersion} />
               <motion.div
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="self-stretch flex"
               >
                 <Link
                   href="#features"
-                  className="inline-flex items-center gap-2 px-7 py-4 text-base font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors duration-150 border border-gray-200"
+                  className="flex items-center gap-2 px-7 text-base font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors duration-150 border border-gray-200"
                 >
                   See features <ArrowRight className="w-4 h-4" />
                 </Link>
