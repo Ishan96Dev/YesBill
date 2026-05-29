@@ -123,4 +123,4 @@ Write tests for:
 
 ## Questions?
 
-Open a GitHub Issue or discussion. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system design context.
+Open a GitHub Issue or discussion. See [docs/architecture.md](docs/architecture.md) for system design context.

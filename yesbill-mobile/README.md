@@ -1,369 +1,321 @@
-# YesBill Mobile — Android App
+﻿# YesBill Mobile — Android App
 
-> Household Service Billing Tracker for Android, built with Flutter.
+> Track household services, auto-generate monthly bills, and chat with AI about your spending — all from your Android phone.
 
-YesBill helps you track daily service deliveries (milk, newspapers, internet, tiffin, etc.), automatically generate AI-powered monthly bills, and gain insights into your household spending — right from your Android phone.
-
----
-
-## Features
-
-| Screen | Status | Details |
-|--------|--------|---------|
-| **Splash / Onboarding** | ✅ | Animated branding + first-run walkthrough |
-| **Authentication** | ✅ | Email/password, Google OAuth, magic-link, biometric lock |
-| **Dashboard** | ✅ | Monthly spending, delivery rates, quick-stat cards, shimmer loading |
-| **Services** | ✅ | Add / edit / archive recurring household services with per-day pricing |
-| **Calendar Tracking** | ✅ | Mark each day Delivered / Skipped / Pending; month navigator |
-| **AI Bill Generation** | ✅ | One-tap monthly bill via OpenAI · Anthropic · Google AI (BYOK) |
-| **Bill Management** | ✅ | View, export PDF, mark paid with custom payment method picker |
-| **Analytics** | ✅ | Spending trends, service breakdown charts, year-over-year comparison |
-| **AI Chat** | ✅ | Chat with AI about your data; tappable hyperlinks via url_launcher |
-| **Agentic AI** | ✅ | Agent mode — AI can mark deliveries, answer contextual queries |
-| **AI Settings** | ✅ | Per-provider API key, model selector, reasoning effort — with logo images |
-| **Profile Settings** | ✅ | Display name, timezone & currency pickers, avatar upload |
-| **Support** | ✅ | FAQ, contact form, changelog |
-| **Notifications** | ✅ | Firebase Cloud Messaging — bill reminders & delivery alerts |
+YesBill makes it effortless to manage recurring household expenses like milk, newspapers, tiffin, cleaning, and internet. Mark daily deliveries in one tap, let AI generate your monthly bill, and pay with a single swipe.
 
 ---
 
-## Tech Stack
+## What You Can Do
+
+- **Track deliveries daily** — one tap marks a service as delivered, skipped, or pending
+- **Auto-generate bills** — YesBill calculates your monthly total automatically; no spreadsheets
+- **Pay & record instantly** — mark bills as paid and choose your payment method (UPI, cash, card, etc.)
+- **Export as PDF or text** — share bills with your service provider via WhatsApp or email
+- **Chat with AI** — ask "How much did I spend on milk this month?" in plain language
+- **AI Agent mode** — let the AI mark deliveries and answer complex questions on your behalf
+- **Spending analytics** — beautiful charts showing trends, service breakdowns, and comparisons
+- **Smart reminders** — get notified when to tick a service or when a bill is ready
+- **Works everywhere** — changes sync instantly between the Android app and the web dashboard
+
+---
+
+## Screenshots
+
+<table>
+<tr>
+  <td align="center"><img src="doc-screens-Images/Dashboard-screen-01.jpeg" width="160" alt="Dashboard"/><br/><sub>Dashboard</sub></td>
+  <td align="center"><img src="doc-screens-Images/Calender-Screen-01.jpeg" width="160" alt="Calendar"/><br/><sub>Calendar</sub></td>
+  <td align="center"><img src="doc-screens-Images/Bills-screen-01.jpeg" width="160" alt="Bills list"/><br/><sub>Bills</sub></td>
+  <td align="center"><img src="doc-screens-Images/Bills-Details-Screen-01.jpeg" width="160" alt="Bill details"/><br/><sub>Bill Details</sub></td>
+</tr>
+<tr>
+  <td align="center"><img src="doc-screens-Images/Mark-as-paid-bill-Screen-01.jpeg" width="160" alt="Mark as paid"/><br/><sub>Mark as Paid</sub></td>
+  <td align="center"><img src="doc-screens-Images/Export-as-pdf-Or-share-as-text-bill-option-screen-01.jpeg" width="160" alt="Export bill"/><br/><sub>Export Bill</sub></td>
+  <td align="center"><img src="doc-screens-Images/Ask-AI-Chat-Screen-01.jpeg" width="160" alt="Ask AI chat"/><br/><sub>Ask AI</sub></td>
+  <td align="center"><img src="doc-screens-Images/Agentic-AI-Chat-Screen-01.jpeg" width="160" alt="Agentic AI"/><br/><sub>Agentic AI</sub></td>
+</tr>
+<tr>
+  <td align="center"><img src="doc-screens-Images/Onboarding-profile-Screen-01.jpeg" width="160" alt="Profile setup"/><br/><sub>Onboarding Profile</sub></td>
+  <td align="center"><img src="doc-screens-Images/Onboarding-AIConfig-Screen-01.jpeg" width="160" alt="AI config"/><br/><sub>AI Config Setup</sub></td>
+  <td align="center"><img src="doc-screens-Images/Analytics-Screen-01.jpeg" width="160" alt="Analytics"/><br/><sub>Analytics</sub></td>
+  <td align="center"><img src="doc-screens-Images/Settings-Screen-01.jpeg" width="160" alt="Settings"/><br/><sub>Settings</sub></td>
+</tr>
+</table>
+
+---
+
+## Download & Install
+
+1. Go to the [**Releases**](https://github.com/Ishan96Dev/YesBill/releases/latest) page and download `YesBill.apk`.
+2. On your Android phone, open the downloaded file.
+3. If prompted, allow **Install from unknown sources** (Settings → Security → Unknown apps).
+4. Tap **Install** and open the app.
+
+> Requires Android 6.0 (Marshmallow) or higher · ~30 MB · Internet required for sync & AI
+
+---
+
+## Getting Started
+
+### 1. Create your account
+
+Open the app → tap **Create Account** → enter your name, email, and password → verify your email. You can also sign in with **Google** for one-tap access.
+
+### 2. Complete onboarding
+
+- **Profile**: Set your timezone and currency — this affects all billing calculations.
+- **AI Provider**: Add an API key from [OpenAI](https://platform.openai.com/api-keys), [Anthropic](https://console.anthropic.com/settings/keys), or [Google AI](https://aistudio.google.com/apikey) to unlock AI features. You can skip this and add it later from Settings.
+
+### 3. Add your services
+
+Tap **Services** in the bottom navigation → tap **+** → fill in the service name, type, rate, and start date.
+
+| Example Service | Type | Rate |
+|----------------|------|------|
+| Morning Milk | Home Delivery | Rs.25 / litre |
+| Newspaper | Home Delivery | Rs.5 / day |
+| Internet | Utility | Rs.999 / month |
+| Maid | Visit-based | Rs.150 / visit |
+
+### 4. Track deliveries daily
+
+Tap **Calendar** → select today → tap each service to mark it **Delivered**, **Skipped**, or leave it **Pending**.
+
+### 5. Generate your bill
+
+Tap **Bills** → **Generate Bill** → select the month → tap **Generate**. YesBill calculates totals and writes an AI summary with spending insights.
+
+### 6. Pay and export
+
+Open a bill → tap **Mark as Paid** → choose your payment method. Tap the share icon to export as **PDF** or send as **text** via WhatsApp or email.
+
+### 7. Ask AI about your spending
+
+Tap **Ask AI** or the Sparkles agent button and type questions like:
+- *"Which service cost the most in April?"*
+- *"How many days did I get milk this month?"*
+- *"Compare my spending between March and April"*
+
+---
+
+## Features at a Glance
+
+| Feature | Description |
+|---------|-------------|
+| Daily Tracking | One-tap calendar for each service |
+| Auto Monthly Bills | AI-powered calculation and plain-language summary |
+| Bill Export | PDF and plain text, ready to share |
+| Pay & Record | Payment method picker with history |
+| Ask AI Chat | Natural-language queries about your data |
+| AI Agent | Autonomous mode — AI can take actions on your behalf |
+| Analytics | Spending trends, breakdown charts, year-over-year |
+| Dark Mode | Follows system appearance automatically |
+| Biometric Lock | Unlock with fingerprint or face ID |
+| Real-Time Sync | App and web dashboard stay in sync instantly |
+| Notifications | Bill reminders and delivery alerts |
+| Multi-Provider AI | OpenAI, Anthropic, Google AI, Ollama |
+
+---
+
+## System Requirements
+
+| Requirement | Minimum |
+|-------------|---------|
+| Android | 6.0 (Marshmallow) or higher |
+| Storage | ~30 MB free |
+| Internet | Required (sync and AI features) |
+| AI features | API key from OpenAI / Anthropic / Google AI (or Ollama locally) |
+
+---
+
+## Docs & Support
+
+- Full user guide: [yesbill.vercel.app/docs/mobile](https://yesbill.vercel.app/docs/mobile/intro)
+- Changelog: [CHANGELOG.md](../CHANGELOG.md)
+- Issues / feedback: [GitHub Issues](https://github.com/Ishan96Dev/YesBill/issues)
+
+---
+
+---
+
+## Developer Reference
+
+> The sections below are for developers building or contributing to YesBill Mobile.
+
+---
+
+### Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| UI Framework | Flutter 3.41.6 · Material 3 · `useMaterial3: true` |
+| UI Framework | Flutter 3.41.6, Material 3 |
 | Design System | Stitch "Soft Minimalism / Ethereal Organizer" |
-| Fonts | Plus Jakarta Sans (headings) · Manrope (body) via google_fonts |
-| State | flutter_riverpod 2.5.x — `NotifierProvider` / `StreamProvider` / `FutureProvider` |
-| Navigation | go_router 14.x with `ShellRoute` + `AppScaffold` |
-| HTTP + SSE | Dio + native `dart:io` SSE for streaming AI responses |
-| Database | Supabase (direct realtime `.stream()`) |
-| Auth | Supabase Auth · Google OAuth (`yesbill://login-callback`) · local_auth biometrics |
-| AI Providers | OpenAI · Anthropic · Google AI (bring your own key) |
-| Markdown | flutter_markdown 0.7.x |
-| URL Launch | url_launcher 6.3.x (tappable chat links) |
-| Animations | flutter_animate 4.5.x |
-| Icons | lucide_icons 0.257.x |
-| Charts | fl_chart |
+| Fonts | Plus Jakarta Sans (headings), Manrope (body) via google_fonts |
+| State | flutter_riverpod 2.5.x |
+| Navigation | go_router 14.x with ShellRoute + AppScaffold |
+| HTTP + SSE | Dio + native dart:io SSE for streaming AI responses |
+| Database | Supabase (direct realtime .stream()) |
+| Auth | Supabase Auth, Google OAuth, local_auth biometrics |
+| AI Providers | OpenAI, Anthropic, Google AI (BYOK), Ollama |
 | PDF | pdf + printing + share_plus |
 | Notifications | Firebase Cloud Messaging |
+| Charts | fl_chart |
+| Animations | flutter_animate 4.5.x |
+| Icons | lucide_icons 0.257.x |
+
+For architecture details, see [docs/architecture.md](docs/architecture.md).
 
 ---
 
-## Prerequisites
+### Prerequisites
 
 | Requirement | Version |
 |-------------|---------|
-| Flutter SDK | ≥ 3.41.6 (stable channel) |
-| Dart SDK | ≥ 3.3.0 |
-| Java / JDK | ≥ 17 (tested with Android Studio JBR — JetBrains OpenJDK 21) |
+| Flutter SDK | >= 3.41.6 (stable channel) |
+| Dart SDK | >= 3.3.0 |
+| Java / JDK | >= 17 |
 | Android SDK | API 33+ target, API 21+ minimum |
 
-Set the `JAVA_HOME` environment variable to your JDK root, e.g.:
+Set JAVA_HOME to your JDK root, e.g.:
 ```
 JAVA_HOME=C:\Program Files\Android\Android Studio\jbr
 ```
 
 ---
 
-## Setup
+### Setup
 
-### 1. Clone & install dependencies
+#### 1. Clone & install dependencies
+
 ```powershell
-cd e:\Projects-Repository\YesBill\yesbill-mobile
-E:\flutter\bin\flutter.bat pub get
+cd yesbill-mobile
+flutter pub get
 ```
 
-### 2. Configure environment
+#### 2. Configure environment
 
-Copy `.env.example` to `.env` (gitignored) and fill in your values:
+Copy `.env.example` to `.env` and fill in your values:
+
 ```powershell
 Copy-Item .env.example .env
 ```
 
 Edit `.env`:
-```
+
+```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
 API_BASE_URL=https://your-backend-url.example.com
 GOOGLE_WEB_CLIENT_ID=   # optional
 ```
 
-Values are injected at build time via `--dart-define`. The app reads them through `AppConfig` — if any required value is missing, the app shows an "App configuration missing" screen.
+Values are injected at build time via `--dart-define`. The app reads them through `AppConfig` — if a key is missing, that feature is silently disabled.
 
-### 3. Firebase (optional — for push notifications)
+#### 3. Firebase (optional — for push notifications)
+
 Place `google-services.json` in `android/app/`.
 
 ---
 
-## Running the App
+### Running the App
 
 ```powershell
 # Run on connected device / emulator (debug)
-E:\flutter\bin\flutter.bat run
+flutter run
 
 # Run with verbose output
-E:\flutter\bin\flutter.bat run -v
+flutter run -v
 
 # Run on a specific device
-E:\flutter\bin\flutter.bat devices                         # list devices
-E:\flutter\bin\flutter.bat run -d <device-id>
+flutter devices                      # list devices
+flutter run -d <device-id>
 ```
 
 ---
 
-## Code Quality
+### Building the APK
 
-```powershell
-# Analyze for errors and warnings
-E:\flutter\bin\flutter.bat analyze
+#### Option 1 — Build script (recommended)
 
-# Format all Dart files
-E:\flutter\bin\flutter.bat format lib/
-
-# Run tests
-E:\flutter\bin\flutter.bat test
-```
-
----
-
-## Building the APK
-
-### Option 1 — Build script (recommended)
-
-Use the build script at `tools/build-apk.ps1`. It reads values from `.env` and
-passes them as `--dart-define` flags automatically — no manual flags needed.
-
-```
-yesbill-mobile/
-└── tools/
-    └── build-apk.ps1   ← build script (reads .env automatically)
-```
+Use the build script — it reads `.env` and passes all dart-define flags automatically:
 
 ```powershell
 # From yesbill-mobile/
 
-# Debug build (default)
+# Debug APK (default)
 .\tools\build-apk.ps1
 
-# Release build
+# Release APK
 .\tools\build-apk.ps1 -Release
+
+# Both debug and release
+.\tools\build-apk.ps1 -Both
 ```
 
-Output paths:
-```
-yesbill-mobile\build\app\outputs\flutter-apk\app-debug.apk    # debug
-yesbill-mobile\build\app\outputs\flutter-apk\app-release.apk  # release
-```
-
----
-
-### Option 2 — Manual terminal commands
+#### Option 2 — Manual terminal commands
 
 Run these from `yesbill-mobile/` with Flutter in your PATH:
 
 ```powershell
-# From: E:\Projects-Repository\YesBill\yesbill-mobile\
-
 # 1. Clean previous build artifacts
-E:\flutter\bin\flutter.bat clean
+flutter clean
 
 # 2. Get dependencies
-E:\flutter\bin\flutter.bat pub get
+flutter pub get
 
 # 3. Remove any old APKs
 Remove-Item "build\app\outputs\flutter-apk\*.apk" -Force -ErrorAction SilentlyContinue
 
 # 4. Build release APK
-E:\flutter\bin\flutter.bat build apk --release
+flutter build apk --release
 
 # 5. Rename to YesBill.apk
 Rename-Item "build\app\outputs\flutter-apk\app-release.apk" "YesBill.apk"
 ```
 
-The final APK is at:
+Output:
+
+```text
+build\app\outputs\flutter-apk\app-debug.apk
+build\app\outputs\flutter-apk\app-release.apk
+build\app\outputs\flutter-apk\YesBill.apk
 ```
-E:\Projects-Repository\YesBill\yesbill-mobile\build\app\outputs\flutter-apk\YesBill.apk
-```
+
+See [docs/release.md](docs/release.md) for signing setup and Play Store bundle instructions.
 
 ---
 
-### Build an App Bundle (for Play Store)
+### Code Quality
 
 ```powershell
-flutter build appbundle --release
-# Output: build\app\outputs\bundle\release\app-release.aab
+flutter analyze          # lint and type check
+flutter format lib/      # format Dart files
+flutter test             # run tests
 ```
 
 ---
 
-## Project Structure
+### Project Structure
 
-```
+```text
 lib/
-├── core/
-│   ├── config/          # Environment & app configuration
-│   ├── extensions/      # Dart extension methods
-│   ├── theme/           # AppColors, AppTextStyles, AppSpacing
-│   └── utils/           # Validators, formatters, helpers
-├── data/
-│   ├── datasources/     # Remote (Supabase, FastAPI) & local data sources
-│   ├── models/          # Freezed data models
-│   └── repositories/    # Repository pattern implementations
-├── providers/           # Riverpod providers (state management)
-└── presentation/
-    ├── screens/
-    │   ├── auth/        # Login, signup screens
-    │   ├── bills/       # Bill list, bill detail
-    │   ├── calendar/    # Calendar tracking + service month tracker
-    │   ├── chat/        # AI chat interface
-    │   ├── agent/       # Agentic AI interface
-    │   ├── dashboard/   # Home dashboard
-    │   ├── analytics/   # Spending analytics
-    │   ├── services/    # Service management
-    │   ├── settings/    # AI settings, profile settings
-    │   ├── support/     # Help & support
-    │   └── onboarding/  # First-run experience
-    └── widgets/
-        └── common/      # Shared widgets (AppDropdown, AppScaffold, etc.)
++-- core/
+|   +-- config/          # Environment & app configuration
+|   +-- theme/           # AppColors, AppTextStyles, AppSpacing
+|   +-- utils/           # Validators, formatters, helpers
++-- data/
+|   +-- datasources/     # Remote (Supabase, FastAPI) & local data sources
+|   +-- models/          # Freezed data models
+|   +-- repositories/    # Repository pattern implementations
++-- providers/           # Riverpod providers (state management)
++-- presentation/
+    +-- screens/         # Auth, Dashboard, Calendar, Services, Bills, AI, Settings
+    +-- widgets/common/  # Shared widgets (AppDropdown, AppScaffold, etc.)
 ```
 
----
-
-## Key Design Conventions
-
-- **Theme**: Stitch "Soft Minimalism" — background `Color(0xFFF7F9FB)`, cards `Colors.white` with subtle shadow
-- **Primary color**: `Color(0xFF6366F1)` (indigo)
-- **No border lines** on non-interactive containers (use shadow depth instead)
-- **Custom dropdowns**: Use `AppDropdown<T>` from `widgets/common/app_dropdown.dart` — opens a styled bottom sheet
-- **Navigation**: All sub-screens need `120px` bottom padding (behind bottom nav bar)
-- **Markdown**: AI responses rendered with `flutter_markdown`; links open in external browser via `url_launcher`
-
----
-
-## Changelog
-
-See the root [CHANGELOG.md](../CHANGELOG.md) for version history.
-
-| Charts | fl_chart |
-| Models | Freezed + json_serializable |
-
-## Getting Started
-
-### Prerequisites
-
-- [Flutter SDK 3.22.0+](https://docs.flutter.dev/get-started/install) (stable channel)
-- Optional: [Puro](https://puro.dev/) to manage Flutter versions per project
-- Android Studio + Android SDK (API 35)
-- JDK 17
-- A [Supabase](https://supabase.com) project with the YesBill schema applied
-- `google-services.json` from Firebase (see [docs/FCM_SETUP.md](docs/FCM_SETUP.md))
-
-### Setup
-
-```bash
-# Clone the YesBill monorepo
-git clone https://github.com/your-org/yesbill.git
-cd yesbill/yesbill-mobile
-
-# Optional (if Flutter is not in PATH)
-puro create stable stable
-puro use stable
-
-# Install Flutter dependencies
-flutter pub get
-
-# Run code generation (Freezed models + Riverpod providers)
-dart run build_runner build --delete-conflicting-outputs
-
-# Place google-services.json
-cp /path/to/google-services.json android/app/google-services.json
-
-# Place Inter font files (download from fonts.google.com/specimen/Inter)
-# assets/fonts/Inter/Inter-Regular.ttf
-# assets/fonts/Inter/Inter-Medium.ttf
-# assets/fonts/Inter/Inter-SemiBold.ttf
-# assets/fonts/Inter/Inter-Bold.ttf
-
-# Run the app
-flutter run \
-  --dart-define=SUPABASE_URL=https://your-project.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=your-anon-key \
-  --dart-define=API_BASE_URL=https://yesbill.onrender.com
-```
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `SUPABASE_URL` | Your Supabase project URL |
-| `SUPABASE_ANON_KEY` | Your Supabase anon/public key |
-| `API_BASE_URL` | YesBill FastAPI backend URL |
-
-Copy `.env.example` for reference. Pass values via `--dart-define` (not `.env` files).
-
-## Project Structure
-
-```
-yesbill-mobile/
-├── android/                  Android native project
-├── assets/                   Icons, animations, fonts
-├── docs/                     Architecture, API, theming docs
-├── lib/
-│   ├── core/                 Config, theme, constants, errors, utils
-│   ├── data/                 Models, datasources, repositories
-│   ├── providers/            Riverpod state providers
-│   ├── presentation/         Screens, widgets, router
-│   └── services/             FCM, biometric, PDF
-├── test/                     Unit, widget, integration tests
-├── .github/                  CI/CD workflows, issue templates
-├── pubspec.yaml
-└── analysis_options.yaml
-```
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed layer breakdown.
-
-## Documentation
-
-| Doc | Description |
-|-----|-------------|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layer diagram, Riverpod graph |
-| [API_INTEGRATION.md](docs/API_INTEGRATION.md) | All FastAPI + Supabase endpoints |
-| [AUTH_FLOW.md](docs/AUTH_FLOW.md) | Auth sequence diagrams |
-| [THEMING.md](docs/THEMING.md) | Color tokens, fonts, gradients |
-| [NAVIGATION.md](docs/NAVIGATION.md) | go_router route tree |
-| [SSE_STREAMING.md](docs/SSE_STREAMING.md) | AI chat streaming implementation |
-| [FCM_SETUP.md](docs/FCM_SETUP.md) | Firebase setup guide |
-| [RELEASE.md](docs/RELEASE.md) | Build, sign, and release guide |
-
-## Development
-
-```bash
-# Run tests
-flutter test
-
-# Analyze code
-flutter analyze
-
-# Re-generate Freezed/Riverpod code
-dart run build_runner build --delete-conflicting-outputs
-
-# Watch mode (auto-regenerate on file change)
-dart run build_runner watch --delete-conflicting-outputs
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
-
-## Screenshots
-
-> Screenshots will be added as features are implemented.
-
-## Related
-
-- [YesBill Web App](../frontend-next/) — Next.js 14 frontend (same feature set)
-- [YesBill Backend](../backend/) — FastAPI Python backend (shared by web + mobile)
-- [YesBill Supabase](../supabase/) — Database migrations + Edge Functions
-
-## License
-
-MIT — see [LICENSE](../LICENSE) in the repository root.
+- Architecture: [docs/architecture.md](docs/architecture.md)
+- Navigation routes: [docs/navigation.md](docs/navigation.md)
+- Auth flow: [docs/authentication.md](docs/authentication.md)
+- AI streaming: [docs/ai-streaming.md](docs/ai-streaming.md)
+- Theming: [docs/theming.md](docs/theming.md)

@@ -25,6 +25,35 @@ class _DocSection {
   final List<_DocItem> items;
 }
 
+class _ScreenshotItem {
+  const _ScreenshotItem({required this.label, required this.asset});
+  final String label;
+  final String asset;
+}
+
+// 19 curated screenshots — representative of every major screen
+const _screenshots = <_ScreenshotItem>[
+  _ScreenshotItem(label: 'Intro', asset: 'doc-screens-Images/Intro-screen-01.jpeg'),
+  _ScreenshotItem(label: 'Intro 2', asset: 'doc-screens-Images/Intro-screen-02.jpeg'),
+  _ScreenshotItem(label: 'Create Account', asset: 'doc-screens-Images/Create-account-screen-01.jpeg'),
+  _ScreenshotItem(label: 'Login', asset: 'doc-screens-Images/login-screen-01.jpeg'),
+  _ScreenshotItem(label: 'Dashboard', asset: 'doc-screens-Images/Dashboard-screen-01.jpeg'),
+  _ScreenshotItem(label: 'Dark Mode', asset: 'doc-screens-Images/Dark-Mode-Dashboard-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Calendar', asset: 'doc-screens-Images/Calender-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Bills', asset: 'doc-screens-Images/Bills-screen-01.jpeg'),
+  _ScreenshotItem(label: 'Bill Details', asset: 'doc-screens-Images/Bills-Details-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Generate Bill', asset: 'doc-screens-Images/Generate-Bill-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Mark as Paid', asset: 'doc-screens-Images/Mark-as-paid-bill-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Ask AI', asset: 'doc-screens-Images/Ask-AI-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Chat', asset: 'doc-screens-Images/Ask-AI-Chat-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Agentic AI', asset: 'doc-screens-Images/Agentic-AI-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Agent Chat', asset: 'doc-screens-Images/Agentic-AI-Chat-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Analytics', asset: 'doc-screens-Images/YesBill-Analytics-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Settings', asset: 'doc-screens-Images/Settings-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Onboarding Profile', asset: 'doc-screens-Images/Onboarding-profile-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Config Setup', asset: 'doc-screens-Images/Onboarding-AIConfig-Screen-01.jpeg'),
+];
+
 const _sections = <_DocSection>[
   _DocSection(
     title: 'Overview',
@@ -144,6 +173,13 @@ const _sections = <_DocSection>[
     icon: LucideIcons.gitBranch,
     items: [
       _DocItem(label: 'v1.0.0', asset: 'assets/docs/changelog/v1.0.0.md'),
+    ],
+  ),
+  _DocSection(
+    title: 'Screenshots',
+    icon: LucideIcons.image,
+    items: [
+      _DocItem(label: 'App Screenshots', asset: '__screenshots__'),
     ],
   ),
 ];
@@ -656,6 +692,8 @@ class _DocsBodyState extends State<_DocsBody> {
   }
 
   Future<void> _loadDoc() async {
+    // Screenshots gallery is rendered from local assets — no loading needed.
+    if (widget.asset == '__screenshots__') return;
     setState(() {
       _loading = true;
       _error = null;
@@ -701,6 +739,17 @@ class _DocsBodyState extends State<_DocsBody> {
     final blockquoteBorder = isDark
         ? AppColors.primary.withAlpha(120)
         : AppColors.primary.withAlpha(80);
+
+    // Screenshots gallery — bypass loading/markdown pipeline entirely
+    if (widget.asset == '__screenshots__') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _DocTitleBar(label: widget.label, isDark: isDark),
+          Expanded(child: _ScreenshotGallery(isDark: isDark)),
+        ],
+      );
+    }
 
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -938,6 +987,139 @@ class _DocTitleBar extends StatelessWidget {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Screenshots gallery
+// ---------------------------------------------------------------------------
+
+class _ScreenshotGallery extends StatelessWidget {
+  const _ScreenshotGallery({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final cardBg = isDark
+        ? Colors.white.withAlpha(10)
+        : Colors.black.withAlpha(5);
+    final labelColor =
+        isDark ? Colors.white70 : const Color(0xFF374151);
+
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 100),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.54,
+      ),
+      itemCount: _screenshots.length,
+      itemBuilder: (context, i) {
+        final shot = _screenshots[i];
+        return GestureDetector(
+          onTap: () => showDialog(
+            context: context,
+            builder: (_) => _ScreenshotFullView(item: shot),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withAlpha(14)
+                    : Colors.black.withAlpha(10),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12)),
+                    child: Image.asset(
+                      shot.asset,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Icon(
+                          LucideIcons.imageOff,
+                          size: 24,
+                          color: isDark
+                              ? Colors.white30
+                              : Colors.black26,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 6),
+                  child: Text(
+                    shot.label,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: labelColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ScreenshotFullView extends StatelessWidget {
+  const _ScreenshotFullView({required this.item});
+  final _ScreenshotItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset(
+                item.asset,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                    LucideIcons.imageOff,
+                    size: 48,
+                    color: Colors.white54),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            item.label,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close',
+                style: TextStyle(color: Colors.white70)),
           ),
         ],
       ),

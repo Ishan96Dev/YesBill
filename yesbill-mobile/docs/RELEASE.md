@@ -5,7 +5,7 @@
 - Flutter SDK 3.22.0+ (stable channel): https://docs.flutter.dev/get-started/install
 - Android Studio with Android SDK (API 35)
 - JDK 17
-- `google-services.json` in `android/app/` (see FCM_SETUP.md)
+- `google-services.json` in `android/app/` (see [push-notifications.md](push-notifications.md))
 
 Optional (recommended on Windows when `flutter` is not in PATH):
 

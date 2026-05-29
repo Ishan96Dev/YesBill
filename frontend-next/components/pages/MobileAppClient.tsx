@@ -9,7 +9,8 @@ import { useState, useEffect } from 'react'
 import {
   CheckCircle2, Calendar, IndianRupee, Bot, BarChart3,
   MessageSquare, Bell, Smartphone, RefreshCw, Shield,
-  Download, Star, Zap, ArrowRight, ChevronRight
+  Download, Star, Zap, ArrowRight, ChevronRight,
+  HardDrive, Globe
 } from 'lucide-react'
 import Navbar from '@/components/landing/Navbar'
 import Footer from '@/components/landing/Footer'
@@ -268,11 +269,17 @@ export default function MobileAppClient() {
               </p>
             </div>
             <div className="flex-1 grid sm:grid-cols-2 gap-3">
-              {syncPoints.map((point) => (
-                <div key={point} className="flex items-start gap-2 bg-white/10 rounded-xl p-3">
+              {syncPoints.map((point, i) => (
+                <motion.div
+                  key={point}
+                  whileHover={{ scale: 1.03, y: -2, backgroundColor: 'rgba(255,255,255,0.22)' }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                  className="flex items-start gap-2 bg-white/10 rounded-xl p-3 cursor-default"
+                >
                   <CheckCircle2 className="w-4 h-4 text-emerald-300 mt-0.5 flex-shrink-0" />
                   <span className="text-white/90 text-sm leading-snug">{point}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -390,10 +397,10 @@ export default function MobileAppClient() {
           </motion.h2>
           <div className="grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
             {[
-              { label: 'Android Version', value: '6.0 (Marshmallow) or higher', icon: '📱' },
-              { label: 'Storage', value: 'Approx. 30 MB free space', icon: '💾' },
-              { label: 'Internet', value: 'Required for sync & AI features', icon: '🌐' },
-            ].map(({ label, value, icon }, i) => (
+              { label: 'Android Version', value: '6.0 (Marshmallow) or higher', Icon: Smartphone, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+              { label: 'Storage', value: 'Approx. 30 MB free space', Icon: HardDrive, color: 'text-violet-500', bg: 'bg-violet-50' },
+              { label: 'Internet', value: 'Required for sync & AI features', Icon: Globe, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+            ].map(({ label, value, Icon, color, bg }, i) => (
               <motion.div
                 key={label}
                 initial={{ opacity: 0, y: 16 }}
@@ -404,7 +411,9 @@ export default function MobileAppClient() {
                 whileTap={{ scale: 0.97 }}
                 className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-gray-100 shadow-sm cursor-default"
               >
-                <div className="text-2xl mb-3">{icon}</div>
+                <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
+                  <Icon className={`w-5 h-5 ${color}`} />
+                </div>
                 <div className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-1">{label}</div>
                 <div className="font-medium text-gray-800">{value}</div>
               </motion.div>
@@ -432,16 +441,17 @@ export default function MobileAppClient() {
             <p className="text-lg text-gray-500 mb-8 leading-relaxed">
               Download the free YesBill Android app and bring your billing calendar everywhere.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-stretch">
               <DownloadButton size="lg" version={latestVersion} />
               <motion.div
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="self-stretch flex"
               >
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 px-7 py-4 text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-colors duration-150 border border-indigo-200"
+                  className="flex items-center gap-2 px-7 text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-2xl transition-colors duration-150 border border-indigo-200 w-full justify-center"
                 >
                   Create free account <ChevronRight className="w-4 h-4" />
                 </Link>

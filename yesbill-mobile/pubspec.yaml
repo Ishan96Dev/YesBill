@@ -116,6 +116,7 @@ flutter:
     - assets/docs/ai-features/
     - assets/docs/settings/
     - assets/docs/changelog/
+    - doc-screens-Images/
 
 flutter_launcher_icons:
   android: true

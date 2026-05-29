@@ -4,15 +4,26 @@
 
 import { useRouter } from 'next/navigation';
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, PlayCircle, CheckCircle2, FileText, Mail } from "lucide-react";
+import { ArrowRight, PlayCircle, CheckCircle2, FileText, Mail, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import { assetUrl } from "../../lib/utils";
+import { useState, useEffect } from 'react';
 
 export default function Hero() {
   const router = useRouter();
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const y2 = useTransform(scrollY, [0, 500], [0, -100]);
+  const [latestRelease, setLatestRelease] = useState(null);
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/Ishan96Dev/YesBill/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.name || d.tag_name) setLatestRelease(d.name || d.tag_name) })
+      .catch(() => {})
+  }, [])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -48,12 +59,21 @@ export default function Hero() {
           animate="visible"
           className="relative z-10 max-w-2xl"
         >
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-indigo-100 shadow-sm text-primary text-sm font-medium mb-8 hover:border-primary/30 transition-colors cursor-default">
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ scale: 1.06, y: -2, boxShadow: '0 8px 24px rgba(99,102,241,0.15)' }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-indigo-100 shadow-sm text-primary text-sm font-medium mb-8 hover:border-primary/40 transition-colors cursor-default"
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            <span className="tracking-wide text-xs uppercase font-bold">New: Export PDF Invoices</span>
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+            <span className="tracking-wide text-xs uppercase font-bold">
+              {latestRelease ? `New: ${latestRelease}` : 'New: Export PDF Invoices'}
+            </span>
           </motion.div>
 
           <motion.h1

@@ -57,6 +57,28 @@ Open the password reset email and tap **Reset Password**. The link is valid for 
 
 Enter your new password (minimum 8 characters) and confirm it, then tap **Update Password**. Return to the app and sign in with your new credentials.
 
+## Biometric Lock
+
+After signing in, you can enable fingerprint or face unlock so you don't need to enter your password every time you open the app.
+
+### Enable Biometric Lock
+
+1. Go to **Settings → Security**.
+2. Toggle on **Biometric Lock**.
+3. Authenticate once with your fingerprint or face to confirm.
+
+On your next app open, YesBill will prompt you to unlock with your biometric instead of your password. Your existing session stays active — no re-login required.
+
+### What Happens If Biometric Fails?
+
+If the biometric check fails (wrong finger, face not recognised, or too many attempts), a **Use Password** fallback appears. Tap it to sign in with your email and password instead.
+
+:::info
+Biometric unlock only protects the app on your device. Your account is still secured with your password and 2FA where applicable. The biometric gate does not create a new login session — it simply gates access to the already-authenticated session.
+:::
+
+---
+
 ## Security Notes
 
 - YesBill never stores your password in plain text — passwords are hashed with bcrypt.

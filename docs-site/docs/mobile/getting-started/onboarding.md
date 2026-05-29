@@ -11,9 +11,7 @@ After signing in for the first time, YesBill guides you through a **two-step onb
 
 ## Step 1 — Profile Setup
 
-<PhoneFrame src="/img/screenshots/mobile/Profile-Edit-Profile-Screen-01.jpeg" alt="Profile setup during onboarding" />
-
-![Onboarding — Profile Setup](/img/screenshots/Onboard-Profile-01.png)
+<PhoneFrame src="/img/screenshots/mobile/Onboarding-profile-Screen-01.jpeg" alt="Onboarding Step 1 — Set up your profile" />
 
 Fill in your profile information:
 
@@ -29,9 +27,7 @@ Tap **Save & Continue** when done. You can update all of this later from **Setti
 
 ## Step 2 — AI Provider Setup
 
-<PhoneFrame src="/img/screenshots/mobile/AI-Settings-Screen-01.jpeg" alt="AI provider setup during onboarding" />
-
-![AI Configuration during onboarding](/img/screenshots/Onboard-AI-Config-01.png)
+<PhoneFrame src="/img/screenshots/mobile/Onboarding-AIConfig-Screen-01.jpeg" alt="Onboarding Step 2 — Configure AI provider" />
 
 YesBill's AI features — bill summaries, Ask AI chat, and the AI Agent — require an API key from an AI provider.
 
@@ -53,7 +49,7 @@ YesBill's AI features — bill summaries, Ask AI chat, and the AI Agent — requ
 
 ### Skip for Now
 
-![Skip AI config modal](/img/screenshots/Onboard-skip-modal-01.png)
+<PhoneFrame src="/img/screenshots/mobile/Onboarding-AI-Config-skip-Screen-01.jpeg" alt="AI features will be limited — skip confirmation modal" />
 
 If you're not ready to set up AI, tap **Skip for now**. A confirmation modal appears reminding you that AI features will be unavailable until you add a key.
 
