@@ -427,8 +427,8 @@ def _google_function_declarations() -> list[dict]:
 
 async def _call_openai_with_tools(
     api_key: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT
-) -> dict:
-    """Call OpenAI with tool definitions. Returns raw response dict."""
+) -> tuple[dict, str]:
+    """Call OpenAI with tool definitions. Returns (raw response dict, thinking_text)."""
     all_messages = [{"role": "system", "content": system_prompt}] + messages
     params = _build_openai_params(model, all_messages, max_tokens=1500)
     params["tools"] = _openai_tools()
@@ -440,37 +440,46 @@ async def _call_openai_with_tools(
             json=params,
         )
         r.raise_for_status()
-        return r.json()
+        return r.json(), ""
 
 
 async def _call_anthropic_with_tools(
-    api_key: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT
-) -> dict:
-    """Call Anthropic with tool definitions. Returns raw response dict."""
+    api_key: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT,
+    reasoning_effort: str = "none",
+) -> tuple[dict, str]:
+    """Call Anthropic with tool definitions. Returns (raw response dict, thinking_text)."""
+    _budget = _ANTHROPIC_EFFORT_BUDGET.get(reasoning_effort, 0)
+    headers: dict = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+    }
+    request_body: dict = {
+        "model": model,
+        "max_tokens": 1500,
+        "system": system_prompt,
+        "messages": messages,
+        "tools": _anthropic_tools(),
+    }
+    if _budget > 0:
+        request_body["thinking"] = {"type": "enabled", "budget_tokens": _budget}
+        headers["anthropic-beta"] = "interleaved-thinking-2025-05-14"
     async with httpx.AsyncClient(timeout=60.0) as client:
-        r = await client.post(
-            ANTHROPIC_MESSAGES_URL,
-            headers={
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
-            json={
-                "model": model,
-                "max_tokens": 1500,
-                "system": system_prompt,
-                "messages": messages,
-                "tools": _anthropic_tools(),
-            },
-        )
+        r = await client.post(ANTHROPIC_MESSAGES_URL, headers=headers, json=request_body)
         r.raise_for_status()
-        return r.json()
+        resp = r.json()
+    thinking_text = "".join(
+        block.get("thinking", "")
+        for block in resp.get("content", [])
+        if block.get("type") == "thinking"
+    )
+    return resp, thinking_text
 
 
 async def _call_google_with_tools(
     api_key: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT
-) -> dict:
-    """Call Google with function declarations. Returns raw response dict."""
+) -> tuple[dict, str]:
+    """Call Google with function declarations. Returns (raw response dict, thinking_text)."""
     contents = []
     for m in messages:
         role = "user" if m["role"] == "user" else "model"
@@ -509,7 +518,13 @@ async def _call_google_with_tools(
             },
         )
         r.raise_for_status()
-        return r.json()
+        resp_json = r.json()
+    thinking_text = "".join(
+        part.get("text", "")
+        for part in (resp_json.get("candidates") or [{}])[0].get("content", {}).get("parts", [])
+        if part.get("thought")
+    )
+    return resp_json, thinking_text
 
 
 def _normalize_tool_call(name: str | None, args: object, call_id: str | None, index: int) -> dict | None:
@@ -761,8 +776,8 @@ async def _stream_google_final(
 
 async def _call_ollama_with_tools(
     base_url: str, model: str, messages: list[dict], system_prompt: str = AGENT_SYSTEM_PROMPT
-) -> dict:
-    """Call Ollama's OpenAI-compatible endpoint with tool definitions. Returns raw response dict."""
+) -> tuple[dict, str]:
+    """Call Ollama's OpenAI-compatible endpoint with tool definitions. Returns (raw response dict, thinking_text)."""
     all_messages = [{"role": "system", "content": system_prompt}] + messages
     url = f"{base_url.rstrip('/')}{OLLAMA_CHAT_PATH}"
     payload = {
@@ -779,7 +794,7 @@ async def _call_ollama_with_tools(
             json=payload,
         )
         r.raise_for_status()
-        return r.json()
+        return r.json(), ""
 
 
 async def _stream_ollama_final(
@@ -1609,30 +1624,45 @@ async def stream_agent_response(
     _chunks_count = 0
     _usage_data: dict = {"tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0}
 
+    # Accumulated thinking text from non-streaming tool-planning calls (for action_required path).
+    _tool_thinking_text = ""
+    # Whether Anthropic tool-planning calls include thinking (needs thinking blocks in history).
+    _anthropic_thinking_enabled = (
+        provider == "anthropic"
+        and _ANTHROPIC_EFFORT_BUDGET.get(reasoning_effort, 0) > 0
+    )
+
     # Tool-calling loop (max 5 iterations to prevent runaway)
     full_text = ""
     for _iteration in range(5):
         google_model_parts: list = []  # full parts from Google response (preserves thoughtSignature)
+        anthropic_raw_content: list = []  # full content from Anthropic response (preserves thinking blocks)
+        anthropic_thinking_turn_added = False  # guard: add Anthropic assistant turn only once per iteration
         try:
             if provider == "openai":
-                resp = await _call_openai_with_tools(api_key, model, messages, agent_system_prompt)
+                resp, _iter_thinking = await _call_openai_with_tools(api_key, model, messages, agent_system_prompt)
                 text, tool_calls, finish_reason = _parse_openai_response(resp)
             elif provider == "anthropic":
-                resp = await _call_anthropic_with_tools(api_key, model, messages, agent_system_prompt)
+                resp, _iter_thinking = await _call_anthropic_with_tools(
+                    api_key, model, messages, agent_system_prompt, reasoning_effort=reasoning_effort
+                )
                 text, tool_calls, finish_reason = _parse_anthropic_response(resp)
+                anthropic_raw_content = resp.get("content", [])
             elif provider == "google":
-                resp = await _call_google_with_tools(api_key, model, messages, agent_system_prompt)
+                resp, _iter_thinking = await _call_google_with_tools(api_key, model, messages, agent_system_prompt)
                 text, tool_calls, finish_reason = _parse_google_response(resp)
                 # Preserve full model parts (including thoughtSignature) for next-turn history
                 google_model_parts = (resp.get("candidates") or [{}])[0].get("content") or {}
                 google_model_parts = google_model_parts.get("parts", [])
             elif provider == "ollama":
                 # api_key carries the base_url for Ollama
-                resp = await _call_ollama_with_tools(api_key, model, messages, agent_system_prompt)
+                resp, _iter_thinking = await _call_ollama_with_tools(api_key, model, messages, agent_system_prompt)
                 text, tool_calls, finish_reason = _parse_openai_response(resp)
             else:
                 yield {"type": "error", "message": f"Unsupported provider: {provider}"}
                 return
+            if _iter_thinking:
+                _tool_thinking_text += _iter_thinking
         except httpx.HTTPStatusError as e:
             code = e.response.status_code
             if code in (400, 404, 422):
@@ -1865,15 +1895,23 @@ async def stream_agent_response(
                         "content": result_str,
                     })
                 elif provider == "anthropic":
-                    messages.append({
-                        "role": "assistant",
-                        "content": [
-                            *(
-                                [{"type": "text", "text": text}] if text else []
-                            ),
-                            {"type": "tool_use", "id": call_id, "name": tool_name, "input": tool_args},
-                        ],
-                    })
+                    # When thinking is enabled, use the raw content array (which includes thinking
+                    # blocks with their signatures). Anthropic's interleaved-thinking API requires
+                    # thinking blocks to be preserved unchanged in subsequent turns.
+                    if not anthropic_thinking_turn_added:
+                        if _anthropic_thinking_enabled and anthropic_raw_content:
+                            messages.append({"role": "assistant", "content": anthropic_raw_content})
+                        else:
+                            messages.append({
+                                "role": "assistant",
+                                "content": [
+                                    *(
+                                        [{"type": "text", "text": text}] if text else []
+                                    ),
+                                    {"type": "tool_use", "id": call_id, "name": tool_name, "input": tool_args},
+                                ],
+                            })
+                        anthropic_thinking_turn_added = True
                     messages.append({
                         "role": "user",
                         "content": [
@@ -1981,6 +2019,10 @@ async def stream_agent_response(
                     ],
                     "summary_text": overall_summary,
                     "analytics": _action_analytics,
+                    # Thinking text captured during non-streaming tool-planning phase.
+                    # The frontend uses this to show the ThoughtBlock on the confirmed "Done!" message.
+                    "thinking_content": _tool_thinking_text or None,
+                    "thinking_duration_ms": _action_latency_ms if _tool_thinking_text else None,
                 }
                 for a in pending_confirms:
                     await supabase_service.add_message(

@@ -124,7 +124,10 @@ function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reaso
 
   // State 3: Complete — collapsible chip
   const hasContent = !!(thinkingContent || reasoningSummary);
-  const isLoadingSummary = !!(thinkingDuration && !hasContent);
+  // Only show the loading dots when there *should* be content coming (a non-empty thinking
+  // session started but reasoningSummary hasn't arrived yet). For OpenAI reasoning models
+  // thinkingContent is an empty string (no visible tokens) — don't show loading indefinitely.
+  const isLoadingSummary = !!(thinkingDuration && !hasContent && thinkingContent !== "");
   const durationLabel = thinkingDuration
     ? ` · ${thinkingDuration >= 60 ? `${Math.round(thinkingDuration / 6) / 10}m` : `${thinkingDuration}s`}`
     : "";
@@ -158,7 +161,12 @@ function AgentThoughtBlock({ thinkingContent, thinkingActive, waitMessage, reaso
             className="overflow-hidden"
           >
             <div className="mt-1 rounded-lg border border-violet-100 bg-violet-50/60 overflow-hidden">
-              {!hasContent && (
+              {!hasContent && thinkingContent === "" && (
+                <div className="p-2 text-center">
+                  <span className="text-[10px] text-violet-400">Reasoning processed internally</span>
+                </div>
+              )}
+              {!hasContent && thinkingContent !== "" && (
                 <div className="p-2 text-center">
                   <motion.span
                     className="text-[10px] text-violet-500"
@@ -571,12 +579,19 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
           // Capture analytics NOW — the frontend returns early here so the done
           // event after action_required is never read; analytics come via this event.
           if (event.analytics) lastAnalyticsRef.current = event.analytics;
-          // Save thinking data so it can be shown on the confirmed "Done!" message
+          // Save thinking data so it can be shown on the confirmed "Done!" message.
+          // Priority: (1) streaming thinking events from frontend, (2) thinking text
+          // emitted by the backend from the non-streaming tool-planning call.
           if (hadThinkingEvent && fullThinking) {
             const savedThinkingDuration = thinkingStartTime
               ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
               : undefined;
             lastThinkingRef.current = { thinkingContent: fullThinking, thinkingDuration: savedThinkingDuration };
+          } else if (event.thinking_content) {
+            const dur = event.thinking_duration_ms
+              ? Math.round(event.thinking_duration_ms / 100) / 10
+              : undefined;
+            lastThinkingRef.current = { thinkingContent: event.thinking_content, thinkingDuration: dur };
           } else {
             lastThinkingRef.current = null;
           }
