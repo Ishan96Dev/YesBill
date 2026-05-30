@@ -150,11 +150,11 @@ const _sections = <_DocSection>[
           label: 'AI Agent Chatbot',
           asset: 'assets/docs/ai-features/agent-chatbot.md'),
       _DocItem(
-          label: 'AI Insights',
-          asset: 'assets/docs/ai-features/ai-insights.md'),
-      _DocItem(
           label: 'AI Analytics',
           asset: 'assets/docs/ai-features/analytics.md'),
+      _DocItem(
+          label: 'AI Insights',
+          asset: 'assets/docs/ai-features/ai-insights.md'),
     ],
   ),
   _DocSection(
@@ -164,20 +164,24 @@ const _sections = <_DocSection>[
       _DocItem(
           label: 'Settings Overview',
           asset: 'assets/docs/settings/overview.md'),
-      _DocItem(label: 'Profile', asset: 'assets/docs/settings/profile.md'),
+      _DocItem(
+          label: 'Profile Settings',
+          asset: 'assets/docs/settings/profile.md'),
+      _DocItem(
+          label: 'Notification Settings',
+          asset: 'assets/docs/settings/notifications.md'),
+      _DocItem(
+          label: 'Appearance Settings',
+          asset: 'assets/docs/settings/appearance.md'),
+      _DocItem(
+          label: 'Security Settings',
+          asset: 'assets/docs/settings/security.md'),
       _DocItem(
           label: 'AI Configuration',
           asset: 'assets/docs/settings/ai-configuration.md'),
       _DocItem(
-          label: 'Appearance',
-          asset: 'assets/docs/settings/appearance.md'),
-      _DocItem(
-          label: 'Notifications',
-          asset: 'assets/docs/settings/notifications.md'),
-      _DocItem(
-          label: 'Ollama Setup',
+          label: 'Ollama (Local AI) Setup',
           asset: 'assets/docs/settings/ollama-setup.md'),
-      _DocItem(label: 'Security', asset: 'assets/docs/settings/security.md'),
       _DocItem(
           label: 'Help & Support',
           asset: 'assets/docs/settings/support.md'),
@@ -199,8 +203,13 @@ const _sections = <_DocSection>[
   ),
 ];
 
-const _docsSiteRoot = 'https://ishan96dev.github.io/YesBill';
-const _docsBaseUrl = 'https://ishan96dev.github.io/YesBill/docs/mobile';
+/// Base URL for resolving images in the docs.
+/// The Docusaurus build is placed in gh-pages-dist/docs/, so static images
+/// (originally in docs-site/static/img/) are served at /YesBill/docs/img/...
+const _docsImgBase = 'https://ishan96dev.github.io/YesBill/docs';
+
+/// Root URL of the mobile docs section on the live site.
+const _mobileDocsRoot = 'https://ishan96dev.github.io/YesBill/docs/mobile';
 
 /// Flat lookup: Docusaurus page path → _DocItem (for in-app link navigation)
 Map<String, _DocItem> _buildDocPathMap() {
@@ -680,14 +689,19 @@ class _DocsBodyState extends State<_DocsBody> {
     );
   }
 
+  /// Strips HTML comments (<!-- ... -->) that would otherwise render as
+  /// visible text in flutter_markdown.
+  static String _stripHtmlComments(String content) {
+    return content.replaceAll(RegExp(r'<!--.*?-->', dotAll: true), '');
+  }
+
   /// Converts root-relative image paths (e.g. `/img/...`) in markdown to
-  /// absolute URLs pointing at the Docusaurus site root. This ensures
-  /// flutter_markdown receives fully-qualified http URLs regardless of the
-  /// internal imageBuilder resolution path.
+  /// absolute URLs. Images live at /YesBill/docs/img/... because the
+  /// Docusaurus build is deployed under the /docs/ path on GitHub Pages.
   static String _resolveRelativeImages(String content) {
     return content.replaceAllMapped(
       RegExp(r'!\[([^\]]*)\]\((/[^)]+)\)'),
-      (m) => '![${m.group(1)}]($_docsSiteRoot${m.group(2)})',
+      (m) => '![${m.group(1)}]($_docsImgBase${m.group(2)})',
     );
   }
 
@@ -743,7 +757,9 @@ class _DocsBodyState extends State<_DocsBody> {
       setState(() {
         _content = _resolveRelativeImages(
           _convertAdmonitions(
-            _convertPhoneFrames(_stripFrontmatter(raw)),
+            _stripHtmlComments(
+              _convertPhoneFrames(_stripFrontmatter(raw)),
+            ),
           ),
         );
         _loading = false;
@@ -758,14 +774,24 @@ class _DocsBodyState extends State<_DocsBody> {
   }
 
   /// Resolve image URIs that come from Docusaurus static paths.
-  /// e.g. `/img/screenshots/Login-01.png` → full URL on docs site.
+  /// `/img/...` paths are relative to the Docusaurus base, which is
+  /// /YesBill/docs/ on GitHub Pages — so prepend _docsImgBase.
   Uri? _resolveImageUri(Uri uri) {
     if (uri.scheme.isEmpty || uri.host.isEmpty) {
-      // Relative path from site root (images live at /img/..., not /docs/img/...)
       final path = uri.path.startsWith('/') ? uri.path : '/${uri.path}';
-      return Uri.parse('$_docsSiteRoot$path');
+      return Uri.parse('$_docsImgBase$path');
     }
     return uri;
+  }
+
+  /// Returns the live docs URL for the current page, used by the browser
+  /// open button.
+  static String _getPageUrl(String asset) {
+    if (asset == '__screenshots__') return _mobileDocsRoot;
+    final docPath = asset
+        .replaceFirst('assets/docs', '')
+        .replaceFirst('.md', '');
+    return '$_mobileDocsRoot$docPath';
   }
 
   @override
@@ -784,7 +810,11 @@ class _DocsBodyState extends State<_DocsBody> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _DocTitleBar(label: widget.label, isDark: isDark),
+          _DocTitleBar(
+            label: widget.label,
+            isDark: isDark,
+            pageUrl: _mobileDocsRoot,
+          ),
           Expanded(child: _ScreenshotGallery(isDark: isDark)),
         ],
       );
@@ -811,7 +841,11 @@ class _DocsBodyState extends State<_DocsBody> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Doc title bar with hamburger
-        _DocTitleBar(label: widget.label, isDark: isDark),
+        _DocTitleBar(
+          label: widget.label,
+          isDark: isDark,
+          pageUrl: _getPageUrl(widget.asset),
+        ),
         // Markdown content
         Expanded(
           child: Markdown(
@@ -976,9 +1010,14 @@ class _DocsBodyState extends State<_DocsBody> {
 // ---------------------------------------------------------------------------
 
 class _DocTitleBar extends StatelessWidget {
-  const _DocTitleBar({required this.label, required this.isDark});
+  const _DocTitleBar({
+    required this.label,
+    required this.isDark,
+    required this.pageUrl,
+  });
   final String label;
   final bool isDark;
+  final String pageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -1021,7 +1060,7 @@ class _DocTitleBar extends StatelessWidget {
               color: isDark ? Colors.white54 : Colors.black38,
             ),
             onPressed: () async {
-              final uri = Uri.parse(_docsBaseUrl);
+              final uri = Uri.parse(pageUrl);
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }

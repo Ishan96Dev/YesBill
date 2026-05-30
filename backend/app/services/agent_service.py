@@ -1628,6 +1628,10 @@ async def stream_agent_response(
 
     # Accumulated thinking text from non-streaming tool-planning calls (for action_required path).
     _tool_thinking_text = ""
+    # Accumulated thinking text from the final streaming response.
+    _final_thinking_text = ""
+    _thinking_stream_start: float | None = None
+    _thinking_stream_end: float | None = None
     # Whether Anthropic tool-planning calls include thinking (needs thinking blocks in history).
     _anthropic_thinking_enabled = (
         provider == "anthropic"
@@ -1794,7 +1798,14 @@ async def stream_agent_response(
                             _usage_data["tokens_out"] += event.get("tokens_out", 0)
                             _usage_data["tokens_thinking"] += event.get("tokens_thinking", 0)
                             continue  # don't yield to client
+                        if event["type"] == "thinking":
+                            # Accumulate thinking content for DB persistence.
+                            _final_thinking_text += event.get("content", "") or ""
+                            if _thinking_stream_start is None:
+                                _thinking_stream_start = time.monotonic()
                         if event["type"] == "chunk":
+                            if _thinking_stream_start is not None and _thinking_stream_end is None:
+                                _thinking_stream_end = time.monotonic()
                             full_text += event["content"]
                             _chunks_count += 1
                             if _ttft_ms is None:
@@ -1802,6 +1813,8 @@ async def stream_agent_response(
                         yield event  # pass thinking and chunk events as-is
                     else:
                         # Google yields plain strings
+                        if _thinking_stream_start is not None and _thinking_stream_end is None:
+                            _thinking_stream_end = time.monotonic()
                         full_text += event
                         _chunks_count += 1
                         if _ttft_ms is None:
@@ -2055,13 +2068,24 @@ async def stream_agent_response(
     _latency_ms = int((time.monotonic() - _agent_start) * 1000)
     # Save final assistant message
     if full_text:
+        # Build metadata — combine tool-planning + final streaming thinking for persistence.
+        _all_thinking = "\n\n".join(filter(None, [_tool_thinking_text, _final_thinking_text])) or None
+        _thinking_dur_ms: int | None = None
+        if _thinking_stream_start is not None:
+            _tse = _thinking_stream_end or time.monotonic()
+            _thinking_dur_ms = int((_tse - _thinking_stream_start) * 1000)
+        _final_meta: dict = {"reasoning": reasoning}
+        if _all_thinking:
+            _final_meta["thinking_content"] = _all_thinking
+        if _thinking_dur_ms is not None:
+            _final_meta["thinking_duration_ms"] = _thinking_dur_ms
         msg = await supabase_service.add_message(
             conv_id,
             user_id,
             "assistant",
             full_text,
             model_used=f"{provider}/{model}",
-            metadata={"reasoning": reasoning},
+            metadata=_final_meta,
         )
         msg_id = msg.get("id")
         # Save analytics (best-effort)

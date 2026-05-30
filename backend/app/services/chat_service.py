@@ -1471,6 +1471,10 @@ async def stream_response(
     _ttft_ms: Optional[int] = None
     _chunks_count = 0
     _usage_data: dict = {"tokens_in": 0, "tokens_out": 0, "tokens_thinking": 0}
+    # Track thinking content from streaming for DB persistence.
+    _full_thinking_text = ""
+    _thinking_stream_start: Optional[float] = None
+    _thinking_stream_end: Optional[float] = None
     try:
         if provider == "openai":
             gen = _stream_openai(api_key, model, system_prompt, messages,
@@ -1521,6 +1525,9 @@ async def stream_response(
                         "tokens_thinking": event.get("tokens_thinking", 0),
                     }
                 elif event["type"] == "thinking":
+                    _full_thinking_text += event["content"] or ""
+                    if _thinking_stream_start is None:
+                        _thinking_stream_start = time.monotonic()
                     yield {"type": "thinking", "content": event["content"]}
                 elif event["type"] == "thinking_wait":
                     yield {"type": "thinking_wait", "content": event["content"]}
@@ -1528,12 +1535,16 @@ async def stream_response(
                     yield {"type": "thinking_progress", "elapsed": event["elapsed"]}
                 else:
                     chunk = event["content"]
+                    if _thinking_stream_start is not None and _thinking_stream_end is None:
+                        _thinking_stream_end = time.monotonic()
                     full_response += chunk
                     _chunks_count += 1
                     if _ttft_ms is None:
                         _ttft_ms = int((time.monotonic() - _chat_start) * 1000)
                     yield {"type": "chunk", "content": chunk}
             else:
+                if _thinking_stream_start is not None and _thinking_stream_end is None:
+                    _thinking_stream_end = time.monotonic()
                 full_response += event
                 _chunks_count += 1
                 if _ttft_ms is None:
@@ -1627,13 +1638,23 @@ async def stream_response(
     _latency_ms = int((time.monotonic() - _chat_start) * 1000)
     msg_id = None
     if full_response:
+        # Build metadata — include thinking content for history restoration.
+        _thinking_dur_ms: Optional[int] = None
+        if _thinking_stream_start is not None:
+            _tse = _thinking_stream_end or time.monotonic()
+            _thinking_dur_ms = int((_tse - _thinking_stream_start) * 1000)
+        _chat_meta: dict = {"reasoning": reasoning_meta}
+        if _full_thinking_text:
+            _chat_meta["thinking_content"] = _full_thinking_text
+        if _thinking_dur_ms is not None:
+            _chat_meta["thinking_duration_ms"] = _thinking_dur_ms
         msg = await supabase_service.add_message(
             conv_id,
             user_id,
             "assistant",
             full_response,
             model_used=f"{provider}/{model}",
-            metadata={"reasoning": reasoning_meta},
+            metadata=_chat_meta,
         )
         msg_id = msg.get("id")
         # Save analytics asynchronously (don't block done event on failure)

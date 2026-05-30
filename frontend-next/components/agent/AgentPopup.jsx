@@ -403,6 +403,13 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
         const msgs = (data?.messages || []).map((m) => ({
           ...m,
           isError: m.metadata?.type === "error",
+          // Restore thinking data from persisted metadata so ThoughtBlock shows in history.
+          thinkingContent: m.metadata?.thinking_content !== undefined
+            ? (m.metadata.thinking_content || "")
+            : undefined,
+          thinkingDuration: m.metadata?.thinking_duration_ms != null
+            ? Math.round(m.metadata.thinking_duration_ms / 100) / 10
+            : undefined,
         }));
         setMessages(msgs.length > 0 ? msgs : []);
         setWaitingForConfirm(false);
@@ -640,6 +647,22 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
               message_analytics: event.analytics ? [event.analytics] : undefined,
             },
           ]);
+          // Auto-generate reasoning summary and persist to DB so it's visible on history reload.
+          if (event.reasoning?.supported && finalMessageId && activeConvId) {
+            chatService.getReasoningSummary(String(finalMessageId), activeConvId)
+              .then((res) => {
+                if (res?.summary) {
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === finalMessageId
+                        ? { ...m, metadata: { ...m.metadata, reasoning: { ...m.metadata?.reasoning, summary: res.summary } } }
+                        : m
+                    )
+                  );
+                }
+              })
+              .catch(() => {});
+          }
 
         } else if (event.type === "title") {
           onTitleUpdate?.(activeConvId, event.title);

@@ -211,6 +211,15 @@ class ChatRemoteDataSource {
 
     final rawMetadata = raw['metadata'];
 
+    // Extract thinking content and duration from persisted metadata so the
+    // reasoning panel is visible when loading historical conversations.
+    final metaMap = rawMetadata is Map ? Map<String, dynamic>.from(rawMetadata) : null;
+    final thinkingContent = metaMap?['thinking_content'] as String?;
+    final thinkingDurationMs = metaMap?['thinking_duration_ms'];
+    final thinkingDurationSecs = thinkingDurationMs is num
+        ? (thinkingDurationMs / 1000).round()
+        : null;
+
     return {
       ...raw,
       'id': (raw['id'] ?? '').toString(),
@@ -220,12 +229,13 @@ class ChatRemoteDataSource {
           ? raw['role'].toString().trim()
           : 'user',
       'content': (raw['content'] ?? '').toString(),
-      'reasoning': raw['reasoning']?.toString(),
+      // Use persisted thinking_content from metadata for history restoration.
+      'reasoning': thinkingContent ?? raw['reasoning']?.toString(),
+      'thinking_duration_seconds': thinkingDurationSecs,
       'model_used': raw['model_used']?.toString(),
       'feedback': raw['feedback']?.toString(),
       'context_tags': contextTags,
-      'metadata':
-          rawMetadata is Map ? Map<String, dynamic>.from(rawMetadata) : null,
+      'metadata': metaMap,
     };
   }
 
