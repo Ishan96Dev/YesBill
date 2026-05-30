@@ -31,27 +31,60 @@ class _ScreenshotItem {
   final String asset;
 }
 
-// 19 curated screenshots — representative of every major screen
+// All app screenshots grouped by category
 const _screenshots = <_ScreenshotItem>[
+  // ── Intro & Authentication ───────────────────────────────────────────────
   _ScreenshotItem(label: 'Intro', asset: 'doc-screens-Images/Intro-screen-01.jpeg'),
   _ScreenshotItem(label: 'Intro 2', asset: 'doc-screens-Images/Intro-screen-02.jpeg'),
   _ScreenshotItem(label: 'Create Account', asset: 'doc-screens-Images/Create-account-screen-01.jpeg'),
   _ScreenshotItem(label: 'Login', asset: 'doc-screens-Images/login-screen-01.jpeg'),
+  _ScreenshotItem(label: 'Forgot Password', asset: 'doc-screens-Images/Forget-Password-screen-01.jpeg'),
+  // ── Onboarding ───────────────────────────────────────────────────────────
+  _ScreenshotItem(label: 'Onboarding Profile', asset: 'doc-screens-Images/Onboarding-profile-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Config Setup', asset: 'doc-screens-Images/Onboarding-AIConfig-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Config Skip', asset: 'doc-screens-Images/Onboarding-AI-Config-skip-Screen-01.jpeg'),
+  // ── Dashboard ────────────────────────────────────────────────────────────
   _ScreenshotItem(label: 'Dashboard', asset: 'doc-screens-Images/Dashboard-screen-01.jpeg'),
   _ScreenshotItem(label: 'Dark Mode', asset: 'doc-screens-Images/Dark-Mode-Dashboard-Screen-01.jpeg'),
+  // ── Services ─────────────────────────────────────────────────────────────
+  _ScreenshotItem(label: 'Services', asset: 'doc-screens-Images/Service-Screen-Manage-Service-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Service Details', asset: 'doc-screens-Images/Service-Details-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Create Service', asset: 'doc-screens-Images/Create-Service-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Edit Service', asset: 'doc-screens-Images/Edit-Service-Screen-01.jpeg'),
+  // ── Calendar ─────────────────────────────────────────────────────────────
   _ScreenshotItem(label: 'Calendar', asset: 'doc-screens-Images/Calender-Screen-01.jpeg'),
+  // ── Bills ────────────────────────────────────────────────────────────────
   _ScreenshotItem(label: 'Bills', asset: 'doc-screens-Images/Bills-screen-01.jpeg'),
   _ScreenshotItem(label: 'Bill Details', asset: 'doc-screens-Images/Bills-Details-Screen-01.jpeg'),
   _ScreenshotItem(label: 'Generate Bill', asset: 'doc-screens-Images/Generate-Bill-Screen-01.jpeg'),
   _ScreenshotItem(label: 'Mark as Paid', asset: 'doc-screens-Images/Mark-as-paid-bill-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Delete Bill', asset: 'doc-screens-Images/Delete-Bill-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Export / Share Bill', asset: 'doc-screens-Images/Export-as-pdf-Or-share-as-text-bill-option-screen-01.jpeg'),
+  // ── AI Features ──────────────────────────────────────────────────────────
   _ScreenshotItem(label: 'Ask AI', asset: 'doc-screens-Images/Ask-AI-Screen-01.jpeg'),
   _ScreenshotItem(label: 'AI Chat', asset: 'doc-screens-Images/Ask-AI-Chat-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Chat Conversations', asset: 'doc-screens-Images/Chat-Connversation-Drawer-screen-01.jpeg'),
   _ScreenshotItem(label: 'Agentic AI', asset: 'doc-screens-Images/Agentic-AI-Screen-01.jpeg'),
   _ScreenshotItem(label: 'AI Agent Chat', asset: 'doc-screens-Images/Agentic-AI-Chat-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Agent Confirmation', asset: 'doc-screens-Images/Agentic-AI-Agent-Confirmation-Screen-01.jpeg'),
+  // ── Analytics ────────────────────────────────────────────────────────────
   _ScreenshotItem(label: 'Analytics', asset: 'doc-screens-Images/YesBill-Analytics-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Usage Analytics', asset: 'doc-screens-Images/AI-Usage-Analytics-Screen-01.jpeg'),
+  // ── Settings ─────────────────────────────────────────────────────────────
   _ScreenshotItem(label: 'Settings', asset: 'doc-screens-Images/Settings-Screen-01.jpeg'),
-  _ScreenshotItem(label: 'Onboarding Profile', asset: 'doc-screens-Images/Onboarding-profile-Screen-01.jpeg'),
-  _ScreenshotItem(label: 'AI Config Setup', asset: 'doc-screens-Images/Onboarding-AIConfig-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'AI Settings', asset: 'doc-screens-Images/AI-Settings-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Provider Settings', asset: 'doc-screens-Images/Provider-Settings-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Appearance Settings', asset: 'doc-screens-Images/Appearance-Settings-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Notification Settings', asset: 'doc-screens-Images/Notifications-Settings-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Security', asset: 'doc-screens-Images/Security-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Edit Profile', asset: 'doc-screens-Images/Profile-Edit-Profile-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Support', asset: 'doc-screens-Images/Support-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Sign Out', asset: 'doc-screens-Images/Sign-out-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Delete Account', asset: 'doc-screens-Images/Delete-Acoount-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Delete Account Confirm', asset: 'doc-screens-Images/Delete-Account-Confirmation-Screen-01.jpeg'),
+  // ── Navigation ───────────────────────────────────────────────────────────
+  _ScreenshotItem(label: 'Notifications', asset: 'doc-screens-Images/Notification-Screen-01.jpeg'),
+  _ScreenshotItem(label: 'Search & Navigation', asset: 'doc-screens-Images/Search-with-Navigation-Screen-01.jpeg'),
 ];
 
 const _sections = <_DocSection>[
@@ -68,16 +101,13 @@ const _sections = <_DocSection>[
     icon: LucideIcons.rocket,
     items: [
       _DocItem(
-          label: 'Creating Account',
+          label: 'Creating an Account',
           asset: 'assets/docs/getting-started/creating-account.md'),
       _DocItem(
-          label: 'Onboarding',
+          label: 'Setting Up Your Account',
           asset: 'assets/docs/getting-started/onboarding.md'),
       _DocItem(
-          label: 'First Service',
-          asset: 'assets/docs/getting-started/first-service.md'),
-      _DocItem(
-          label: 'Dashboard',
+          label: 'Dashboard Overview',
           asset: 'assets/docs/getting-started/dashboard.md'),
     ],
   ),
@@ -85,34 +115,18 @@ const _sections = <_DocSection>[
     title: 'Services',
     icon: LucideIcons.briefcase,
     items: [
-      _DocItem(label: 'Overview', asset: 'assets/docs/services/overview.md'),
-      _DocItem(
-          label: 'Home Delivery',
-          asset: 'assets/docs/services/home-delivery.md'),
-      _DocItem(
-          label: 'Visit-Based', asset: 'assets/docs/services/visit-based.md'),
       _DocItem(
           label: 'Managing Services',
           asset: 'assets/docs/services/managing-services.md'),
-      _DocItem(label: 'Payments', asset: 'assets/docs/services/payments.md'),
-      _DocItem(
-          label: 'Subscriptions',
-          asset: 'assets/docs/services/subscriptions.md'),
-      _DocItem(
-          label: 'Utility Services',
-          asset: 'assets/docs/services/utility-services.md'),
     ],
   ),
   _DocSection(
     title: 'Calendar',
     icon: LucideIcons.calendarDays,
     items: [
-      _DocItem(label: 'Overview', asset: 'assets/docs/calendar/overview.md'),
       _DocItem(
-          label: 'Daily Tracking',
-          asset: 'assets/docs/calendar/daily-tracking.md'),
-      _DocItem(
-          label: 'Yearly View', asset: 'assets/docs/calendar/yearly-view.md'),
+          label: 'Calendar Overview',
+          asset: 'assets/docs/calendar/overview.md'),
     ],
   ),
   _DocSection(
@@ -123,49 +137,50 @@ const _sections = <_DocSection>[
           label: 'Understanding Bills',
           asset: 'assets/docs/bills/understanding-bills.md'),
       _DocItem(
-          label: 'Auto-Generation',
+          label: 'Auto Bill Generation',
           asset: 'assets/docs/bills/auto-generation.md'),
-      _DocItem(
-          label: 'Marking Paid', asset: 'assets/docs/bills/marking-paid.md'),
-      _DocItem(
-          label: 'Bill History', asset: 'assets/docs/bills/bill-history.md'),
     ],
   ),
   _DocSection(
     title: 'AI Features',
     icon: LucideIcons.sparkles,
     items: [
-      _DocItem(label: 'Overview', asset: 'assets/docs/ai-features/overview.md'),
       _DocItem(label: 'Ask AI', asset: 'assets/docs/ai-features/ask-ai.md'),
       _DocItem(
-          label: 'Agent Chatbot',
+          label: 'AI Agent Chatbot',
           asset: 'assets/docs/ai-features/agent-chatbot.md'),
       _DocItem(
-          label: 'Agent Actions',
-          asset: 'assets/docs/ai-features/agent-actions.md'),
+          label: 'AI Insights',
+          asset: 'assets/docs/ai-features/ai-insights.md'),
       _DocItem(
-          label: 'AI Bill Generation',
-          asset: 'assets/docs/ai-features/ai-bill-generation.md'),
-      _DocItem(
-          label: 'AI Configuration',
-          asset: 'assets/docs/ai-features/ai-configuration.md'),
-      _DocItem(
-          label: 'Analytics', asset: 'assets/docs/ai-features/analytics.md'),
+          label: 'AI Analytics',
+          asset: 'assets/docs/ai-features/analytics.md'),
     ],
   ),
   _DocSection(
     title: 'Settings',
     icon: LucideIcons.settings,
     items: [
+      _DocItem(
+          label: 'Settings Overview',
+          asset: 'assets/docs/settings/overview.md'),
       _DocItem(label: 'Profile', asset: 'assets/docs/settings/profile.md'),
       _DocItem(
           label: 'AI Configuration',
           asset: 'assets/docs/settings/ai-configuration.md'),
       _DocItem(
+          label: 'Appearance',
+          asset: 'assets/docs/settings/appearance.md'),
+      _DocItem(
           label: 'Notifications',
           asset: 'assets/docs/settings/notifications.md'),
+      _DocItem(
+          label: 'Ollama Setup',
+          asset: 'assets/docs/settings/ollama-setup.md'),
       _DocItem(label: 'Security', asset: 'assets/docs/settings/security.md'),
-      _DocItem(label: 'Support', asset: 'assets/docs/settings/support.md'),
+      _DocItem(
+          label: 'Help & Support',
+          asset: 'assets/docs/settings/support.md'),
     ],
   ),
   _DocSection(
@@ -184,7 +199,8 @@ const _sections = <_DocSection>[
   ),
 ];
 
-const _docsBaseUrl = 'https://ishan96dev.github.io/YesBill/docs';
+const _docsSiteRoot = 'https://ishan96dev.github.io/YesBill';
+const _docsBaseUrl = 'https://ishan96dev.github.io/YesBill/docs/mobile';
 
 /// Flat lookup: Docusaurus page path → _DocItem (for in-app link navigation)
 Map<String, _DocItem> _buildDocPathMap() {
@@ -194,6 +210,8 @@ Map<String, _DocItem> _buildDocPathMap() {
       final path =
           item.asset.replaceFirst('assets/docs', '').replaceFirst('.md', '');
       map[path] = item;
+      // Also register with /mobile/ prefix to match Docusaurus internal links
+      map['/mobile$path'] = item;
     }
   }
   return map;
@@ -643,14 +661,33 @@ class _DocsBodyState extends State<_DocsBody> {
     return trimmed.substring(afterNewline + 1).trimLeft();
   }
 
+  /// Converts Docusaurus `<PhoneFrame src="..." alt="..." />` JSX shortcodes
+  /// into plain markdown images that flutter_markdown can render.
+  static String _convertPhoneFrames(String content) {
+    return content.replaceAllMapped(
+      RegExp(r'<PhoneFrame\s+([^>]*?)\s*/>', multiLine: true),
+      (match) {
+        final attrs = match.group(1) ?? '';
+        final srcMatch =
+            RegExp(r'''src=["']([^"']+)["']''').firstMatch(attrs);
+        final altMatch =
+            RegExp(r'''alt=["']([^"']+)["']''').firstMatch(attrs);
+        final src = srcMatch?.group(1) ?? '';
+        final alt = altMatch?.group(1) ?? '';
+        if (src.isEmpty) return '';
+        return '![$alt]($src)';
+      },
+    );
+  }
+
   /// Converts root-relative image paths (e.g. `/img/...`) in markdown to
-  /// absolute URLs pointing at the Docusaurus docs site.  This ensures
+  /// absolute URLs pointing at the Docusaurus site root. This ensures
   /// flutter_markdown receives fully-qualified http URLs regardless of the
   /// internal imageBuilder resolution path.
   static String _resolveRelativeImages(String content) {
     return content.replaceAllMapped(
       RegExp(r'!\[([^\]]*)\]\((/[^)]+)\)'),
-      (m) => '![${m.group(1)}]($_docsBaseUrl${m.group(2)})',
+      (m) => '![${m.group(1)}]($_docsSiteRoot${m.group(2)})',
     );
   }
 
@@ -705,7 +742,9 @@ class _DocsBodyState extends State<_DocsBody> {
       if (_loadedAsset != widget.asset) return; // stale response
       setState(() {
         _content = _resolveRelativeImages(
-          _convertAdmonitions(_stripFrontmatter(raw)),
+          _convertAdmonitions(
+            _convertPhoneFrames(_stripFrontmatter(raw)),
+          ),
         );
         _loading = false;
       });
@@ -722,9 +761,9 @@ class _DocsBodyState extends State<_DocsBody> {
   /// e.g. `/img/screenshots/Login-01.png` → full URL on docs site.
   Uri? _resolveImageUri(Uri uri) {
     if (uri.scheme.isEmpty || uri.host.isEmpty) {
-      // Relative path from docs site
+      // Relative path from site root (images live at /img/..., not /docs/img/...)
       final path = uri.path.startsWith('/') ? uri.path : '/${uri.path}';
-      return Uri.parse('$_docsBaseUrl$path');
+      return Uri.parse('$_docsSiteRoot$path');
     }
     return uri;
   }

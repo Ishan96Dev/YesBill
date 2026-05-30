@@ -1,53 +1,65 @@
----
+﻿---
 id: dashboard
-title: Your Dashboard
-sidebar_position: 4
+title: Dashboard Overview
+sidebar_position: 3
+displayed_sidebar: mobileSidebar
 ---
 
-# Your Dashboard
+# Dashboard Overview
 
-The Dashboard is your command centre — it shows key metrics, quick actions, and a snapshot of recent activity every time you open the app.
+The **Home** tab is your central hub. It shows key metrics, quick actions, and a snapshot of your recent activity.
 
-## Dashboard Overview
+## Dashboard Layout
 
-![Dashboard screen](/img/screenshots/mobile/Dashboard-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Dashboard-screen-01.jpeg" alt="Dashboard screen" />
 
-The Dashboard is organized into three sections:
+The dashboard is organized into three sections:
 
-- **KPI Cards** — Total active services, bills due, amount owed, AI queries used
-- **Quick Actions** — Add Service, Open Calendar, Generate Bill, Ask AI
-- **Recent Activity** — Latest bill generations, payments, and service changes
+**KPI Cards (top row)**
+- Total active services
+- Bills due this month
+- Amount owed this month
+- AI queries used
+
+**Quick Actions**
+- Add Service
+- Open Calendar
+- Generate Bill
+- Ask AI
+
+**Recent Activity**
+- A list of your most recent bill generations, payments, and service changes.
 
 ## Dark Mode
 
-![Dashboard in dark mode](/img/screenshots/mobile/Dark-Mode-Dashboard-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Dark-Mode-Dashboard-Screen-01.jpeg" alt="Dashboard in dark mode" />
 
-YesBill follows your device's system theme. Toggle dark mode in **Settings → Appearance**.
+YesBill automatically follows your device's dark/light mode setting. You can also override it in **Settings → Appearance**.
 
-## Search
+## Search & Navigation
 
-![Search screen](/img/screenshots/mobile/Search-with-Navigation-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Search-with-Navigation-Screen-01.jpeg" alt="Search and navigation screen" />
 
-Tap the **search icon** at the top-right of the Home screen to search your services and bills by name or amount.
+Tap the **search icon** (top-right of the Home screen) to search across your services and bills by name or amount.
 
 ## Notifications
 
-![Notifications screen](/img/screenshots/mobile/Notification-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Notification-Screen-01.jpeg" alt="Notifications screen" />
 
-Tap the **bell icon** to open your notification center. Notifications include bill reminders, overdue alerts, and AI usage milestones.
+Tap the **bell icon** (top-right) to view your notification center. Notifications include:
 
-## Navigation
+- Bill generation reminders
+- Overdue payment alerts
+- AI usage milestones
 
-Use the **bottom navigation bar** to navigate between sections:
+## Navigation Bar
 
-| Tab | What It Does |
-|-----|-------------|
-| **Home** | This dashboard screen |
-| **Calendar** | Day-by-day service tracking |
-| **Services** | Manage your service list |
-| **Bills** | View and pay your bills |
-| **Ask AI** | Natural language AI chat |
+At the bottom of every screen, the navigation bar provides instant access to:
 
-:::tip
-Open the app each morning and mark the previous day's deliveries in the Calendar — it takes under 30 seconds.
-:::
+| Tab | Icon | Purpose |
+|-----|------|---------|
+| Home | 🏠 | Dashboard |
+| Calendar | 📅 | Daily tracking |
+| Services | ⚙️ | Manage services |
+| Bills | 📄 | Monthly bills |
+| Ask AI | 🤖 | AI chat |

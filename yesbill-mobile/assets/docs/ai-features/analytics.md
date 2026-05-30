@@ -1,43 +1,51 @@
----
+﻿---
 id: analytics
-title: Analytics & AI Usage
-sidebar_position: 5
+title: AI Analytics
+sidebar_position: 3
+displayed_sidebar: mobileSidebar
 ---
 
-# Analytics
+# AI Analytics
 
-YesBill's Analytics screen gives you a visual overview of your spending trends and AI usage.
+YesBill Analytics gives you visual insights into your spending patterns and AI usage — powered by charts and AI-generated summaries.
 
-## Spending Analytics
+## YesBill Analytics
 
-![Analytics screen](/img/screenshots/mobile/YesBill-Analytics-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/YesBill-Analytics-Screen-01.jpeg" alt="YesBill Analytics screen" />
 
-Tap **Analytics** in the bottom navigation bar to open the analytics dashboard. You'll see:
+The **YesBill Analytics** tab shows your household spending data:
 
-- Monthly total spend across all services
-- Per-service cost breakdown
-- Month-over-month trends
-- Your most and least expensive services
-
-Use the month/year selector at the top to browse any historical period.
+- **Monthly Spend Chart** — bar chart comparing spending across months
+- **Service Breakdown** — pie chart showing which services cost the most
+- **Trends** — AI-generated summary of your spending patterns and notable changes
 
 ## AI Usage Analytics
 
-![AI usage analytics screen](/img/screenshots/mobile/AI-Usage-Analytics-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/AI-Usage-Analytics-Screen-01.jpeg" alt="AI Usage Analytics screen" />
 
-Tap the **AI Usage** tab within Analytics to track your AI API consumption across all AI-powered features.
+The **AI Usage** tab tracks how you're using the AI features:
 
-### What's Tracked
+- Total queries sent this month
+- Queries per day (line chart)
+- Token usage by provider
+- Cost estimate based on your API provider's pricing
 
-- Total tokens used (prompt + completion)
-- Estimated cost based on your provider's pricing
-- Usage per feature (Ask AI, Agent, Bill Summaries)
-- Usage per model
+This helps you monitor your API costs, especially if you're on a metered plan.
+
+## Accessing Analytics
+
+1. Tap **Ask AI** in the bottom navigation bar.
+2. Tap the **Analytics** tab at the top of the screen.
+3. Switch between **YesBill Analytics** and **AI Usage** using the tabs.
+
+## Time Range
+
+Use the **date range selector** at the top to change the analytics period:
+- Last 7 days
+- This month
+- Last 3 months
+- Custom range
 
 :::tip
-If AI costs are higher than expected, switch to a smaller model (e.g. GPT-4o Mini or Gemini 2.0 Flash) for routine queries in **Settings → AI Configuration**.
-:::
-
-:::note
-Cost estimates are approximate. Check your AI provider's billing dashboard for exact charges.
+The AI-generated trend summary updates automatically when you generate new bills. For the most accurate insights, ensure your bills are generated and marked as paid on time.
 :::

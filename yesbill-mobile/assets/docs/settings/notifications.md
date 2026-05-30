@@ -1,37 +1,48 @@
----
+﻿---
 id: notifications
-title: Notification Preferences
-sidebar_position: 2
+title: Notification Settings
+sidebar_position: 3
+displayed_sidebar: mobileSidebar
 ---
 
-# Notification Preferences
+# Notification Settings
 
-Control which types of notifications YesBill sends you.
+Control which notifications YesBill sends you and how they appear.
 
 ## Notification Settings Screen
 
-![Notification settings screen](/img/screenshots/mobile/Notifications-Settings-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Notifications-Settings-Screen-01.jpeg" alt="Notification settings screen" />
 
-Tap **Settings** → **Notifications** to see notification toggles. Switch each type on or off.
+Open **Settings → Notifications** to manage your preferences.
 
-## Notification Types
+## Available Notifications
 
-- **Bill Generated** — When a new bill is created for any service
-- **Bill Warning** — When bills are nearing their due date
-- **Service Expiry** — When a service is about to end
-- **AI Config** — Reminder when no AI provider is configured
-- **General** — Announcements and updates
+| Notification | Default | Description |
+|-------------|---------|-------------|
+| Bill Generated | ✅ On | Alerts when a monthly bill is created |
+| Payment Due | ✅ On | Reminder when a bill is approaching its due date |
+| Overdue Bill | ✅ On | Alert when a bill has passed its due date |
+| AI Query Limit | ✅ On | Warning when you're near your monthly AI usage limit |
+| Delivery Reminder | ❌ Off | Daily reminder to mark today's deliveries |
 
-## Reading Notifications
+## Notification Center
 
-![Notifications screen](/img/screenshots/mobile/Notification-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Notification-Screen-01.jpeg" alt="Notification center screen" />
 
-Tap the **bell icon** at the top of any screen to open your notification list:
+Tap the **bell icon** on the Home screen to open your notification center. You can:
 
-- Unread notifications are highlighted
-- Tap a notification to navigate to the relevant section
-- Tap **Mark all as read** to clear all unread indicators
+- Read notifications
+- Mark all as read
+- Tap a notification to jump directly to the related bill or service
+
+## Enabling Push Notifications
+
+If YesBill asks for notification permissions, tap **Allow** to receive push notifications. If you previously denied permission:
+
+1. Open your device **Settings**.
+2. Go to **Apps → YesBill → Notifications**.
+3. Enable **Allow Notifications**.
 
 :::tip
-**Bill Generated** notifications are the most useful — they remind you to review and pay new bills promptly.
+Enable **Bill Generated** and **Overdue Bill** notifications at minimum — these are the most useful for staying on top of payments.
 :::

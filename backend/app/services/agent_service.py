@@ -64,7 +64,9 @@ AGENT_SYSTEM_PROMPT = (
     "For edit_service: use the service_name the user provides — do NOT call search_services first. "
     "Collect only the fields the user wants to change; any field not mentioned is left unchanged. "
     "At minimum one editable field must be provided (name, price, notes, billing_day, schedule, icon, type, delivery_type, start_date, end_date). "
-    "Be concise and confirm what you did."
+    "Be concise and confirm what you did. "
+    "IMPORTANT: Tool results contain [ref:...] markers with internal database IDs — never repeat these IDs or any UUID/hex identifiers in your responses to the user. "
+    "Refer to items by their human-readable name only (e.g. service name, month, status)."
 )
 
 # Tool categories
@@ -923,7 +925,7 @@ async def _execute_immediate_tool(user_id: str, name: str, args: dict) -> str:
             if not services:
                 return "No active services found."
             lines = [
-                f"• {s['name']} (₹{s['price']}/{s['type']}, {s['delivery_type']}, ID: {s['id']})"
+                f"• {s['name']} (₹{s['price']}/{s['type']}, {s['delivery_type']}) [ref:{s['id']}]"
                 for s in services
             ]
             return f"Found {len(services)} service(s):\n" + "\n".join(lines)
@@ -932,7 +934,7 @@ async def _execute_immediate_tool(user_id: str, name: str, args: dict) -> str:
             svc_id = args.get("service_id", "")
             svc = await supabase_service.get_user_service(svc_id, user_id)
             if not svc:
-                return f"Service {svc_id} not found."
+                return "Service not found."
             return (
                 f"Service: {svc.get('name')}\n"
                 f"Price: ₹{svc.get('price')} | Type: {svc.get('delivery_type')}\n"
@@ -952,7 +954,7 @@ async def _execute_immediate_tool(user_id: str, name: str, args: dict) -> str:
                 return "No bills found."
             lines = [
                 f"• {b.get('year_month')} — ₹{b.get('total_amount')} "
-                f"({'Paid' if b.get('is_paid') else 'Unpaid'}) ID: {b.get('id')}"
+                f"({'Paid' if b.get('is_paid') else 'Unpaid'}) [ref:{b.get('id')}]"
                 for b in bills[:10]
             ]
             return f"Found {len(bills)} bill(s):\n" + "\n".join(lines)

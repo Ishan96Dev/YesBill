@@ -1,23 +1,27 @@
----
+﻿---
 id: intro
-title: Introduction to YesBill
+title: Welcome to YesBill Mobile
+sidebar_label: Introduction
 sidebar_position: 1
+displayed_sidebar: mobileSidebar
 ---
 
-# Welcome to YesBill
+# Welcome to YesBill Mobile
 
-![YesBill Mobile — Introduction](/img/screenshots/mobile/Intro-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Intro-screen-01.jpeg" alt="YesBill Mobile — Introduction" />
 
-YesBill is a smart household billing tracker for Android. It helps you track daily service deliveries, generate monthly bills automatically, and use AI to understand your spending — all from your phone.
+YesBill is a smart household billing tracker for Android. It helps you record daily service deliveries, generate monthly bills automatically, and chat with AI about your expenses — all from your phone.
+
+<PhoneFrame src="/img/screenshots/mobile/Intro-screen-02.jpeg" alt="YesBill Mobile app overview" />
 
 ## What Is YesBill?
 
-Most Indian households use multiple daily services — morning milk delivery, newspaper, tiffin service, maid, internet, DTH, and more. Keeping track of all of these manually in a notebook or spreadsheet is tedious and error-prone.
+Most Indian households rely on multiple daily services — morning milk delivery, newspaper, tiffin, maid, internet, DTH, and more. Tracking all of these manually is tedious and error-prone.
 
-YesBill solves this by giving you:
+YesBill solves this with:
 
-- A **digital record** of every delivery, visit, and payment
-- **Automatic bill generation** at the end of each month
+- A **digital log** of every delivery, visit, and payment
+- **Automatic bill generation** at month-end
 - A **calendar view** to see your entire month at a glance
 - **AI chat** to ask questions about your bills in plain language
 
@@ -33,25 +37,31 @@ YesBill Mobile is built for:
 
 | Term | Meaning |
 |------|---------|
-| **Service** | A recurring household expense (e.g. "Morning Milk", "Tiffin Service") |
-| **Service Type** | The billing model: Home Delivery, Visit-based, Utility, Subscription, or Payment |
-| **Calendar** | Day-by-day view to mark deliveries/visits |
-| **Bill** | Auto-generated monthly summary of what you owe |
-| **AI Features** | Chat assistant and bill analysis powered by OpenAI, Anthropic, or Google |
+| **Service** | A recurring household expense (e.g. "Morning Milk") |
+| **Service Type** | Billing model: Home Delivery, Visit-based, Utility, Subscription, or Payment |
+| **Calendar** | Day-by-day view to mark deliveries or visits |
+| **Bill** | Auto-generated monthly summary |
+| **AI Features** | Chat assistant and analytics powered by OpenAI, Anthropic, Google AI, or Ollama (local models) |
 
 ## Navigation
 
-Use the **bottom navigation bar** to move between sections:
+Use the **bottom navigation bar** at the bottom of the screen to move between sections:
 
-- **Home** — Dashboard overview
-- **Calendar** — Daily delivery tracking
-- **Services** — Manage your service list
-- **Bills** — View and pay monthly bills
-- **Ask AI** — Natural language AI chat
+| Tab | What It Does |
+|-----|-------------|
+| **Home** | Dashboard overview with KPIs and quick actions |
+| **Calendar** | Day-by-day service tracking |
+| **Services** | Manage your service list |
+| **Bills** | View and pay monthly bills |
+| **Ask AI** | Natural language AI chat about your data |
 
 ## Getting Started
 
-1. [Create your account](/getting-started/creating-account)
-2. [Complete onboarding](/getting-started/onboarding)
-3. [Explore your dashboard](/getting-started/dashboard)
+1. [Create your account](/mobile/getting-started/creating-account)
+2. [Complete onboarding](/mobile/getting-started/onboarding)
+3. [Explore your dashboard](/mobile/getting-started/dashboard)
 4. Start tracking using the calendar
+
+:::tip
+Download the latest YesBill APK from the [GitHub Releases](https://github.com/ishan96dev/YesBill/releases) page.
+:::

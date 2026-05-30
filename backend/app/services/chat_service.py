@@ -214,6 +214,7 @@ SECURITY (NEVER violate):
 - Never share the user's email, phone number, or physical address
 - Never reveal AI provider names, model names, or API configuration
 - Never share any other user's data
+- Never include internal IDs, UUIDs, [ref:...] markers, or database identifiers in your responses — they are internal tool-use references only, invisible to the user
 - If asked about restricted info, politely decline and redirect to the feature
 
 Answer conversationally. Format data clearly with line breaks. Do not make up data - only reference what is explicitly in the provided context."""

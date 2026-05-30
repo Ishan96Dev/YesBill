@@ -1,24 +1,25 @@
----
+﻿---
 id: ask-ai
-title: Ask AI Chat
-sidebar_position: 2
+title: Ask AI
+sidebar_position: 1
+displayed_sidebar: mobileSidebar
 ---
 
 # Ask AI
 
-Ask AI is a conversational chat interface where you can ask questions about your bills, services, and spending in plain language.
+The **Ask AI** tab gives you a conversational interface to query your billing data in plain language. No spreadsheets, no filters — just ask.
 
 ## Opening Ask AI
 
-![Ask AI screen](/img/screenshots/mobile/Ask-AI-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Ask-AI-Screen-01.jpeg" alt="Ask AI screen" />
 
-Tap **Ask AI** (the robot icon) in the bottom navigation bar. Type your question in the text field at the bottom and tap **Send**.
+Tap **Ask AI** (the robot icon) in the bottom navigation bar. The screen shows your recent conversation history and a text input at the bottom.
 
-## Asking Questions
+## Asking a Question
 
-![Ask AI chat screen](/img/screenshots/mobile/Ask-AI-Chat-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Ask-AI-Chat-Screen-01.jpeg" alt="Ask AI chat screen" />
 
-Ask AI understands natural language. Simply type as you would to a person:
+Type your question in the text field at the bottom and tap **Send**. Examples:
 
 - *"How much did I spend on milk this month?"*
 - *"Which services cost me the most last quarter?"*
@@ -29,7 +30,7 @@ The AI reads your actual billing data and responds with accurate, personalized a
 
 ## Conversation History
 
-![Chat conversation drawer](/img/screenshots/mobile/Chat-Connversation-Drawer-screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Chat-Connversation-Drawer-screen-01.jpeg" alt="Chat conversation drawer" />
 
 Tap the **history icon** (top-right) to open the conversation drawer. Here you can:
 
@@ -44,9 +45,10 @@ Tap the **history icon** (top-right) to open the conversation drawer. Here you c
 | Answers questions | ✅ | ✅ |
 | Reads your data | ✅ | ✅ |
 | Creates/edits data | ❌ | ✅ |
+| Requires confirmation | N/A | ✅ |
 
-Use **Ask AI** when you want quick answers. Use the [AI Agent](/ai-features/agent-chatbot) when you want to make changes like generating bills or adding services.
+Use **Ask AI** when you want quick answers. Use the [AI Agent](/mobile/ai-features/agent-chatbot) when you want to make changes like generating bills or adding services.
 
 ## AI Provider
 
-Ask AI uses whichever AI provider you configured in **Settings → AI Configuration**. See [AI Configuration](/settings/ai-configuration) to set up your provider and API key.
+Ask AI uses whichever AI provider you configured in **Settings → AI Configuration**. See [AI Configuration](/mobile/settings/ai-configuration) to set up or change your provider and API key.

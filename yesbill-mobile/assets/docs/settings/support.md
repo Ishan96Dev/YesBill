@@ -1,48 +1,56 @@
----
+﻿---
 id: support
-title: Support
-sidebar_position: 5
+title: Help & Support
+sidebar_position: 6
+displayed_sidebar: mobileSidebar
 ---
 
-# Support
+# Help & Support
 
-YesBill has a built-in support system — report bugs, request features, or flag AI issues directly from the app.
+Get help with YesBill, report issues, or send feedback.
 
-## Opening Support
+## Support Screen
 
-![Support screen](/img/screenshots/mobile/Support-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Support-Screen-01.jpeg" alt="Support screen" />
 
-Tap **Settings** → **Support** to open the support centre.
+Open **Settings → Support** to access help resources.
 
-## Raise a Bug
+## In-App Help
 
-Use this form to report something that isn't working correctly:
+The **Help** section within Support shows:
 
-1. Tap **Raise a Bug**.
-2. Describe what happened and what you expected.
-3. Add steps to reproduce if possible.
-4. Tap **Submit** — the report is sent to the YesBill team.
+- Quick start guide
+- FAQs about billing, services, and AI features
+- Video tutorials (where available)
+
+## Report an Issue
+
+1. Tap **Report an Issue** in the Support screen.
+2. Describe the problem you're experiencing.
+3. Optionally attach a screenshot.
+4. Tap **Send Report**.
+
+Your report is sent to the YesBill development team.
+
+## Send Feedback
+
+Have a feature request or general feedback? Tap **Send Feedback** and write your thoughts. We read every submission.
+
+## Contact
+
+- **GitHub Issues**: [github.com/ishan96dev/YesBill/issues](https://github.com/ishan96dev/YesBill/issues)
+- **Email**: Available from the Support screen in the app
+
+## About YesBill
+
+The **About** section in Support shows:
+
+- App version number
+- Build number
+- Open source licenses
+- Privacy Policy
+- Terms of Service
 
 :::tip
-The more detail you include, the faster we can fix it.
+Before reporting an issue, check if there's an app update available — many issues are fixed in newer versions. Check the [GitHub Releases](https://github.com/ishan96dev/YesBill/releases) page.
 :::
-
-## Request a Feature
-
-Have an idea that would make YesBill better?
-
-1. Tap **Request a Feature**.
-2. Give it a short title and describe how it should work.
-3. Tap **Submit**.
-
-## AI Feature Issue
-
-Use this for issues with Ask AI, the AI Agent, or AI bill summaries:
-
-1. Tap **AI Feature Issue**.
-2. Select the feature and describe what went wrong.
-3. Tap **Submit**.
-
-## Response Times
-
-The YesBill team reviews all support tickets. You'll receive a response via your account email address.

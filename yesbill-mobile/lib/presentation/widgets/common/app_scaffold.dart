@@ -303,15 +303,15 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   Future<void> _openSearchSheet(String currentLocation) async {
     if (!mounted) return;
     final searchCtrl = TextEditingController();
+    final feedbackCtrl = TextEditingController();
     var query = '';
+    var feedbackSent = false;
 
-    // Capture router before sheet opens. router.go() does not use BuildContext
-    // so it is safe to call after the modal future resolves (while the sheet's
-    // reverse-animation may still be running) without triggering the
-    // '_dependents.isEmpty' InheritedElement assertion.
+    // Capture router before sheet opens (safe to use after modal closes).
     final router = GoRouter.of(context);
+    // Capture ScaffoldMessenger before the async gap.
+    final messenger = ScaffoldMessenger.of(context);
 
-    // Navigate-first pattern — see showShellSearchSheet for full explanation.
     await showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -330,6 +330,24 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                 )
                 .toList(growable: false);
 
+            void submitFeedback() {
+              final text = feedbackCtrl.text.trim();
+              if (text.isEmpty) return;
+              feedbackCtrl.clear();
+              setModalState(() => feedbackSent = true);
+              // Reset the sent state after a moment so the field is reusable.
+              Future.delayed(const Duration(seconds: 3), () {
+                if (mounted) setModalState(() => feedbackSent = false);
+              });
+              messenger.showSnackBar(
+                const SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  content: Text('Thanks for your feedback!'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+
             return SafeArea(
               top: false,
               child: Padding(
@@ -344,147 +362,158 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                     maxHeight: MediaQuery.of(context).size.height * 0.9,
                   ),
                   decoration: BoxDecoration(
-                    color:
-                        isDark ? AppColors.cardDark : const Color(0xFFF2F5FB),
+                    color: isDark ? AppColors.cardDark : const Color(0xFFF2F5FB),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: isDark
-                          ? AppColors.cardDarkBorder
-                          : const Color(0xFFE2E8F0),
+                      color: isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0),
                     ),
                   ),
                   child: Column(
                     children: [
+                      // ── Header ────────────────────────────────────────────
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+                        padding: const EdgeInsets.fromLTRB(16, 14, 14, 0),
                         child: Row(
                           children: [
+                            Icon(
+                              LucideIcons.compass,
+                              size: 15,
+                              color: isDark ? AppColors.primaryLighter : AppColors.primary,
+                            ),
+                            const SizedBox(width: 6),
                             Expanded(
-                              child: TextField(
-                                controller: searchCtrl,
-                                autofocus: true,
-                                onChanged: (value) => setModalState(() {
-                                  query = value;
-                                }),
-                                decoration: InputDecoration(
-                                  hintText: 'Search',
-                                  prefixIcon:
-                                      const Icon(LucideIcons.search, size: 18),
-                                  suffixIcon: IconButton(
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      minimumSize: const Size(36, 36),
-                                    ),
-                                    icon: const Icon(
-                                      LucideIcons.chevronRight,
-                                      size: 17,
-                                    ),
-                                    onPressed: () {},
-                                  ),
-                                  isDense: true,
-                                  filled: true,
-                                  fillColor: isDark
-                                      ? AppColors.surfaceDarkElevated
-                                      : Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(999),
-                                    borderSide: BorderSide(
-                                      color: isDark
-                                          ? AppColors.cardDarkBorder
-                                          : const Color(0xFFE2E8F0),
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(999),
-                                    borderSide: BorderSide(
-                                      color: isDark
-                                          ? AppColors.cardDarkBorder
-                                          : const Color(0xFFE2E8F0),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(999),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
+                              child: Text(
+                                'Navigate',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? AppColors.textPrimary : AppColors.textPrimaryLight,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.of(sheetContext).pop(),
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.white.withAlpha(14) : Colors.black.withAlpha(8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  LucideIcons.x,
+                                  size: 14,
+                                  color: isDark ? Colors.white54 : Colors.black38,
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: filtered.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No pages found',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: isDark
-                                        ? AppColors.textSecondary
-                                        : AppColors.textSecondaryLight,
-                                  ),
-                                ),
-                              )
-                            : ListView.separated(
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 4, 10, 12),
-                                itemBuilder: (_, index) {
-                                  final destination = filtered[index];
-                                  final isCurrent = currentLocation
-                                      .startsWith(destination.path);
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(14),
-                                      color: isCurrent
-                                          ? AppColors.primary.withOpacity(0.14)
-                                          : (isDark
-                                              ? AppColors.surfaceDarkElevated
-                                              : Colors.white),
-                                      border: Border.all(
-                                        color: isCurrent
-                                            ? AppColors.primary
-                                                .withOpacity(0.38)
-                                            : (isDark
-                                                ? AppColors.cardDarkBorder
-                                                : const Color(0xFFE2E8F0)),
-                                      ),
-                                    ),
-                                    child: ListTile(
-                                      leading: Icon(destination.icon, size: 18),
-                                      title: Text(destination.label),
-                                      trailing: const Icon(
-                                        LucideIcons.chevronRight,
-                                        size: 16,
-                                      ),
-                                      onTap: () {
-                                        if (!isCurrent) {
-                                          router.go(destination.path);
-                                        }
-                                        Navigator.of(sheetContext).pop();
-                                      },
-                                    ),
-                                  );
-                                },
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 6),
-                                itemCount: filtered.length,
-                              ),
-                      ),
+                      // ── Search field ──────────────────────────────────────
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+                        child: TextField(
+                          controller: searchCtrl,
+                          autofocus: false,
+                          onChanged: (value) => setModalState(() {
+                            query = value;
+                          }),
+                          decoration: InputDecoration(
+                            hintText: 'Search pages...',
+                            prefixIcon: const Icon(LucideIcons.search, size: 18),
+                            isDense: true,
+                            filled: true,
+                            fillColor: isDark ? AppColors.surfaceDarkElevated : Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(999),
+                              borderSide: BorderSide(
+                                color: isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(999),
+                              borderSide: BorderSide(
+                                color: isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(999),
+                              borderSide: const BorderSide(color: AppColors.primary),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // ── Content: quick nav grid OR filtered search list ───
+                      Expanded(
+                        child: query.trim().isEmpty
+                            ? _QuickNavGrid(
+                                destinations: _searchDestinations,
+                                currentLocation: currentLocation,
+                                isDark: isDark,
+                                onTap: (path) {
+                                  if (!currentLocation.startsWith(path)) {
+                                    router.go(path);
+                                  }
+                                  Navigator.of(sheetContext).pop();
+                                },
+                              )
+                            : filtered.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'No pages found',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? AppColors.textSecondary
+                                            : AppColors.textSecondaryLight,
+                                      ),
+                                    ),
+                                  )
+                                : ListView.separated(
+                                    padding: const EdgeInsets.fromLTRB(10, 4, 10, 12),
+                                    itemBuilder: (_, index) {
+                                      final destination = filtered[index];
+                                      final isCurrent = currentLocation.startsWith(destination.path);
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(14),
+                                          color: isCurrent
+                                              ? AppColors.primary.withOpacity(0.14)
+                                              : (isDark ? AppColors.surfaceDarkElevated : Colors.white),
+                                          border: Border.all(
+                                            color: isCurrent
+                                                ? AppColors.primary.withOpacity(0.38)
+                                                : (isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0)),
+                                          ),
+                                        ),
+                                        child: ListTile(
+                                          leading: Icon(destination.icon, size: 18),
+                                          title: Text(destination.label),
+                                          trailing: const Icon(LucideIcons.chevronRight, size: 16),
+                                          onTap: () {
+                                            if (!isCurrent) {
+                                              router.go(destination.path);
+                                            }
+                                            Navigator.of(sheetContext).pop();
+                                          },
+                                        ),
+                                      );
+                                    },
+                                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                                    itemCount: filtered.length,
+                                  ),
+                      ),
+                      // ── Ask AI quick-launch ───────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                             gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [
-                                AppColors.primary,
-                                AppColors.purple,
-                              ],
+                              colors: [AppColors.primary, AppColors.purple],
                             ),
                           ),
                           child: Material(
@@ -496,17 +525,10 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                                 Navigator.of(sheetContext).pop();
                               },
                               child: const Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 12,
-                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      LucideIcons.sparkles,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
+                                    Icon(LucideIcons.sparkles, size: 16, color: Colors.white),
                                     SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
@@ -518,16 +540,89 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                                         ),
                                       ),
                                     ),
-                                    Icon(
-                                      LucideIcons.zap,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
+                                    Icon(LucideIcons.zap, size: 16, color: Colors.white),
                                   ],
                                 ),
                               ),
                             ),
                           ),
+                        ),
+                      ),
+                      // ── Feedback field ────────────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.surfaceDarkElevated : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: feedbackSent
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(LucideIcons.checkCircle, size: 15,
+                                        color: isDark ? AppColors.primaryLighter : AppColors.primary),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Thanks for your feedback!',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? AppColors.primaryLighter : AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    Icon(
+                                      LucideIcons.messageSquarePlus,
+                                      size: 15,
+                                      color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: feedbackCtrl,
+                                        decoration: InputDecoration(
+                                          hintText: 'Share your feedback...',
+                                          hintStyle: TextStyle(
+                                            fontSize: 12.5,
+                                            color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+                                          ),
+                                          border: InputBorder.none,
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: isDark ? AppColors.textPrimary : AppColors.textPrimaryLight,
+                                        ),
+                                        onSubmitted: (_) => submitFeedback(),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: submitFeedback,
+                                      child: Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withOpacity(0.12),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          LucideIcons.send,
+                                          size: 13,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                     ],
@@ -541,6 +636,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     );
 
     searchCtrl.dispose();
+    feedbackCtrl.dispose();
     // Navigation was already triggered inside onTap — nothing more to do here.
   }
 
@@ -1193,6 +1289,8 @@ class _AppBottomNav extends StatelessWidget {
   final String location;
   final VoidCallback onLogout;
 
+  // 5 primary tabs — fit the navbar without scrolling on any phone width.
+  // Analytics + other pages live in the More sheet for easy discovery.
   static const _primaryTabs = [
     _NavTab(
       label: 'Home',
@@ -1224,12 +1322,6 @@ class _AppBottomNav extends StatelessWidget {
       selectedIcon: LucideIcons.messageCircle,
       path: '/chat',
     ),
-    _NavTab(
-      label: 'Analytics',
-      icon: LucideIcons.barChart3,
-      selectedIcon: LucideIcons.pieChart,
-      path: '/analytics',
-    ),
   ];
 
   static const _moreTab = _NavTab(
@@ -1239,7 +1331,15 @@ class _AppBottomNav extends StatelessWidget {
     path: '/more',
   );
 
+  // More-sheet destinations — shown when the user taps the More tab.
+  // Analytics and Settings are promoted to the top for easy discovery.
   static const _moreDestinations = [
+    _NavTab(
+      label: 'Analytics',
+      icon: LucideIcons.barChart3,
+      selectedIcon: LucideIcons.pieChart,
+      path: '/analytics',
+    ),
     _NavTab(
       label: 'Agentic AI',
       icon: LucideIcons.sparkles,
@@ -1247,16 +1347,16 @@ class _AppBottomNav extends StatelessWidget {
       path: '/agent',
     ),
     _NavTab(
-      label: 'Docs',
-      icon: LucideIcons.bookOpen,
-      selectedIcon: LucideIcons.bookOpen,
-      path: '/docs',
-    ),
-    _NavTab(
       label: 'Settings',
       icon: LucideIcons.settings,
       selectedIcon: LucideIcons.settings,
       path: '/settings',
+    ),
+    _NavTab(
+      label: 'Docs',
+      icon: LucideIcons.bookOpen,
+      selectedIcon: LucideIcons.bookOpen,
+      path: '/docs',
     ),
     _NavTab(
       label: 'Support',
@@ -1290,15 +1390,12 @@ class _AppBottomNav extends StatelessWidget {
             ),
           ],
         ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(tabs.length, (index) {
-              final tab = tabs[index];
-              final selected = tab.path == currentPath;
-              return SizedBox(
-                width: 74,
-                child: InkWell(
+        child: Row(
+          children: List.generate(tabs.length, (index) {
+            final tab = tabs[index];
+            final selected = tab.path == currentPath;
+            return Expanded(
+              child: InkWell(
                   borderRadius: BorderRadius.circular(12),
                   onTap: () {
                     if (tab.path == _moreTab.path) {
@@ -1356,7 +1453,6 @@ class _AppBottomNav extends StatelessWidget {
                 ),
               );
             }),
-          ),
         ),
       ),
     );
@@ -1596,6 +1692,119 @@ class _ContextActionFab extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       heroTag: heroTag,
       child: const Icon(LucideIcons.plus, size: 18),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Quick Navigation Grid — shown in the Navigate sheet when no search query.
+// Displays all destinations as tappable 2-column tiles for easy discovery.
+// ---------------------------------------------------------------------------
+
+class _QuickNavGrid extends StatelessWidget {
+  const _QuickNavGrid({
+    required this.destinations,
+    required this.currentLocation,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final List<_SearchDestination> destinations;
+  final String currentLocation;
+  final bool isDark;
+  final void Function(String path) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(10, 4, 10, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
+            child: Text(
+              'ALL PAGES',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+                color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight,
+              ),
+            ),
+          ),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 2.6,
+            ),
+            itemCount: destinations.length,
+            itemBuilder: (_, index) {
+              final dest = destinations[index];
+              final isCurrent = currentLocation.startsWith(dest.path);
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => onTap(dest.path),
+                  child: Ink(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: isCurrent
+                          ? AppColors.primary.withOpacity(0.14)
+                          : (isDark ? AppColors.surfaceDarkElevated : Colors.white),
+                      border: Border.all(
+                        color: isCurrent
+                            ? AppColors.primary.withOpacity(0.45)
+                            : (isDark ? AppColors.cardDarkBorder : const Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          dest.icon,
+                          size: 16,
+                          color: isCurrent
+                              ? AppColors.primary
+                              : (isDark ? AppColors.textSecondary : AppColors.textSecondaryLight),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            dest.label,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                              color: isCurrent
+                                  ? AppColors.primary
+                                  : (isDark ? AppColors.textPrimary : AppColors.textPrimaryLight),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isCurrent)
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

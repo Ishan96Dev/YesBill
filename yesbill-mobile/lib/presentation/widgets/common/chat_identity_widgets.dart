@@ -89,8 +89,7 @@ class ChatTitleIdentity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subtitle =
-        userEmail?.trim().isNotEmpty == true ? userEmail!.trim() : userLabel;
+    final subtitle = userLabel;
 
     return Row(
       children: [

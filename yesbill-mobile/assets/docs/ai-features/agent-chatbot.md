@@ -1,34 +1,44 @@
----
+﻿---
 id: agent-chatbot
-title: AI Agent Assistant
-sidebar_position: 3
+title: AI Agent Chatbot
+sidebar_position: 2
+displayed_sidebar: mobileSidebar
 ---
 
-# AI Agent Assistant
+# AI Agent Chatbot
 
-The AI Agent goes beyond answering questions — it can take actions in your account on your behalf, with your confirmation.
+The **AI Agent** goes beyond answering questions — it can take actions in your account on your behalf, with your confirmation.
 
 ## Opening the Agent
 
-![Agentic AI screen](/img/screenshots/mobile/Agentic-AI-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Agentic-AI-Screen-01.jpeg" alt="Agentic AI screen" />
 
-Tap **Ask AI** in the bottom navigation bar, then tap the **Agent** tab to switch to agent mode.
+Tap **Ask AI** in the bottom navigation bar, then tap the **Agent** tab (or the robot icon with a wrench). This switches from Q&A mode to the agent mode.
 
 ## Chatting with the Agent
 
-![Agentic AI chat screen](/img/screenshots/mobile/Agentic-AI-Chat-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Agentic-AI-Chat-Screen-01.jpeg" alt="Agentic AI chat screen" />
 
 Type what you want the agent to do. Examples:
 
 - *"Generate all bills for this month"*
 - *"Add a new service called 'Evening Newspaper' at ₹5 per day"*
 - *"Mark all milk deliveries for last week"*
+- *"Delete the tiffin service"*
+
+The agent understands natural language and figures out the right actions to take.
 
 ## Confirmation Before Action
 
-![Agent confirmation screen](/img/screenshots/mobile/Agentic-AI-Agent-Confirmation-Screen-01.jpeg)
+<PhoneFrame src="/img/screenshots/mobile/Agentic-AI-Agent-Confirmation-Screen-01.jpeg" alt="Agent confirmation screen" />
 
-Before the agent makes any change, it shows a **confirmation dialog** listing exactly what it will do. Tap **Confirm** to proceed or **Cancel** to abort.
+Before the agent makes any change to your data, it shows a **confirmation dialog** listing exactly what it will do. You can:
+
+- Tap **Confirm** to proceed
+- Tap **Cancel** to abort
+- Edit your request and try again
+
+This ensures the AI never makes unexpected changes without your approval.
 
 ## What the Agent Can Do
 
@@ -40,19 +50,10 @@ Before the agent makes any change, it shows a **confirmation dialog** listing ex
 | Mark calendar entries | *"Mark all deliveries for last Monday"* |
 | Answer questions | *"What's my total for this month?"* |
 
-## How It Differs from Ask AI
+## AI Provider
 
-| Feature | Ask AI | Agent |
-|---------|--------|-------|
-| Answers questions | ✅ | ✅ |
-| Reads your data | ✅ | ✅ |
-| Creates/edits data | ❌ | ✅ |
-| Requires confirmation | N/A | ✅ |
+The agent uses the same AI provider as Ask AI. See [AI Configuration](/mobile/settings/ai-configuration) to set up your provider.
 
 :::caution
-Some agent actions are irreversible (e.g. deleting a service). Always review the confirmation carefully before tapping Confirm.
-:::
-
-:::note
-The Agent uses the same AI provider you've configured in **Settings → AI Configuration**. If AI is not set up, the Agent will prompt you to configure it.
+The agent actions are irreversible in some cases (e.g. deleting a service). Always review the confirmation carefully before tapping Confirm.
 :::
