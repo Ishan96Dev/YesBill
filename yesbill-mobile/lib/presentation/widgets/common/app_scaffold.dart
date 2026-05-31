@@ -39,7 +39,7 @@ class AppScaffold extends ConsumerStatefulWidget {
 
 class _AppScaffoldState extends ConsumerState<AppScaffold> {
   DateTime? _lastBackPressedAt;
-  static const _permissionsPromptKey = 'permissions_prompted_v1';
+  static const _permissionsPromptKey = 'permissions_prompted_v2';
 
   /// True once [_checkSetupStatus] has confirmed the user is fully onboarded.
   /// Prevents the dashboard shell from rendering before the check redirects to /setup.

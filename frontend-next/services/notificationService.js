@@ -133,6 +133,15 @@ export const notificationService = {
       console.error('notificationService.create error:', error.message)
       return null
     }
+
+    // Dispatch OS-level push notification to all registered devices/browsers.
+    // Fire-and-forget — never blocks the caller.
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { user_id: userId, title, body: message, data: data || {} },
+      })
+      .catch(() => {}) // non-fatal: in-app notification already inserted above
+
     return result
   },
 

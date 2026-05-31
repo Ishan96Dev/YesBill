@@ -14,7 +14,7 @@ import { chatService } from "../../services/chatService";
  *   onConfirmed  — callback(message: string, messageId?: string) after success
  *   onCancelled  — callback() after cancel
  */
-export default function ActionConfirmCard({ actions = [], onConfirmed, onCancelled }) {
+export default function ActionConfirmCard({ actions = [], onConfirmed, onCancelled, thinkingContent, thinkingDurationMs }) {
   const [status, setStatus] = useState("pending"); // 'pending' | 'confirming' | 'confirmed' | 'cancelled'
   const [error, setError] = useState(null);
 
@@ -25,7 +25,7 @@ export default function ActionConfirmCard({ actions = [], onConfirmed, onCancell
       let lastMessageId = null;
       const results = [];
       for (const action of actions) {
-        const result = await chatService.executeAction(action.action_id, true);
+        const result = await chatService.executeAction(action.action_id, true, thinkingContent, thinkingDurationMs);
         results.push(result?.message || "Done.");
         if (result?.message_id) lastMessageId = result.message_id;
       }

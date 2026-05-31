@@ -13,6 +13,12 @@ class PermissionService {
     };
 
     if (Platform.isAndroid) {
+      // Android 13+ (API 33+): READ_EXTERNAL_STORAGE is deprecated; use
+      // granular media permissions so the OS actually shows dialogs.
+      permissions.add(Permission.photos);   // READ_MEDIA_IMAGES
+      permissions.add(Permission.videos);   // READ_MEDIA_VIDEO
+      permissions.add(Permission.audio);    // READ_MEDIA_AUDIO
+      // Android ≤ 12 (API ≤ 32): legacy storage — no-op on API 33+.
       permissions.add(Permission.storage);
     }
 

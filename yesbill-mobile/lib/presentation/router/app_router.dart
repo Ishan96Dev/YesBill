@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../services/fcm_service.dart';
 import '../screens/agent/agent_screen.dart';
 import '../screens/analytics/analytics_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -51,6 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
+    navigatorKey: navigatorKey, // shared with FcmService for notification-tap navigation
     initialLocation: '/splash',
     refreshListenable: notifier,
     redirect: (context, state) {

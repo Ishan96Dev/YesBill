@@ -48,6 +48,8 @@ import notificationService from "../../services/notificationService";
 import { aiSettingsService } from "../../services/aiSettingsService";
 import { useUser, resetUserStore } from "../../hooks/useUser";
 import { useNotifications } from "../../hooks/useNotifications";
+import { initWebPush } from "../../lib/pushNotifications";
+import { supabase } from "../../lib/supabase";
 
 // ─── Searchable pages ──────────────────────────────────────────────
 const DOCS_URL = "https://ishan96dev.github.io/YesBill/docs/";
@@ -193,23 +195,36 @@ export default function AppLayout({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, user?.id, notifsLoading]);
 
+  // ── Web push registration ──────────────────────────────────────────────────
+  // Initialize after the user is confirmed authenticated. Runs only once per
+  // user session (userId as dep). Silently skips if Firebase env vars are not
+  // configured or if the browser doesn't support push.
+  useEffect(() => {
+    if (!user?.id) return;
+    initWebPush(user.id, supabase);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   // ── Click-outside to close dropdowns ──
   useEffect(() => {
     function handleMouseDown(e) {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      // Only update state when the dropdown is actually open — prevents unnecessary
+      // re-renders on every mousedown, which can shift DOM elements between
+      // mousedown and click, causing the click to miss its target (double-click issue).
+      if (profileOpen && profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
       }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
+      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
         setNotifOpen(false);
       }
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+      if (searchOpen && searchRef.current && !searchRef.current.contains(e.target)) {
         setSearchOpen(false);
         setSearchQuery("");
       }
     }
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, []);
+  }, [profileOpen, notifOpen, searchOpen]);
 
   // ── Keyboard shortcut Ctrl/Cmd+K → focus search ──
   useEffect(() => {
@@ -680,12 +695,12 @@ export default function AppLayout({
             const itemContent = (
               <span
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-colors duration-100 relative group",
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-[colors,transform] duration-100 relative group cursor-pointer select-none",
                   lockedNav
                     ? "text-gray-400 opacity-60 cursor-not-allowed"
                     : isActive
-                    ? "bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg shadow-primary/20"
-                    : "text-gray-700 hover:bg-gray-100/80"
+                    ? "bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg shadow-primary/20 active:brightness-95"
+                    : "text-gray-700 hover:bg-gray-100/80 active:bg-gray-200/80 active:scale-[0.98]"
                 )}
               >
                 <Icon className={cn("w-5 h-5 shrink-0 transition-colors", lockedNav ? "text-gray-400" : isActive ? "text-white" : "text-gray-500 group-hover:text-primary")} />
@@ -782,12 +797,13 @@ export default function AppLayout({
           : "min-h-screen overflow-y-auto pb-[65px]"
       )}>
         {!fullHeight && <ServiceExpiryBanner userId={user?.id} />}
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.div
             key={pathname}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.15, ease: "easeInOut" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
             className={cn(fullHeight && "h-full")}
           >
             {children}

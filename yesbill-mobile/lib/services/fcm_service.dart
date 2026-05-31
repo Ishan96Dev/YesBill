@@ -1,17 +1,22 @@
-import 'dart:ui' show Color;
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/api_constants.dart';
 import '../providers/core_providers.dart';
 
+// ── Global navigator key ──────────────────────────────────────────────────────
+// Shared between FcmService and MaterialApp so that notification tap callbacks
+// can navigate without a BuildContext (they run outside the widget tree).
+final navigatorKey = GlobalKey<NavigatorState>();
+
 /// Initializes Firebase Cloud Messaging and handles:
 /// - Permission request (Android 13+)
 /// - Token registration with backend
 /// - Foreground notification display via flutter_local_notifications
-/// - Notification tap → deep link routing
+/// - Notification tap → deep link routing via navigatorKey
 class FcmService {
   FcmService({required Dio dio}) : _dio = dio;
   final Dio _dio;
@@ -55,21 +60,31 @@ class FcmService {
     if (token != null) await _registerToken(token);
 
     // Refresh token listener
-    FirebaseMessaging.instance.onTokenRefresh
-        .listen(_registerToken);
+    FirebaseMessaging.instance.onTokenRefresh.listen(_registerToken);
 
     // Foreground messages: show via local notifications
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
-    // Background tap: already handled via onDidReceiveNotificationResponse
-    // when the app is opened from a notification
+    // App opened by tapping a background FCM notification
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      final route = message.data['route'] as String?;
+      _navigateTo(route);
+    });
+
+    // App launched from a terminated state by tapping a notification
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      final route = initialMessage.data['route'] as String?;
+      // Slight delay to allow the widget tree to mount before navigating
+      Future.delayed(const Duration(milliseconds: 500), () => _navigateTo(route));
+    }
   }
 
   Future<void> _registerToken(String token) async {
     try {
       await _dio.post(
         ApiConstants.notificationsRegisterToken,
-        data: {'token': token},
+        data: {'token': token, 'platform': 'android'},
       );
     } catch (_) {
       // Non-fatal — app works without push notifications
@@ -100,11 +115,18 @@ class FcmService {
   }
 
   void _onNotificationTap(NotificationResponse response) {
-    // TODO: Use GoRouter to navigate to response.payload route
-    // e.g., /bills/:id, /calendar, /services/:id
-    // This requires a global navigator key or router reference
+    _navigateTo(response.payload);
+  }
+
+  /// Navigate to [route] using the global navigator key.
+  /// Falls back to /dashboard if [route] is null or empty.
+  void _navigateTo(String? route) {
+    final target = (route?.isNotEmpty == true) ? route! : '/dashboard';
+    navigatorKey.currentState?.pushNamed(target);
   }
 }
+
 final fcmServiceProvider = Provider<FcmService>((ref) {
   return FcmService(dio: ref.read(dioProvider));
 });
+

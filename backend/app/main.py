@@ -14,7 +14,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from app.core.config import settings
-from app.routers import auth, bills, ai_settings, chat
+from app.routers import auth, bills, ai_settings, chat, notifications
 
 # Logging
 logging.basicConfig(
@@ -113,6 +113,7 @@ app.include_router(auth.router)
 app.include_router(bills.router)
 app.include_router(ai_settings.router)
 app.include_router(chat.router)
+app.include_router(notifications.router)
 
 
 if __name__ == "__main__":

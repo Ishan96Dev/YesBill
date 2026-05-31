@@ -49,7 +49,10 @@ AGENT_SYSTEM_PROMPT = (
     YESBILL_SYSTEM_PROMPT
     + "\n\nYou are in AGENT MODE with access to tools. "
     "Use tools to look up accurate data before answering. "
-    "For write operations, use the appropriate tool - the user will see a confirmation card before any change is applied. "
+    "For write operations (CONFIRM tools), call the tool IMMEDIATELY — never ask 'shall I go ahead?', "
+    "'do you want me to proceed?', or any other text confirmation before calling the tool. "
+    "The system automatically shows a confirmation card to the user; your role is to call the tool, not to seek verbal permission. "
+    "Do NOT narrate what you are about to do and ask for approval — just call the tool. "
     "For update_calendar_day: you can update any date within the LAST 30 DAYS (including today). "
     "Future dates are not allowed. Dates older than 30 days are not allowed. "
     "If the user requests a date outside this window, explain the 30-day limit and ask which valid date they want instead. "
@@ -1324,7 +1327,12 @@ async def _build_confirm_action(
 # Execute a confirmed action
 # ──────────────────────────────────────────────
 
-async def execute_confirmed_action(action_id: str, user_id: str) -> dict:
+async def execute_confirmed_action(
+    action_id: str,
+    user_id: str,
+    thinking_content: str | None = None,
+    thinking_duration_ms: int | None = None,
+) -> dict:
     """Execute an agent_action that the user confirmed. Returns dict with message and message_id."""
     action = await supabase_service.get_agent_action(action_id, user_id)
     if not action:
@@ -1535,8 +1543,14 @@ async def execute_confirmed_action(action_id: str, user_id: str) -> dict:
         )
         # Persist the success message so it survives page refresh
         conv_id = action["conversation_id"]
+        _done_meta: dict = {}
+        if thinking_content:
+            _done_meta["thinking_content"] = thinking_content
+        if thinking_duration_ms is not None:
+            _done_meta["thinking_duration_ms"] = thinking_duration_ms
         saved = await supabase_service.add_message(
-            conv_id, user_id, "assistant", f"Done! {result}"
+            conv_id, user_id, "assistant", f"Done! {result}",
+            metadata=_done_meta if _done_meta else None,
         )
         return {"message": result, "message_id": saved["id"]}
 
@@ -1974,9 +1988,19 @@ async def stream_agent_response(
             if provider == "google" and google_fn_responses:
                 messages.append({"role": "user", "content": google_fn_responses})
 
-            # Emit already-set / failed messages as a single chunk
+            # Emit already-set / failed messages as a single chunk.
+            # If the tool-planning call produced thinking tokens, surface them as a
+            # thinking SSE event BEFORE the chunk so the frontend shows the thought chip.
             info_parts = already_set_msgs + failed_action_msgs
             if info_parts:
+                if _tool_thinking_text:
+                    yield {"type": "thinking", "content": _tool_thinking_text}
+                    # Use agent start as the thinking start so the done handler
+                    # computes duration as total elapsed time (same convention as
+                    # action_required path).  Leave _thinking_stream_end unset so
+                    # the done handler uses time.monotonic() as the end point.
+                    if _thinking_stream_start is None:
+                        _thinking_stream_start = _agent_start
                 info_text = "\n".join(info_parts)
                 full_text = info_text
                 yield {"type": "chunk", "content": info_text}
@@ -2040,13 +2064,18 @@ async def stream_agent_response(
                     "thinking_duration_ms": _action_latency_ms if _tool_thinking_text else None,
                 }
                 for a in pending_confirms:
+                    _ar_meta: dict = {"action_id": a["id"], "reasoning": reasoning}
+                    if _tool_thinking_text:
+                        _ar_meta["thinking_content"] = _tool_thinking_text
+                    if _action_latency_ms and _tool_thinking_text:
+                        _ar_meta["thinking_duration_ms"] = _action_latency_ms
                     await supabase_service.add_message(
                         conv_id,
                         user_id,
                         "assistant",
                         f"Action required: {a.get('summary_text', '')}",
                         model_used=f"{provider}/{model}",
-                        metadata={"action_id": a["id"], "reasoning": reasoning},
+                        metadata=_ar_meta,
                     )
                 yield {
                     "type": "done",

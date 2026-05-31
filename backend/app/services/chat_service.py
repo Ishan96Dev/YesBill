@@ -1716,7 +1716,7 @@ async def stream_response(
     # Auto-generate title after done — frontend handles 'title' events post-done.
     try:
         conv = await supabase_service.get_conversation(conv_id, user_id)
-        if conv and conv.get("title") in ("New Conversation", "YesBill Assistant") and full_response:
+        if conv and conv.get("title", "").strip().lower() in ("new conversation", "yesbill assistant") and full_response:
             all_msgs = await supabase_service.get_messages(conv_id, user_id)
             ua_msgs = [m for m in all_msgs if m.get("role") in ("user", "assistant")]
             if len(ua_msgs) >= 2:

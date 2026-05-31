@@ -224,8 +224,11 @@ export const chatService = {
 
   // ── Agent action execute ──────────────────────────────────
 
-  async executeAction(actionId, confirmed) {
-    return request('POST', '/agent/execute', { action_id: actionId, confirmed })
+  async executeAction(actionId, confirmed, thinkingContent = null, thinkingDurationMs = null) {
+    const body = { action_id: actionId, confirmed }
+    if (thinkingContent != null) body.thinking_content = thinkingContent
+    if (thinkingDurationMs != null) body.thinking_duration_ms = thinkingDurationMs
+    return request('POST', '/agent/execute', body)
   },
 
   // ── Rephrase (Alt+L) ─────────────────────────────────────

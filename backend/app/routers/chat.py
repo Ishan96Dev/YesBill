@@ -55,6 +55,8 @@ class RephraseRequest(BaseModel):
 class ExecuteActionRequest(BaseModel):
     action_id: str
     confirmed: bool
+    thinking_content: Optional[str] = None
+    thinking_duration_ms: Optional[int] = None
 
 
 class FeedbackRequest(BaseModel):
@@ -259,7 +261,11 @@ async def execute_action(
 
     # Execute the confirmed action
     try:
-        result = await execute_confirmed_action(body.action_id, user_id)
+        result = await execute_confirmed_action(
+            body.action_id, user_id,
+            thinking_content=body.thinking_content,
+            thinking_duration_ms=body.thinking_duration_ms,
+        )
         return {"status": "executed", "message": result["message"], "message_id": result["message_id"]}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

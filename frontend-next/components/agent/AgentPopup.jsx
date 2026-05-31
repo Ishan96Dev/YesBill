@@ -248,6 +248,8 @@ const AgentMessage = memo(function AgentMessage({ msg, onConfirmed, onCancelled,
     return (
       <ActionConfirmCard
         actions={msg.actions}
+        thinkingContent={msg.thinkingContent}
+        thinkingDurationMs={msg.thinkingDurationMs}
         onConfirmed={onConfirmed}
         onCancelled={onCancelled}
       />
@@ -480,6 +482,20 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
 
     isSubmittingRef.current = true;
 
+    // Show user message + streaming placeholder IMMEDIATELY.
+    // flushSync forces React to paint synchronously right here, before the async
+    // work below (authHeaders → fetch) keeps the microtask queue busy for 3-5s.
+    // Without flushSync, React 18 batches these updates and only renders after the
+    // first SSE chunk arrives, making the UI appear frozen on Enter press.
+    const userMsgId = Date.now();
+    const userMsg = { role: "user", content: trimmed, id: userMsgId };
+    const assistantMsg = { role: "assistant", content: "", id: STREAMING_ID, streaming: true };
+    flushSync(() => {
+      setMessages((prev) => [...prev, userMsg, assistantMsg]);
+      setInput("");
+      setStreaming(true);
+    });
+
     let activeConvId = convId;
     if (!activeConvId) {
       try {
@@ -489,19 +505,14 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
         setConvId(conv.id);
       } catch {
         setMessages((prev) => [
-          ...prev,
+          ...prev.filter((m) => m.id !== STREAMING_ID && m.id !== userMsgId),
           { role: "assistant", content: "Failed to start session. Please try again.", id: Date.now() },
         ]);
         isSubmittingRef.current = false;
+        setStreaming(false);
         return;
       }
     }
-
-    const userMsg = { role: "user", content: trimmed, id: Date.now() };
-    const assistantMsg = { role: "assistant", content: "", id: STREAMING_ID, streaming: true };
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
-    setInput("");
-    setStreaming(true);
 
     let fullContent = "";
     let fullThinking = "";
@@ -590,15 +601,14 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
           // Priority: (1) streaming thinking events from frontend, (2) thinking text
           // emitted by the backend from the non-streaming tool-planning call.
           if (hadThinkingEvent && fullThinking) {
-            const savedThinkingDuration = thinkingStartTime
-              ? Math.round((Date.now() - thinkingStartTime) / 100) / 10
-              : undefined;
-            lastThinkingRef.current = { thinkingContent: fullThinking, thinkingDuration: savedThinkingDuration };
+            const thinkingMs = thinkingStartTime ? Date.now() - thinkingStartTime : undefined;
+            const savedThinkingDuration = thinkingMs ? Math.round(thinkingMs / 100) / 10 : undefined;
+            lastThinkingRef.current = { thinkingContent: fullThinking, thinkingDuration: savedThinkingDuration, thinkingDurationMs: thinkingMs };
           } else if (event.thinking_content) {
             const dur = event.thinking_duration_ms
               ? Math.round(event.thinking_duration_ms / 100) / 10
               : undefined;
-            lastThinkingRef.current = { thinkingContent: event.thinking_content, thinkingDuration: dur };
+            lastThinkingRef.current = { thinkingContent: event.thinking_content, thinkingDuration: dur, thinkingDurationMs: event.thinking_duration_ms || undefined };
           } else {
             lastThinkingRef.current = null;
           }
@@ -616,6 +626,8 @@ export default function AgentPopup({ onClose, convId, setConvId, onTitleUpdate }
               id: actions[0]?.action_id || Date.now(),
               actions,
               summaryText: event.summary_text,
+              thinkingContent: lastThinkingRef.current?.thinkingContent || undefined,
+              thinkingDurationMs: lastThinkingRef.current?.thinkingDurationMs || undefined,
             },
           ]);
           setWaitingForConfirm(true);

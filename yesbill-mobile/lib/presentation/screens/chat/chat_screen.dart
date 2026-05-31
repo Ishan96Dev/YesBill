@@ -546,7 +546,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final conversation =
           await ref.read(chatRemoteDsProvider).createConversation(
                 convType: 'main',
-                title: 'New conversation',
+                title: 'New Conversation',
               );
       ref.invalidate(conversationsProvider);
       ref.read(activeConversationIdProvider.notifier).state = conversation.id;
