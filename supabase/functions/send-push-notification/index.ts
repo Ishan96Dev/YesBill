@@ -5,14 +5,15 @@
 // send-push-notification
 // ──────────────────────────────────────────────────────────────────────────────
 // Deno edge function — dispatches FCM push notifications to every registered
-// device/browser for a given user.
+// device/browser for a given user using FCM HTTP V1 API.
 //
-// Called by notificationService.js (web) and notificationService.dart (mobile)
-// immediately after a notification row is inserted into public.notifications.
+// Called by notificationService.js (web) immediately after a notification row
+// is inserted into public.notifications.
 //
 // Required Supabase secrets (set via: supabase secrets set NAME=value):
-//   FCM_SERVER_KEY  — Firebase Cloud Messaging legacy server key
-//                     (Firebase Console → Project Settings → Cloud Messaging)
+//   FIREBASE_SERVICE_ACCOUNT_JSON — full service account JSON from Firebase Console
+//                                   (Firebase Console → Project Settings → Service accounts
+//                                    → Generate new private key)
 //
 // The SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY secrets are injected
 // automatically by the Supabase runtime — no manual configuration needed.
@@ -24,109 +25,162 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
+const FIREBASE_SERVICE_ACCOUNT_JSON = Deno.env.get("FIREBASE_SERVICE_ACCOUNT_JSON");
 
-// ── FCM (Android / iOS) ────────────────────────────────────────────────────────
-async function sendFcmPush(
-  tokens: string[],
+// ── Service account types ──────────────────────────────────────────────────────
+interface ServiceAccount {
+  project_id: string;
+  client_email: string;
+  private_key: string;
+}
+
+// ── Base64url encode ───────────────────────────────────────────────────────────
+function base64url(input: string | Uint8Array): string {
+  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+}
+
+// ── Get OAuth2 access token from service account ───────────────────────────────
+async function getAccessToken(sa: ServiceAccount): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+  const claimSet = base64url(JSON.stringify({
+    iss: sa.client_email,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600,
+  }));
+
+  const signingInput = `${header}.${claimSet}`;
+
+  // Strip PEM headers and decode DER
+  const pemContent = sa.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\n/g, "");
+  const der = Uint8Array.from(atob(pemContent), (c) => c.charCodeAt(0));
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    der,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+
+  const sigBytes = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    new TextEncoder().encode(signingInput),
+  );
+
+  const jwt = `${signingInput}.${base64url(new Uint8Array(sigBytes))}`;
+
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+  });
+
+  if (!tokenRes.ok) {
+    const err = await tokenRes.text();
+    throw new Error(`[push] OAuth2 token exchange failed: ${tokenRes.status} ${err}`);
+  }
+
+  const tokenData = await tokenRes.json();
+  return tokenData.access_token as string;
+}
+
+// ── Send a single FCM V1 message ───────────────────────────────────────────────
+async function sendFcmV1Message(
+  token: string,
   title: string,
   body: string,
   data: Record<string, string>,
-): Promise<void> {
-  if (!FCM_SERVER_KEY) {
-    console.warn("[push] FCM_SERVER_KEY not set — skipping FCM dispatch");
-    return;
-  }
-  if (tokens.length === 0) return;
-
-  // Use multicast for up to 1000 tokens per request
-  const payload = {
-    registration_ids: tokens,
-    notification: {
-      title,
-      body,
-      icon: "ic_notification",
-      color: "#6366F1",
-      sound: "default",
-      channel_id: "yesbill_notifications",
-    },
-    data: data ?? {},
-    priority: "high",
-    android: {
-      priority: "high",
-      notification: {
-        channel_id: "yesbill_notifications",
-        notification_priority: "PRIORITY_HIGH",
-        sound: "default",
-        default_sound: true,
-        default_vibrate_timings: true,
-      },
-    },
-    apns: {
-      payload: {
-        aps: {
+  projectId: string,
+  accessToken: string,
+): Promise<{ ok: boolean; stale: boolean }> {
+  const message = {
+    message: {
+      token,
+      notification: { title, body },
+      data,
+      android: {
+        priority: "high",
+        notification: {
+          channel_id: "yesbill_notifications",
+          notification_priority: "PRIORITY_HIGH",
           sound: "default",
-          badge: 1,
+          default_sound: true,
+          default_vibrate_timings: true,
+          icon: "ic_notification",
+          color: "#6366F1",
         },
+      },
+      apns: {
+        payload: { aps: { sound: "default", badge: 1 } },
+      },
+      webpush: {
+        notification: {
+          title,
+          body,
+          icon: "/icon-192.png",
+          badge: "/icon-192.png",
+        },
+        fcm_options: { link: "/" },
       },
     },
   };
 
-  const res = await fetch("https://fcm.googleapis.com/fcm/send", {
-    method: "POST",
-    headers: {
-      Authorization: `key=${FCM_SERVER_KEY}`,
-      "Content-Type": "application/json",
+  const res = await fetch(
+    `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
     },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    console.error("[push] FCM error:", res.status, text);
-    return;
-  }
-
-  const json = await res.json();
-  console.log(
-    `[push] FCM sent to ${tokens.length} tokens — success:${json.success} failure:${json.failure}`,
   );
 
-  // Remove tokens that FCM says are no longer valid
-  if (json.results) {
-    const invalidTokens: string[] = [];
-    json.results.forEach((result: { error?: string }, i: number) => {
-      if (
-        result.error === "NotRegistered" ||
-        result.error === "InvalidRegistration"
-      ) {
-        invalidTokens.push(tokens[i]);
-      }
-    });
-    if (invalidTokens.length > 0) {
-      console.log(`[push] Removing ${invalidTokens.length} stale token(s)`);
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-      await supabase
-        .from("device_tokens")
-        .delete()
-        .in("token", invalidTokens);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({})) as {
+      error?: { status?: string; message?: string };
+    };
+    const status = err?.error?.status ?? "";
+    const isStale = status === "NOT_FOUND" || status === "UNREGISTERED";
+    if (!isStale) {
+      console.error("[push] FCM V1 error for token:", res.status, JSON.stringify(err));
     }
+    return { ok: false, stale: isStale };
   }
+
+  return { ok: true, stale: false };
 }
 
-// ── Web Push (Chrome / Firefox / Edge) ────────────────────────────────────────
-// Web push subscriptions are stored as JSON strings; they contain
-// { endpoint, keys: { p256dh, auth } } from the browser's PushManager.
-// Firebase Web SDK generates standard FCM tokens (not PushSubscription objects),
-// so those are handled via the FCM path above with platform='web' check below.
-async function sendWebFcmPush(
-  webTokens: string[],
+// ── Dispatch to all tokens for a user ─────────────────────────────────────────
+async function dispatchToTokens(
+  tokens: Array<{ token: string; platform: string }>,
   title: string,
   body: string,
   data: Record<string, string>,
-): Promise<void> {
-  // Web FCM tokens are regular FCM registration tokens — use same FCM API
-  await sendFcmPush(webTokens, title, body, data);
+  sa: ServiceAccount,
+  accessToken: string,
+): Promise<string[]> {
+  const staleTokens: string[] = [];
+
+  await Promise.allSettled(
+    tokens.map(async ({ token }) => {
+      const result = await sendFcmV1Message(token, title, body, data, sa.project_id, accessToken);
+      if (result.stale) staleTokens.push(token);
+    }),
+  );
+
+  return staleTokens;
 }
 
 // ── Handler ────────────────────────────────────────────────────────────────────
@@ -149,6 +203,27 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // ── Parse service account ──────────────────────────────────────────────────
+  if (!FIREBASE_SERVICE_ACCOUNT_JSON) {
+    console.error("[push] FIREBASE_SERVICE_ACCOUNT_JSON secret is not set");
+    return new Response(
+      JSON.stringify({ error: "Push notifications are not configured (missing service account)" }),
+      { status: 503, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  let sa: ServiceAccount;
+  try {
+    sa = JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON) as ServiceAccount;
+  } catch {
+    console.error("[push] FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON");
+    return new Response(
+      JSON.stringify({ error: "Push notifications misconfigured (invalid service account JSON)" }),
+      { status: 503, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── Parse request body ─────────────────────────────────────────────────────
   let payload: {
     user_id: string;
     title: string;
@@ -174,7 +249,7 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // Look up all registered device tokens for this user
+  // ── Look up all registered device tokens for this user ────────────────────
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const { data: tokens, error } = await supabase
     .from("device_tokens")
@@ -196,24 +271,50 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const nativeTokens = tokens
-    .filter((t) => t.platform === "android" || t.platform === "ios")
-    .map((t) => t.token);
-
-  const webTokens = tokens
-    .filter((t) => t.platform === "web")
-    .map((t) => t.token);
-
   const notifBody = msgBody ?? "";
-  const notifData = data ?? {};
+  const notifData: Record<string, string> = {};
+  if (data) {
+    // FCM data payload values must all be strings
+    for (const [k, v] of Object.entries(data)) {
+      notifData[k] = typeof v === "string" ? v : JSON.stringify(v);
+    }
+  }
 
-  await Promise.allSettled([
-    sendFcmPush(nativeTokens, title, notifBody, notifData),
-    sendWebFcmPush(webTokens, title, notifBody, notifData),
-  ]);
+  // ── Obtain OAuth2 access token ─────────────────────────────────────────────
+  let accessToken: string;
+  try {
+    accessToken = await getAccessToken(sa);
+  } catch (err) {
+    console.error("[push] Failed to get OAuth2 access token:", err);
+    return new Response(
+      JSON.stringify({ error: "Failed to authenticate with FCM" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── Dispatch notifications ─────────────────────────────────────────────────
+  const staleTokens = await dispatchToTokens(
+    tokens,
+    title,
+    notifBody,
+    notifData,
+    sa,
+    accessToken,
+  );
+
+  // Clean up stale/unregistered tokens
+  if (staleTokens.length > 0) {
+    console.log(`[push] Removing ${staleTokens.length} stale/unregistered token(s)`);
+    await supabase
+      .from("device_tokens")
+      .delete()
+      .in("token", staleTokens);
+  }
+
+  console.log(`[push] Dispatched to ${tokens.length} token(s), ${staleTokens.length} stale removed`);
 
   return new Response(
-    JSON.stringify({ sent: tokens.length }),
+    JSON.stringify({ sent: tokens.length - staleTokens.length }),
     { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } },
   );
 });

@@ -71,6 +71,16 @@ dependencies {
 }
 
 def googleServicesJson = file('google-services.json')
+def projectRootGoogleServicesJson = rootProject.file('../google-services.json')
+if (!googleServicesJson.exists() && projectRootGoogleServicesJson.exists()) {
+    copy {
+        from projectRootGoogleServicesJson
+        into projectDir
+        rename { 'google-services.json' }
+    }
+    logger.lifecycle("Copied google-services.json from project root into android/app.")
+}
+
 if (googleServicesJson.exists()) {
     apply plugin: 'com.google.gms.google-services'
 } else {

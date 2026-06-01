@@ -57,6 +57,13 @@ if ($defines.Count -eq 0) {
 }
 
 # ── Helper: run one build and report result ───────────────────────────────────
+$rootGoogleServicesJson = Join-Path $projectRoot "google-services.json"
+$androidAppGoogleServicesJson = Join-Path $projectRoot "android\\app\\google-services.json"
+if ((Test-Path $rootGoogleServicesJson) -and -not (Test-Path $androidAppGoogleServicesJson)) {
+    Copy-Item -LiteralPath $rootGoogleServicesJson -Destination $androidAppGoogleServicesJson -Force
+    Write-Host "Copied google-services.json into android/app for this build." -ForegroundColor DarkCyan
+}
+
 function Invoke-FlutterBuild([string]$Mode) {
     Write-Host "`n Building $Mode APK..." -ForegroundColor Cyan
     Push-Location $projectRoot
