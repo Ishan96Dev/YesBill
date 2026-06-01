@@ -80,6 +80,7 @@ class _ServiceFormState extends State<ServiceForm> {
     'package',
     'bike',
     'dumbbell',
+    'shirt',
     'flame',
     'tv',
     'phone',
@@ -173,11 +174,21 @@ class _ServiceFormState extends State<ServiceForm> {
             controller: _nameCtrl,
             decoration: InputDecoration(
               hintText: 'e.g., Netflix, Rent, Electricity',
+              labelText: 'Service Name *',
+              floatingLabelBehavior: FloatingLabelBehavior.never,
               filled: true,
               fillColor: AppSurfaces.isDark(context) ? AppColors.surfaceDarkElevated : const Color(0xFFF4F5F7),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
                 borderSide: BorderSide.none,
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 18,
@@ -239,7 +250,7 @@ class _ServiceFormState extends State<ServiceForm> {
                   TextFormField(
                     controller: _clientNameCtrl,
                     decoration: InputDecoration(
-                      labelText: 'Client Name',
+                      labelText: 'Client Name *',
                       hintText: 'e.g. Rahul Sharma',
                       prefixIcon: const Icon(LucideIcons.user, size: 18),
                       filled: true,
@@ -248,7 +259,21 @@ class _ServiceFormState extends State<ServiceForm> {
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
                       ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                      ),
                     ),
+                    validator: (value) {
+                      if (_serviceRole == 'provider' && (value == null || value.trim().isEmpty)) {
+                        return 'Required for provider';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -268,7 +293,24 @@ class _ServiceFormState extends State<ServiceForm> {
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide.none,
                             ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                            ),
                           ),
+                          validator: (value) {
+                            if (_serviceRole == 'provider' && value != null && value.trim().isNotEmpty) {
+                              final cleanPhone = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+                              if (!RegExp(r'^\d{10}$').hasMatch(cleanPhone)) {
+                                return 'Enter 10 digit number';
+                              }
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -287,7 +329,24 @@ class _ServiceFormState extends State<ServiceForm> {
                               borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide.none,
                             ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                            ),
                           ),
+                          validator: (value) {
+                            if (_serviceRole == 'provider' && value != null && value.trim().isNotEmpty) {
+                              final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                              if (!emailRegex.hasMatch(value.trim())) {
+                                return 'Enter valid email';
+                              }
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -590,23 +649,65 @@ class _ServiceFormState extends State<ServiceForm> {
           const SizedBox(height: 18),
 
           // ── CHOOSE ICON ───────────────────────────────────────────────────
-          Text('CHOOSE ICON', style: sectionLabelStyle),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _featuredIcons
-                .map(
-                  (name) => _IconChip(
-                    icon: ServiceIcons.fromName(name),
-                    selected: _iconName == name,
-                    onTap: () => setState(() => _iconName = name),
-                  ),
-                )
-                .toList(),
+          Row(
+            children: [
+              Text('CHOOSE ICON', style: sectionLabelStyle),
+              const SizedBox(width: 4),
+              Text(
+                '*',
+                style: sectionLabelStyle.copyWith(
+                  color: const Color(0xFFEF4444),
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _iconName.isEmpty 
+                    ? const Color(0xFFEF4444).withOpacity(0.3)
+                    : const Color(0xFFACB3B7).withOpacity(0.35),
+                width: _iconName.isEmpty ? 1.5 : 1,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A2D3337),
+                  blurRadius: 12,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: _featuredIcons
+                  .map(
+                    (name) => _IconChip(
+                      icon: ServiceIcons.fromName(name),
+                      selected: _iconName == name,
+                      onTap: () => setState(() => _iconName = name),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          if (_iconName.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(
+                'Please select an icon',
+                style: AppTextStyles.labelSm.copyWith(
+                  color: const Color(0xFFEF4444),
+                  fontSize: 12,
+                ),
+              ),
+            ),
           const SizedBox(height: 18),
-                  Text(_type == 'yearly' ? 'YEARLY AMOUNT' : 'MONTHLY AMOUNT', style: sectionLabelStyle),
+                  Text(_type == 'yearly' ? 'YEARLY AMOUNT *' : 'MONTHLY AMOUNT *', style: sectionLabelStyle),
           const SizedBox(height: 8),
           TextFormField(
             controller: _priceCtrl,
@@ -619,6 +720,14 @@ class _ServiceFormState extends State<ServiceForm> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
                 borderSide: BorderSide.none,
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 18,
@@ -712,7 +821,7 @@ class _ServiceFormState extends State<ServiceForm> {
   static IconData _deliveryTypeIcon(String type) {
     switch (type) {
       case 'home_delivery':
-        return LucideIcons.package;
+        return LucideIcons.truck;
       case 'utility':
         return LucideIcons.zap;
       case 'visit_based':
@@ -720,7 +829,7 @@ class _ServiceFormState extends State<ServiceForm> {
       case 'subscription':
         return LucideIcons.repeat;
       case 'payment':
-        return LucideIcons.creditCard;
+        return LucideIcons.banknote;
       default:
         return LucideIcons.circle;
     }
@@ -732,18 +841,35 @@ class _ServiceFormState extends State<ServiceForm> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Validate icon selection
+    if (_iconName.isEmpty) {
+      context.showErrorSnackBar('Please select an icon for your service');
+      return;
+    }
+
     final clientName = _clientNameCtrl.text.trim();
     final clientPhone = _clientPhoneCtrl.text.trim();
     final clientEmail = _clientEmailCtrl.text.trim();
     final clientAddress = _clientAddressCtrl.text.trim();
 
+    // Provider role validations
     if (_serviceRole == 'provider') {
       if (clientName.isEmpty) {
         context.showErrorSnackBar('Client name is required for provider services');
         return;
       }
       if (clientPhone.isEmpty && clientEmail.isEmpty) {
-        context.showErrorSnackBar('Add a client phone number or email');
+        context.showErrorSnackBar('Please provide either a phone number or email for the client');
+        return;
+      }
+      // Validate email format if provided
+      if (clientEmail.isNotEmpty && !_isValidEmail(clientEmail)) {
+        context.showErrorSnackBar('Please enter a valid email address');
+        return;
+      }
+      // Validate phone format if provided
+      if (clientPhone.isNotEmpty && !_isValidPhone(clientPhone)) {
+        context.showErrorSnackBar('Please enter a valid phone number (10 digits)');
         return;
       }
     }
@@ -781,6 +907,21 @@ class _ServiceFormState extends State<ServiceForm> {
     } else {
       context.showErrorSnackBar('Unable to save service');
     }
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+  bool _isValidPhone(String phone) {
+    // Remove any spaces, dashes, or parentheses
+    final cleanPhone = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    // Check if it's 10 digits (Indian phone number format)
+    final phoneRegex = RegExp(r'^\d{10}$');
+    return phoneRegex.hasMatch(cleanPhone);
   }
 }
 

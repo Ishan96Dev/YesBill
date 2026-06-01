@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '../lib/supabase'
+import { browserNotificationService } from './browserNotificationService'
 
 export const notificationService = {
   /**
@@ -63,8 +64,9 @@ export const notificationService = {
    * @param {string} title
    * @param {string} [message]
    * @param {object} [data] - extra JSON payload (e.g. { path: '/bills', billId: '...' })
+   * @param {boolean} [showBrowserNotification=true] - Whether to show browser notification
    */
-  async create(userId, type, title, message = null, data = {}) {
+  async create(userId, type, title, message = null, data = {}, showBrowserNotification = true) {
     if (!userId) return null
 
     // Check user's notification preferences before creating
@@ -93,6 +95,34 @@ export const notificationService = {
       console.error('notificationService.create error:', error.message)
       return null
     }
+
+    // Show browser notification if enabled and permission granted
+    if (showBrowserNotification && result) {
+      try {
+        // Map notification types to browser notification methods
+        switch (type) {
+          case 'service_created':
+            await browserNotificationService.showServiceCreated(title)
+            break
+          case 'service_updated':
+            await browserNotificationService.showServiceUpdated(title)
+            break
+          case 'bill_generated':
+            await browserNotificationService.showBillGenerated(title, data?.amount || 0)
+            break
+          case 'bill_reminder':
+            await browserNotificationService.showBillReminder(title, data?.daysLeft || 0)
+            break
+          default:
+            await browserNotificationService.showGeneric(title, message || '', data?.path)
+            break
+        }
+      } catch (error) {
+        console.error('Error showing browser notification:', error)
+        // Don't fail the whole operation if browser notification fails
+      }
+    }
+
     return result
   },
 

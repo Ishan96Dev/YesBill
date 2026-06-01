@@ -69,6 +69,8 @@ class ServiceIcons {
     'sun': LucideIcons.sun,
     'moon': LucideIcons.moon,
     'star': LucideIcons.star,
+    'shirt': LucideIcons.shirt,
+    'laundry': LucideIcons.shirt,
   };
 
   /// All available icons for the icon picker sheet.
