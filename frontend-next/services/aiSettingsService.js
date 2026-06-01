@@ -17,6 +17,7 @@
 
 import { supabase } from '../lib/supabase'
 import api from './api'
+import notificationService from './notificationService'
 
 export const aiSettingsService = {
   // ── Direct Supabase DB Operations (like profileService) ──
@@ -105,6 +106,12 @@ export const aiSettingsService = {
         .select()
         .single()
       if (error) throw error
+      // Notify (fire-and-forget)
+      notificationService.create(
+        userId, 'ai_config_changed', 'AI Provider Added',
+        `${provider.charAt(0).toUpperCase() + provider.slice(1)} API key has been added`,
+        { path: '/settings', route: '/settings' }
+      ).catch(() => {})
       return {
         ...data,
         api_key_encrypted: settings.api_key_encrypted,
@@ -120,6 +127,12 @@ export const aiSettingsService = {
           .select()
           .single()
         if (!error && data) {
+          // Notify (fire-and-forget)
+          notificationService.create(
+            userId, 'ai_config_changed', 'AI Provider Added',
+            `${provider.charAt(0).toUpperCase() + provider.slice(1)} API key has been added`,
+            { path: '/settings', route: '/settings' }
+          ).catch(() => {})
           return { ...data, api_key_encrypted: settings.api_key_encrypted, is_key_valid: settings.is_key_valid ?? false }
         }
       }
@@ -164,6 +177,12 @@ export const aiSettingsService = {
         .select()
         .single()
       if (error) throw error
+      // Notify (fire-and-forget)
+      notificationService.create(
+        userId, 'ai_config_changed', 'AI Configuration Updated',
+        `${provider.charAt(0).toUpperCase() + provider.slice(1)} AI settings have been updated`,
+        { path: '/settings', route: '/settings' }
+      ).catch(() => {})
       return { ...data, api_key_encrypted: updates.api_key || data.api_key_encrypted || '' }
     } catch (supabaseError) {
       // Fallback to backend API
@@ -203,6 +222,12 @@ export const aiSettingsService = {
     } catch (backendError) {
       console.warn('Backend delete request failed (record removed from Supabase):', backendError.message)
     }
+    // Notify user (fire-and-forget)
+    notificationService.create(
+      userId, 'ai_config_changed', 'AI Provider Removed',
+      `${provider.charAt(0).toUpperCase() + provider.slice(1)} API key has been removed`,
+      { path: '/settings', route: '/settings' }
+    ).catch(() => {})
   },
 
   // ── Backend API Operations (for key validation) ──

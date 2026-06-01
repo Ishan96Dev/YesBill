@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/generated_bill.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'notifications_provider.dart';
 
 /// Lists all generated bills.
 /// Guards against auth race condition — returns empty list until user is authenticated.
@@ -60,6 +61,19 @@ class BillGenerationNotifier extends Notifier<BillGenerationState> {
           );
       ref.invalidate(generatedBillsProvider);
       state = BillGenerationSuccess(bill);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'bill_generated',
+          title: serviceIds.length > 1 ? 'Bills Generated' : 'Bill Generated',
+          message: serviceIds.length > 1
+              ? '${serviceIds.length} separate bills generated for $yearMonth'
+              : 'Bill generated for $yearMonth',
+          data: const {'route': '/bills', 'path': '/bills'},
+        ).catchError((_) {});
+      }
     } catch (e) {
       state = BillGenerationError(e.toString());
     }
@@ -92,6 +106,17 @@ class BillPaymentNotifier extends Notifier<AsyncValue<void>> {
       ref.invalidate(generatedBillsProvider);
       ref.invalidate(billDetailProvider(billId));
       state = const AsyncValue.data(null);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'bill_paid',
+          title: 'Bill Marked as Paid',
+          message: 'Bill marked as paid via $paymentMethod',
+          data: {'route': '/bills', 'path': '/bills', 'payment_method': paymentMethod},
+        ).catchError((_) {});
+      }
       return true;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -115,6 +140,17 @@ class BillDeleteNotifier extends Notifier<AsyncValue<void>> {
       await ref.read(billsRemoteDsProvider).deleteBill(billId);
       ref.invalidate(generatedBillsProvider);
       state = const AsyncValue.data(null);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'bill_deleted',
+          title: 'Bill Deleted',
+          message: 'A bill has been deleted',
+          data: const {'route': '/bills', 'path': '/bills'},
+        ).catchError((_) {});
+      }
       return true;
     } catch (e, st) {
       state = AsyncValue.error(e, st);

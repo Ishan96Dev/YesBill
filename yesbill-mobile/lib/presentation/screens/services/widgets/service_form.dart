@@ -53,11 +53,11 @@ class _ServiceFormState extends State<ServiceForm> {
 
   static const _typeOptions = ['daily', 'weekly', 'monthly', 'yearly'];
   static const _deliveryTypeOptions = [
-    ('home_delivery', 'Home Delivery'),
-    ('utility', 'Utility'),
-    ('visit_based', 'Visit Based'),
-    ('subscription', 'Subscription'),
-    ('payment', 'Payment'),
+    ('home_delivery', 'Home Delivery',   'Delivered to your door'),
+    ('utility',       'Utility',          'Internet, Electricity, Gas'),
+    ('visit_based',   'Visit-Based',      'Gym, clinic, you go there'),
+    ('subscription',  'Subscription',     'OTT, magazine, fixed charge'),
+    ('payment',       'EMI / Loan / Rent','Fixed due-date payment'),
   ];
 
   static const _scheduleOptions = [
@@ -375,54 +375,89 @@ class _ServiceFormState extends State<ServiceForm> {
           // ── SERVICE TYPE ──────────────────────────────────────────────────
           Text('SERVICE TYPE', style: sectionLabelStyle),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          // 3-column card grid matching web layout
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 0.95,
             children: _deliveryTypeOptions.map((opt) {
-              final (value, label) = opt;
+              final (value, label, desc) = opt;
               final selected = _deliveryType == value;
               final icon = _deliveryTypeIcon(value);
               return GestureDetector(
                 onTap: () => setState(() => _deliveryType = value),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   decoration: BoxDecoration(
                     color: selected
-                        ? AppColors.primary
+                        ? (AppSurfaces.isDark(context)
+                            ? AppColors.primary.withOpacity(0.15)
+                            : AppColors.primary.withOpacity(0.05))
                         : (AppSurfaces.isDark(context) ? AppColors.cardDark : Colors.white),
-                    borderRadius: BorderRadius.circular(999),
-                    border: selected
-                        ? null
-                        : Border.all(
-                            color: const Color(0xFFACB3B7).withOpacity(0.35)),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: selected
+                          ? AppColors.primary
+                          : const Color(0xFFACB3B7).withOpacity(0.35),
+                      width: selected ? 2 : 1,
+                    ),
                     boxShadow: selected
-                        ? null
-                        : const [
-                            BoxShadow(
-                              color: Color(0x0A2D3337),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            )
-                          ],
+                        ? [BoxShadow(color: AppColors.primary.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))]
+                        : const [BoxShadow(color: Color(0x0A2D3337), blurRadius: 8, offset: Offset(0, 2))],
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(icon,
-                          size: 14,
+                      // Circled icon — matching web's w-8 h-8 rounded-full
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
                           color: selected
-                              ? Colors.white
-                              : Theme.of(context).colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 6),
+                              ? AppColors.primary.withOpacity(0.12)
+                              : (AppSurfaces.isDark(context)
+                                  ? Colors.white.withOpacity(0.08)
+                                  : const Color(0xFFF3F4F6)),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 16,
+                          color: selected
+                              ? AppColors.primary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Label
                       Text(
                         label,
-                        style: AppTextStyles.bodySm.copyWith(
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        style: AppTextStyles.labelSm.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
                           color: selected
-                              ? Colors.white
+                              ? AppColors.primary
                               : Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      // Description — matching web's text-xs text-gray-500
+                      Text(
+                        desc,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        style: AppTextStyles.labelSm.copyWith(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          height: 1.2,
                         ),
                       ),
                     ],

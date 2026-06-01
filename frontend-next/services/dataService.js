@@ -147,12 +147,38 @@ export const servicesService = {
 
   /** Delete a service */
   async delete(serviceId) {
+    // Fetch service name before deleting (for notification copy)
+    let serviceName = 'Service'
+    let userId
+    try {
+      userId = getUserId()
+      const { data: svc } = await supabase
+        .from('user_services').select('name').eq('id', serviceId).maybeSingle()
+      if (svc?.name) serviceName = svc.name
+    } catch (_) { /* non-fatal — still proceed with delete */ }
+
     const { error } = await supabase
       .from('user_services')
       .delete()
       .eq('id', serviceId)
 
     if (error) throw error
+
+    // Notify user (non-critical — never blocks service deletion)
+    if (userId) {
+      try {
+        await notificationService.create(
+          userId, 'service_deleted',
+          'Service Deleted',
+          `"${serviceName}" has been removed from your services`,
+          {
+            path: '/services',
+            route: '/services',
+            dedupe_key: `service_deleted:${serviceId}:${Date.now()}`,
+          }
+        )
+      } catch (e) { console.error('[notif] service_deleted failed:', e?.message ?? e) }
+    }
   },
 
   /** Toggle service active status */
@@ -229,6 +255,28 @@ export const calendarService = {
       .single()
 
     if (error) throw error
+
+    // Notify only for meaningful status changes (delivered/skipped)
+    if (status === 'delivered' || status === 'skipped') {
+      try {
+        const svcName = data?.service?.name || 'Service'
+        const statusLabel = status === 'delivered' ? 'delivered' : 'skipped'
+        await notificationService.create(
+          userId, 'calendar_status_updated',
+          'Calendar Updated',
+          `${svcName} marked as ${statusLabel} on ${date}`,
+          {
+            path: '/calendar',
+            route: '/calendar',
+            service_id: serviceId,
+            date,
+            status,
+            dedupe_key: `calendar_status:${serviceId}:${date}:${status}`,
+          }
+        )
+      } catch (e) { console.error('[notif] calendar_status_updated failed:', e?.message ?? e) }
+    }
+
     return data
   },
 

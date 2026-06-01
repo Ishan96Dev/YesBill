@@ -84,6 +84,23 @@ export const profileService = {
     if (data) {
       // Fire-and-forget: sync name to auth metadata
       this._syncAuthMetadata(cleanUpdates)
+      
+      // Notify user about profile update (non-critical, skip for internal flags)
+      const internalFlags = ['onboarding_completed', 'onboarding_skipped_steps', 'ai_config_reminder_shown', 'updated_at']
+      const userVisibleFields = Object.keys(cleanUpdates).filter(k => !internalFlags.includes(k))
+      if (userVisibleFields.length > 0) {
+        try {
+          const { default: notificationService } = await import('./notificationService')
+          const fieldNames = userVisibleFields.map(f => f.replace(/_/g, ' ')).join(', ')
+          await notificationService.create(
+            userId, 'profile_updated',
+            'Profile Updated',
+            `Your ${fieldNames} has been updated successfully`,
+            { path: '/settings' }
+          )
+        } catch (e) { console.error('[notif] profile_updated failed:', e?.message ?? e) }
+      }
+      
       return data
     }
 
@@ -199,6 +216,17 @@ export const profileService = {
       console.warn('⚠️ Could not update auth metadata avatar:', authErr.message)
     }
 
+    // Notify user about avatar update (non-critical)
+    try {
+      const { default: notificationService } = await import('./notificationService')
+      await notificationService.create(
+        userId, 'avatar_updated',
+        'Avatar Updated',
+        'Your profile picture has been changed successfully',
+        { path: '/settings' }
+      )
+    } catch (e) { console.error('[notif] avatar_updated failed:', e?.message ?? e) }
+
     return avatarUrl
   },
 
@@ -281,6 +309,17 @@ export const profileService = {
       console.error('Error updating profile cover_image_url:', profileError)
       throw new Error(`Profile update failed: ${profileError.message}`)
     }
+
+    // Notify user about cover image update (non-critical)
+    try {
+      const { default: notificationService } = await import('./notificationService')
+      await notificationService.create(
+        userId, 'cover_updated',
+        'Cover Image Updated',
+        'Your profile cover has been changed successfully',
+        { path: '/settings' }
+      )
+    } catch (e) { console.error('[notif] cover_updated failed:', e?.message ?? e) }
 
     return coverUrl
   },

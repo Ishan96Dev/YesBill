@@ -48,9 +48,9 @@ extension UserServiceType on UserService {
     switch (deliveryType) {
       case 'home_delivery': return 'Home Delivery';
       case 'utility': return 'Utility';
-      case 'visit_based': return 'Visit Based';
+      case 'visit_based': return 'Visit-Based';
       case 'subscription': return 'Subscription';
-      case 'payment': return 'Payment';
+      case 'payment': return 'EMI / Loan / Rent';
       default: return deliveryType;
     }
   }

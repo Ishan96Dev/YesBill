@@ -44,6 +44,7 @@ import { useUser } from "@/hooks/useUser";
 import { servicesService } from "@/services/dataService";
 import { aiSettingsService } from "@/services/aiSettingsService";
 import { generatedBillsAPI } from "@/services/api";
+import notificationService from "@/services/notificationService";
 import { MonthPicker } from "@/components/ui/MonthPicker";
 import EnhancedCheckbox from "@/components/ui/enhanced-checkbox";
 import ServiceDateTable from "@/components/ServiceDateTable";
@@ -244,6 +245,17 @@ export default function Bills() {
           : "Your bill has been saved and appears in Previous Bills.",
         type: "success",
       });
+      // Notify user (fire-and-forget)
+      if (user?.id) {
+        notificationService.create(
+          user.id, 'bill_generated',
+          selectedServiceIds.length > 1 ? 'Bills Generated' : 'Bill Generated',
+          selectedServiceIds.length > 1
+            ? `${selectedServiceIds.length} separate bills generated for ${selectedMonth}`
+            : `Bill generated for ${selectedMonth}`,
+          { path: '/bills', route: '/bills', year_month: selectedMonth }
+        ).catch(() => {})
+      }
     } catch (err) {
       console.error("Bill generation error:", err);
       const msg = err.response?.data?.detail || err.message || "Could not generate bill";
@@ -293,6 +305,15 @@ export default function Bills() {
       setDeleteBillModalOpen(false);
       setBillToDelete(null);
       toast({ title: "Bill deleted", type: "success" });
+      // Notify user (fire-and-forget)
+      if (user?.id) {
+        notificationService.create(
+          user.id, 'bill_deleted',
+          'Bill Deleted',
+          `Bill "${billToDelete.bill_title || billToDelete.year_month || ''}" has been deleted`,
+          { path: '/bills', route: '/bills' }
+        ).catch(() => {})
+      }
     } catch (err) {
       toast({ title: "Delete failed", description: err.message, type: "error" });
     } finally {
@@ -314,6 +335,15 @@ export default function Bills() {
       );
       setPayBillModal({ open: false, bill: null });
       toast({ title: is_paid ? "Bill marked as paid!" : "Payment removed", type: "success" });
+      // Notify user (fire-and-forget)
+      if (user?.id && is_paid) {
+        notificationService.create(
+          user.id, 'bill_paid',
+          'Bill Marked as Paid',
+          `Bill "${payBillModal.bill.bill_title || payBillModal.bill.year_month || ''}" has been marked as paid via ${payment_method || 'cash'}`,
+          { path: '/bills', route: '/bills', payment_method: payment_method || 'cash' }
+        ).catch(() => {})
+      }
     } catch (err) {
       toast({ title: "Failed to update payment", description: err.message, type: "error" });
     } finally {

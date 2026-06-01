@@ -4,6 +4,7 @@ import '../core/extensions/date_extensions.dart';
 import '../data/models/service_confirmation.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'notifications_provider.dart';
 
 /// Currently selected month for the calendar view.
 final selectedMonthProvider = StateProvider<DateTime>((ref) {
@@ -59,6 +60,19 @@ class ConfirmationNotifier extends AutoDisposeNotifier<AsyncValue<void>> {
       final yearMonth = date.toYearMonth();
       ref.invalidate(monthConfirmationsProvider(yearMonth));
       state = const AsyncValue.data(null);
+      // Notify only for meaningful status changes
+      if (status == 'delivered' || status == 'skipped') {
+        final userId = ref.read(authProvider).user?.id;
+        if (userId != null) {
+          ref.read(notificationsProvider.notifier).create(
+            userId: userId,
+            type: 'calendar_status_updated',
+            title: 'Calendar Updated',
+            message: 'Service marked as $status on ${date.toDateString()}',
+            data: {'route': '/calendar', 'path': '/calendar', 'date': date.toDateString(), 'status': status},
+          ).catchError((_) {});
+        }
+      }
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

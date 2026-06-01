@@ -9,7 +9,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_surfaces.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/core_providers.dart';
+import '../../../providers/notifications_provider.dart';
 import '../../../services/permission_service.dart';
 import '../../widgets/common/app_dropdown.dart';
 
@@ -232,6 +234,17 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       });
       if (mounted) {
         context.showSnackBar('Profile saved');
+        // Notify user (fire-and-forget)
+        final userId = ref.read(authProvider).user?.id;
+        if (userId != null) {
+          ref.read(notificationsProvider.notifier).create(
+            userId: userId,
+            type: 'profile_updated',
+            title: 'Profile Updated',
+            message: 'Your profile information has been updated successfully',
+            data: const {'route': '/settings', 'path': '/settings'},
+          ).catchError((_) {});
+        }
       }
     } catch (_) {
       if (mounted) {
@@ -276,6 +289,17 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       final url = await repo.uploadAvatar(bytes, fileName);
       if (mounted) {
         setState(() => _avatarUrl = url);
+        // Notify user (fire-and-forget)
+        final userId = ref.read(authProvider).user?.id;
+        if (userId != null) {
+          ref.read(notificationsProvider.notifier).create(
+            userId: userId,
+            type: 'avatar_updated',
+            title: 'Avatar Updated',
+            message: 'Your profile picture has been changed successfully',
+            data: const {'route': '/settings', 'path': '/settings'},
+          ).catchError((_) {});
+        }
       }
     } finally {
       if (mounted) {
@@ -316,6 +340,17 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       final url = await repo.uploadCoverImage(bytes, fileName);
       if (mounted) {
         setState(() => _coverImageUrl = url);
+        // Notify user (fire-and-forget)
+        final userId = ref.read(authProvider).user?.id;
+        if (userId != null) {
+          ref.read(notificationsProvider.notifier).create(
+            userId: userId,
+            type: 'cover_updated',
+            title: 'Cover Image Updated',
+            message: 'Your profile cover has been changed successfully',
+            data: const {'route': '/settings', 'path': '/settings'},
+          ).catchError((_) {});
+        }
       }
     } finally {
       if (mounted) {

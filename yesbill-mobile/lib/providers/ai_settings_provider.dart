@@ -5,6 +5,7 @@ import '../data/repositories/ai_settings_repository.dart';
 import '../data/models/ai_settings.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'notifications_provider.dart';
 
 final aiSettingsRepositoryProvider = Provider<AiSettingsRepository>((ref) =>
     AiSettingsRepository(
@@ -52,6 +53,17 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
       );
       ref.invalidate(aiSettingsListProvider);
       state = AiSettingsMutationSuccess(result);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'ai_config_changed',
+          title: 'AI Provider Added',
+          message: '${provider[0].toUpperCase()}${provider.substring(1)} API key has been added',
+          data: const {'route': '/settings', 'path': '/settings'},
+        ).catchError((_) {});
+      }
     } catch (e) { state = AiSettingsMutationError(e.toString()); }
   }
 
@@ -71,6 +83,17 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
           );
       ref.invalidate(aiSettingsListProvider);
       state = AiSettingsMutationSuccess(result);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'ai_config_changed',
+          title: 'AI Configuration Updated',
+          message: '${provider[0].toUpperCase()}${provider.substring(1)} AI settings have been updated',
+          data: const {'route': '/settings', 'path': '/settings'},
+        ).catchError((_) {});
+      }
     } catch (e) {
       state = AiSettingsMutationError(e.toString());
     }
@@ -82,6 +105,17 @@ class AiSettingsMutationNotifier extends Notifier<AiSettingsMutationState> {
       await ref.read(aiSettingsRepositoryProvider).deleteSettings(provider);
       ref.invalidate(aiSettingsListProvider);
       state = const AiSettingsMutationIdle();
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'ai_config_changed',
+          title: 'AI Provider Removed',
+          message: '${provider[0].toUpperCase()}${provider.substring(1)} API key has been removed',
+          data: const {'route': '/settings', 'path': '/settings'},
+        ).catchError((_) {});
+      }
     } catch (e) { state = AiSettingsMutationError(e.toString()); }
   }
 

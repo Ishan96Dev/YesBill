@@ -136,17 +136,61 @@ export const servicesService = {
 
   /** Delete a service */
   async delete(serviceId) {
+    const userId = getUserId()
+    
+    // Get service details before deleting for notification
+    const { data: service } = await supabase
+      .from('user_services')
+      .select('name')
+      .eq('id', serviceId)
+      .single()
+
     const { error } = await supabase
       .from('user_services')
       .delete()
       .eq('id', serviceId)
 
     if (error) throw error
+
+    // Notify user (non-critical — never blocks deletion)
+    if (service) {
+      try {
+        await notificationService.create(
+          userId, 'service_deleted',
+          'Service Deleted',
+          `"${service.name}" has been removed from your services`,
+          { path: '/services' }
+        )
+      } catch (e) { console.error('[notif] service_deleted failed:', e?.message ?? e) }
+    }
   },
 
   /** Toggle service active status */
   async toggleActive(serviceId, currentActive) {
-    return this.update(serviceId, { active: !currentActive })
+    const userId = getUserId()
+    const newActive = !currentActive
+
+    const { data, error } = await supabase
+      .from('user_services')
+      .update({ active: newActive })
+      .eq('id', serviceId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // Notify user (non-critical — never blocks toggle)
+    try {
+      const status = newActive ? 'activated' : 'deactivated'
+      await notificationService.create(
+        userId, 'service_toggled',
+        `Service ${newActive ? 'Activated' : 'Deactivated'}`,
+        `"${data?.name || 'Service'}" has been ${status}`,
+        { path: '/services' }
+      )
+    } catch (e) { console.error('[notif] service_toggled failed:', e?.message ?? e) }
+
+    return data
   },
 }
 
@@ -199,7 +243,7 @@ export const calendarService = {
   async upsertConfirmation(serviceId, date, status, customAmount = null) {
     const userId = await getUserIdForWrite()
 
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('service_confirmations')
       .upsert(
         {
@@ -218,6 +262,20 @@ export const calendarService = {
       .single()
 
     if (error) throw error
+
+    // Notify user about calendar status update (non-critical)
+    try {
+      const serviceName = data?.service?.name || 'Service'
+      const statusText = status === 'delivered' ? 'marked as delivered' : 
+                        status === 'skipped' ? 'marked as skipped' : 'updated'
+      await notificationService.create(
+        userId, 'calendar_updated',
+        'Calendar Updated',
+        `${serviceName} on ${date} ${statusText}`,
+        { path: '/calendar' }
+      )
+    } catch (e) { console.error('[notif] calendar_updated failed:', e?.message ?? e) }
+
     return data
   },
 

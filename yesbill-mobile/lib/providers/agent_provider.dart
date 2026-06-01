@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/chat_conversation.dart';
 import '../data/models/sse_event.dart';
+import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'notifications_provider.dart';
 
 final agentConversationsProvider =
     FutureProvider<List<ChatConversation>>((ref) async {
@@ -322,6 +324,17 @@ class AgentNotifier extends AutoDisposeFamilyNotifier<AgentState, String> {
 
       state = AgentReady(messages: List.unmodifiable(_messages));
       ref.invalidate(agentConversationsProvider);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'agent_action_completed',
+          title: 'Agent Action Completed',
+          message: message,
+          data: const {'route': '/agent', 'path': '/agent'},
+        ).catchError((_) {});
+      }
     } catch (e) {
       state = AgentError(e.toString(), messages: List.unmodifiable(_messages));
     }
@@ -345,6 +358,17 @@ class AgentNotifier extends AutoDisposeFamilyNotifier<AgentState, String> {
 
       state = AgentReady(messages: List.unmodifiable(_messages));
       ref.invalidate(agentConversationsProvider);
+      // Notify user (fire-and-forget)
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'agent_action_cancelled',
+          title: 'Agent Action Cancelled',
+          message: 'The requested agent action was cancelled',
+          data: const {'route': '/agent', 'path': '/agent'},
+        ).catchError((_) {});
+      }
     } catch (e) {
       state = AgentError(e.toString(), messages: List.unmodifiable(_messages));
     }

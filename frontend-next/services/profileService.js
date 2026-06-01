@@ -1,5 +1,5 @@
 'use client'
-﻿// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
+// Copyright (c) 2025 Ishan Chakraborty. All rights reserved.
 // YesBill -- Daily Billing Tracker | Created by Ishan Chakraborty
 
 /**
@@ -13,6 +13,7 @@
 
 import { supabase } from '../lib/supabase'
 import { ensureAuth } from '../lib/supabase'
+import notificationService from './notificationService'
 
 export const profileService = {
   /**
@@ -87,6 +88,18 @@ export const profileService = {
     if (data) {
       // Fire-and-forget: sync name to auth metadata
       this._syncAuthMetadata(cleanUpdates)
+      // Notify user (fire-and-forget)
+      const updatedKeys = Object.keys(cleanUpdates).filter(k => k !== 'updated_at')
+      const isAvatarOnly = updatedKeys.length === 1 && updatedKeys[0] === 'avatar_url'
+      const isCoverOnly = updatedKeys.length === 1 && updatedKeys[0] === 'cover_image_url'
+      if (!isAvatarOnly && !isCoverOnly) {
+        notificationService.create(
+          userId, 'profile_updated',
+          'Profile Updated',
+          `Your profile information has been updated successfully`,
+          { path: '/settings', route: '/settings' }
+        ).catch(() => {})
+      }
       return data
     }
 
@@ -202,6 +215,14 @@ export const profileService = {
       console.warn('⚠️ Could not update auth metadata avatar:', authErr.message)
     }
 
+    // Notify user (fire-and-forget)
+    notificationService.create(
+      userId, 'avatar_updated',
+      'Avatar Updated',
+      'Your profile picture has been changed successfully',
+      { path: '/settings', route: '/settings' }
+    ).catch(() => {})
+
     return avatarUrl
   },
 
@@ -284,6 +305,14 @@ export const profileService = {
       console.error('Error updating profile cover_image_url:', profileError)
       throw new Error(`Profile update failed: ${profileError.message}`)
     }
+
+    // Notify user (fire-and-forget)
+    notificationService.create(
+      userId, 'cover_updated',
+      'Cover Image Updated',
+      'Your profile cover has been changed successfully',
+      { path: '/settings', route: '/settings' }
+    ).catch(() => {})
 
     return coverUrl
   },

@@ -1036,6 +1036,17 @@ export default function Settings() {
       }
 
       toast({ title: 'AI Settings Saved', description: `${currentProviderInfo?.name || 'Provider'} configuration saved successfully`, type: 'success' });
+      
+      // Notify user about AI config change (non-critical)
+      try {
+        const action = aiHasExistingKey ? 'updated' : 'added'
+        await notificationService.create(
+          userId, 'ai_config_changed',
+          'AI Configuration Changed',
+          `${currentProviderInfo?.name || selectedProvider} API key has been ${action}`,
+          { path: '/settings' }
+        )
+      } catch (e) { console.error('[notif] ai_config_changed failed:', e?.message ?? e) }
     } catch (err) {
       console.error('Save AI settings error:', err);
       toast({ title: 'Save Failed', description: err.message || 'Could not save AI settings', type: 'error' });
@@ -1061,6 +1072,16 @@ export default function Settings() {
       setAiHasExistingKey(false);
       setAiKeyValidation({ status: 'idle', message: '' });
       toast({ title: 'Removed', description: `${currentProviderInfo?.name} configuration removed`, type: 'success' });
+      
+      // Notify user about AI config removal (non-critical)
+      try {
+        await notificationService.create(
+          userId, 'ai_config_changed',
+          'AI Configuration Changed',
+          `${currentProviderInfo?.name || selectedProvider} API key has been removed`,
+          { path: '/settings' }
+        )
+      } catch (e) { console.error('[notif] ai_config_changed failed:', e?.message ?? e) }
     } catch (err) {
       toast({ title: 'Error', description: 'Could not remove settings', type: 'error' });
     }
