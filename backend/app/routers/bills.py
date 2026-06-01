@@ -658,12 +658,30 @@ async def delete_generated_bill(
     user_id: str = Depends(get_current_user_id),
 ):
     """Delete a generated bill (with confirmation on frontend)."""
+    # Get bill details before deleting for notification
+    bill = await supabase_service.get_generated_bill(bill_id, user_id)
+    
     deleted = await supabase_service.delete_generated_bill(bill_id, user_id)
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Bill not found",
         )
+    
+    # Notify user that bill was deleted
+    if bill:
+        bill_title = bill.get("bill_title") or bill.get("year_month") or "Bill"
+        amount = bill.get("total_amount")
+        amount_str = f" — ₹{amount:.2f}" if amount else ""
+        try:
+            await supabase_service.create_notification(
+                user_id, "bill_deleted",
+                "Bill Deleted",
+                f"{bill_title}{amount_str} has been removed",
+                {"path": "/bills"},
+            )
+        except Exception:
+            pass  # Notification failure must not block response
 
 
 @router.patch("/generated/{bill_id}/paid")

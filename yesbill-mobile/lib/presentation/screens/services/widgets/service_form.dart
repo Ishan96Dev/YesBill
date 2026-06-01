@@ -839,7 +839,30 @@ class _ServiceFormState extends State<ServiceForm> {
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1).replaceAll('-', ' ');
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    // First validate the form fields
+    if (!_formKey.currentState!.validate()) {
+      context.showErrorSnackBar('Please fill in all required fields');
+      return;
+    }
+
+    // Additional validation for service name (double-check)
+    final serviceName = _nameCtrl.text.trim();
+    if (serviceName.isEmpty) {
+      context.showErrorSnackBar('Service name is required');
+      return;
+    }
+
+    // Validate price
+    final priceText = _priceCtrl.text.trim();
+    if (priceText.isEmpty) {
+      context.showErrorSnackBar('Price is required');
+      return;
+    }
+    final price = double.tryParse(priceText);
+    if (price == null || price <= 0) {
+      context.showErrorSnackBar('Please enter a valid price amount');
+      return;
+    }
 
     // Validate icon selection
     if (_iconName.isEmpty) {

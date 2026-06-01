@@ -79,7 +79,30 @@ class ServiceMutationNotifier extends Notifier<AsyncValue<void>> {
   Future<bool> deleteService(String id) async {
     state = const AsyncValue.loading();
     try {
+      // Get service name before deleting for notification
+      final services = await ref.read(userServicesProvider.future);
+      final service = services.firstWhere((s) => s.id == id, orElse: () => UserService(
+        id: id,
+        userId: '',
+        name: 'Service',
+        price: 0,
+        createdAt: DateTime.now(),
+      ));
+      
       await ref.read(servicesRepositoryProvider).delete(id);
+      
+      // Notify user that service was deleted
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        await ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'service_deleted',
+          title: 'Service Deleted',
+          message: '"${service.name}" has been removed from your services',
+          data: const {'route': '/services', 'path': '/services'},
+        );
+      }
+      
       ref.invalidate(userServicesProvider);
       ref.invalidate(activeServicesProvider);
       state = const AsyncValue.data(null);

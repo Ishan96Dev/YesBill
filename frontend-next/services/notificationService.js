@@ -10,6 +10,7 @@
  */
 
 import { supabase } from '../lib/supabase'
+import { browserNotificationService } from './browserNotificationService'
 
 export const notificationService = {
   async findByDedupeKey(userId, type, dedupeKey) {
@@ -158,6 +159,44 @@ export const notificationService = {
     if (error) {
       console.error('notificationService.create error:', error.message)
       return null
+    }
+
+    // Show browser notification immediately if permission is granted
+    // This provides instant feedback when the browser is open
+    if (browserNotificationService.getPermissionStatus() === 'granted') {
+      try {
+        // Map notification types to appropriate browser notification methods
+        switch (type) {
+          case 'service_created':
+            await browserNotificationService.showServiceCreated(title)
+            break
+          case 'bill_added':
+          case 'bill_auto_generated':
+            // Extract service name and amount from message or data
+            await browserNotificationService.showBillGenerated(
+              data?.service_name || 'Service',
+              data?.amount || '0'
+            )
+            break
+          case 'bill_due_soon':
+          case 'bill_overdue':
+            await browserNotificationService.showBillReminder(
+              data?.service_name || 'Service',
+              data?.days_left || 0
+            )
+            break
+          default:
+            // Generic notification for all other types
+            await browserNotificationService.showGeneric(
+              title,
+              message || '',
+              data?.path || null
+            )
+        }
+      } catch (err) {
+        // Non-fatal: browser notification failed but in-app notification is already created
+        console.warn('Browser notification failed:', err)
+      }
     }
 
     // Dispatch OS-level push notification to all registered devices/browsers.

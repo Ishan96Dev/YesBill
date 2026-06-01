@@ -41,6 +41,7 @@ import { WithTooltip } from "../ui/tooltip";
 import Background from "../landing/Background";
 import AuthLoadingScreen from "../loading/AuthLoadingScreen";
 import ServiceExpiryBanner from "../ServiceExpiryBanner";
+import NotificationPermissionPrompt from "../NotificationPermissionPrompt";
 import { cn } from "../../lib/utils"
 import { assetUrl } from "../../lib/utils";
 import authService from "../../services/authService";
@@ -847,6 +848,12 @@ export default function AppLayout({
           Rendered outside footer to avoid overlap
       ═══════════════════════════════════════════════ */}
       {!hideAgentButton && <AgentButton />}
+
+      {/* ═══════════════════════════════════════════════
+          BROWSER NOTIFICATION PERMISSION PROMPT
+          Shows after 3 seconds if permission not granted/denied
+      ═══════════════════════════════════════════════ */}
+      {!onboardingMode && <NotificationPermissionPrompt />}
     </div>
   );
 }
