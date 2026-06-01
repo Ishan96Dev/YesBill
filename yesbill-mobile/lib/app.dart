@@ -9,6 +9,7 @@ import 'core/config/app_config.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/router/app_router.dart';
+import 'providers/auth_provider.dart' as app_auth;
 import 'providers/theme_provider.dart';
 import 'services/fcm_service.dart';
 
@@ -26,11 +27,32 @@ class YesBillApp extends ConsumerStatefulWidget {
 
 class _YesBillAppState extends ConsumerState<YesBillApp> {
   late final Future<bool> _bootstrapFuture;
+  ProviderSubscription<app_auth.AuthState>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
+    _authSubscription = ref.listenManual<app_auth.AuthState>(
+      app_auth.authProvider,
+      (previous, next) {
+        final previousUserId = previous?.user?.id;
+        final nextUserId = next.user?.id;
+        if (nextUserId != null && nextUserId != previousUserId) {
+          unawaited(
+            ref.read(fcmServiceProvider).initialize().catchError((_) {
+              // Non-fatal: app remains usable without FCM.
+            }),
+          );
+        }
+      },
+    );
     _bootstrapFuture = _bootstrap();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.close();
+    super.dispose();
   }
 
   Future<bool> _bootstrap() async {

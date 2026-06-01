@@ -22,8 +22,14 @@ class FcmService {
   final Dio _dio;
 
   final _localNotifications = FlutterLocalNotificationsPlugin();
+  bool _initialized = false;
 
   Future<void> initialize() async {
+    if (_initialized) {
+      await syncTokenRegistration();
+      return;
+    }
+
     // Request permission
     final settings = await FirebaseMessaging.instance.requestPermission(
       alert: true,
@@ -55,9 +61,10 @@ class FcmService {
           importance: Importance.high,
         ));
 
+    _initialized = true;
+
     // Get token and register with backend
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token != null) await _registerToken(token);
+    await syncTokenRegistration();
 
     // Refresh token listener
     FirebaseMessaging.instance.onTokenRefresh.listen(_registerToken);
@@ -77,6 +84,13 @@ class FcmService {
       final route = initialMessage.data['route'] as String?;
       // Slight delay to allow the widget tree to mount before navigating
       Future.delayed(const Duration(milliseconds: 500), () => _navigateTo(route));
+    }
+  }
+
+  Future<void> syncTokenRegistration() async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      await _registerToken(token);
     }
   }
 
@@ -129,4 +143,3 @@ class FcmService {
 final fcmServiceProvider = Provider<FcmService>((ref) {
   return FcmService(dio: ref.read(dioProvider));
 });
-

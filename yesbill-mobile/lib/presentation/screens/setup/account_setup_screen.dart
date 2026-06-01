@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:image_picker/image_picker.dart';
@@ -22,6 +23,7 @@ import '../../../providers/ai_settings_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/core_providers.dart';
 import '../../../providers/notifications_provider.dart';
+import '../../../services/permission_service.dart';
 import '../../widgets/common/app_background_effects.dart';
 import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/auth_widgets.dart';
@@ -322,6 +324,25 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   }
 
   Future<void> _uploadAvatar() async {
+    final permissionStatus =
+        await ref.read(permissionServiceProvider).requestImageLibraryPermission();
+    final canAccessPhotos = permissionStatus == PermissionStatus.granted ||
+        permissionStatus == PermissionStatus.limited;
+    if (!canAccessPhotos) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              permissionStatus == PermissionStatus.permanentlyDenied
+                  ? 'Enable photo access from Android settings to upload a profile picture.'
+                  : 'Allow photo access to upload a profile picture.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
@@ -351,6 +372,25 @@ class _ProfileStepState extends ConsumerState<_ProfileStep> {
   }
 
   Future<void> _uploadCover() async {
+    final permissionStatus =
+        await ref.read(permissionServiceProvider).requestImageLibraryPermission();
+    final canAccessPhotos = permissionStatus == PermissionStatus.granted ||
+        permissionStatus == PermissionStatus.limited;
+    if (!canAccessPhotos) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              permissionStatus == PermissionStatus.permanentlyDenied
+                  ? 'Enable photo access from Android settings to upload a cover image.'
+                  : 'Allow photo access to upload a cover image.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,

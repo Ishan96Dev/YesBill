@@ -188,6 +188,64 @@ class NotificationsNotifier
       debugPrint('NotificationsNotifier.createIfAbsent error: $e');
     }
   }
+
+  Future<void> create({
+    required String userId,
+    required String type,
+    required String title,
+    String? message,
+    Map<String, dynamic>? data,
+  }) async {
+    final client = ref.read(supabaseClientProvider);
+    try {
+      final profileRow = await client
+          .from('user_profiles')
+          .select('notification_prefs')
+          .eq('id', userId)
+          .maybeSingle();
+
+      final prefs = profileRow?['notification_prefs'] as Map<String, dynamic>?;
+      if (prefs != null && prefs[type] == false) return;
+
+      final created = await client
+          .from('notifications')
+          .insert({
+            'user_id': userId,
+            'type': type,
+            'title': title,
+            if (message != null) 'message': message,
+            if (data != null) 'data': data,
+            'read': false,
+          })
+          .select()
+          .single();
+
+      final current = state.valueOrNull ?? const <AppNotification>[];
+      state = AsyncData([
+        AppNotification.fromMap(created),
+        ...current,
+      ]);
+
+      try {
+        await client.functions.invoke(
+          'send-push-notification',
+          body: {
+            'user_id': userId,
+            'title': title,
+            if (message != null) 'body': message,
+            'data': {
+              for (final entry in (data ?? const <String, dynamic>{}).entries)
+                entry.key: entry.value?.toString() ?? '',
+            },
+          },
+        );
+      } catch (e) {
+        debugPrint('NotificationsNotifier.create push invoke error: $e');
+      }
+    } catch (e) {
+      debugPrint('NotificationsNotifier.create error: $e');
+    }
+  }
 }
 
 final notificationsProvider =

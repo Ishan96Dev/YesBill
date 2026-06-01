@@ -28,6 +28,28 @@ class PermissionService {
 
     return permissions.toList().request();
   }
+
+  Future<PermissionStatus> requestImageLibraryPermission() async {
+    if (Platform.isAndroid) {
+      final photosStatus = await Permission.photos.request();
+      if (photosStatus.isGranted || photosStatus.isLimited) {
+        return photosStatus;
+      }
+
+      final storageStatus = await Permission.storage.request();
+      if (storageStatus.isGranted || storageStatus.isLimited) {
+        return storageStatus;
+      }
+
+      return photosStatus;
+    }
+
+    if (Platform.isIOS) {
+      return Permission.photos.request();
+    }
+
+    return PermissionStatus.granted;
+  }
 }
 
 final permissionServiceProvider = Provider<PermissionService>((ref) {

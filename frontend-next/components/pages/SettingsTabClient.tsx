@@ -7,6 +7,7 @@ import { assetUrl } from "@/lib/utils";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { initWebPush } from "@/lib/pushNotifications";
 import {
   User,
   Key,
@@ -825,8 +826,26 @@ export default function Settings() {
         .update({ notification_prefs: notifPrefs, updated_at: new Date().toISOString() })
         .eq('id', userId);
       if (error) throw error;
+
+      const pushResult = await initWebPush(userId, supabase, { forcePrompt: true });
+
       // Show success immediately; refresh shared profile store in background
       toast({ title: 'Preferences saved', description: 'Your notification settings have been updated.', type: 'success' });
+      if (!pushResult?.ok) {
+        if (pushResult?.reason === 'missing-config') {
+          toast({
+            title: 'Browser push not configured',
+            description: 'Firebase web push environment variables are missing, so Chrome notifications cannot be registered yet.',
+            type: 'warning',
+          });
+        } else if (pushResult?.reason === 'denied') {
+          toast({
+            title: 'Browser notifications blocked',
+            description: 'Allow notifications in Chrome site settings to receive Windows and browser push alerts.',
+            type: 'warning',
+          });
+        }
+      }
       refreshProfile().catch((err) => console.warn('Background profile refresh failed:', err));
     } catch (err) {
       toast({ title: 'Save failed', description: err.message, type: 'error' });

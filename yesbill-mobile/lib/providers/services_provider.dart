@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user_service.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'notifications_provider.dart';
 
 /// Fetches all user services from Supabase.
 /// Guards against auth race condition — returns empty stream until user is authenticated.
@@ -30,7 +31,17 @@ class ServiceMutationNotifier extends Notifier<AsyncValue<void>> {
   Future<bool> createService(Map<String, dynamic> fields) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(servicesRepositoryProvider).create(fields);
+      final service = await ref.read(servicesRepositoryProvider).create(fields);
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        await ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'service_created',
+          title: 'New Service Added',
+          message: '"${service.name}" has been set up in your account',
+          data: const {'route': '/services', 'path': '/services'},
+        );
+      }
       ref.invalidate(userServicesProvider);
       ref.invalidate(activeServicesProvider);
       state = const AsyncValue.data(null);
@@ -44,7 +55,17 @@ class ServiceMutationNotifier extends Notifier<AsyncValue<void>> {
   Future<bool> updateService(String id, Map<String, dynamic> fields) async {
     state = const AsyncValue.loading();
     try {
-      await ref.read(servicesRepositoryProvider).update(id, fields);
+      final service = await ref.read(servicesRepositoryProvider).update(id, fields);
+      final userId = ref.read(authProvider).user?.id;
+      if (userId != null) {
+        await ref.read(notificationsProvider.notifier).create(
+          userId: userId,
+          type: 'service_updated',
+          title: 'Service Updated',
+          message: '"${service.name}" details have been updated',
+          data: const {'route': '/services', 'path': '/services'},
+        );
+      }
       ref.invalidate(userServicesProvider);
       ref.invalidate(activeServicesProvider);
       state = const AsyncValue.data(null);

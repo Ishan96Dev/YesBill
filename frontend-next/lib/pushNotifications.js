@@ -16,12 +16,7 @@
  *   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
  *   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
  *   NEXT_PUBLIC_FIREBASE_APP_ID
- *   NEXT_PUBLIC_FIREBASE_VAPID_KEY   ← Web Push certificate public key
- *                                       (Firebase Console → Project Settings
- *                                        → Cloud Messaging → Web Push certificates)
- *
- * If any variable is missing the function exits silently — the app works
- * normally without web push.
+ *   NEXT_PUBLIC_FIREBASE_VAPID_KEY
  */
 
 const FIREBASE_CONFIG = {
@@ -35,36 +30,40 @@ const FIREBASE_CONFIG = {
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
 
-/**
- * Returns true when all required Firebase config values are present.
- */
 function hasFirebaseConfig() {
   return Object.values(FIREBASE_CONFIG).every(Boolean) && Boolean(VAPID_KEY)
 }
 
-/**
- * Initialize web push for the current user session.
- *
- * @param {string} userId  - Authenticated user UUID (used for token registration)
- * @param {import('@supabase/supabase-js').SupabaseClient} supabase
- */
-export async function initWebPush(userId, supabase) {
-  if (typeof window === 'undefined') return // SSR guard
-  if (!('serviceWorker' in navigator) || !('Notification' in window)) return
+export async function initWebPush(userId, supabase, options = {}) {
+  const { forcePrompt = false } = options
+
+  if (typeof window === 'undefined') return { ok: false, reason: 'ssr' }
+  if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+    return { ok: false, reason: 'unsupported' }
+  }
+
+  const currentPermission = Notification.permission
+  if (currentPermission === 'default' || forcePrompt) {
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') {
+      return { ok: false, reason: permission === 'denied' ? 'denied' : 'dismissed' }
+    }
+  } else if (currentPermission !== 'granted') {
+    return { ok: false, reason: 'denied' }
+  }
+
   if (!hasFirebaseConfig()) {
-    // Firebase env vars not configured — web push unavailable
-    return
+    console.warn('[push] Firebase web push env vars are missing. Permission may be granted, but token setup is unavailable.')
+    return { ok: false, reason: 'missing-config' }
   }
 
   try {
-    // Lazily import firebase to keep the initial bundle small
     const [{ initializeApp, getApps }, { getMessaging, getToken }] =
       await Promise.all([
         import('firebase/app'),
         import('firebase/messaging'),
       ])
 
-    // Reuse existing Firebase app if already initialized (HMR / StrictMode safe)
     const app =
       getApps().length > 0
         ? getApps()[0]
@@ -72,11 +71,6 @@ export async function initWebPush(userId, supabase) {
 
     const messaging = getMessaging(app)
 
-    // Register our custom service worker that handles background messages.
-    // The `/api/firebase-sw` route returns the worker JS with the Firebase
-    // config injected from server-side env vars (no secrets exposed to client).
-    // `Service-Worker-Allowed: /` header allows the worker to control the
-    // whole origin even though it is served from /api/.
     let swRegistration
     try {
       swRegistration = await navigator.serviceWorker.register('/api/firebase-sw', {
@@ -84,14 +78,9 @@ export async function initWebPush(userId, supabase) {
       })
     } catch (swErr) {
       console.warn('[push] Service worker registration failed:', swErr)
-      return
+      return { ok: false, reason: 'sw-register-failed' }
     }
 
-    // Request notification permission
-    const permission = await Notification.requestPermission()
-    if (permission !== 'granted') return
-
-    // Obtain FCM web push token
     let token
     try {
       token = await getToken(messaging, {
@@ -100,34 +89,28 @@ export async function initWebPush(userId, supabase) {
       })
     } catch (tokenErr) {
       console.warn('[push] Failed to get FCM web token:', tokenErr)
-      return
+      return { ok: false, reason: 'token-error' }
     }
 
-    if (!token) return
+    if (!token) return { ok: false, reason: 'no-token' }
 
-    // Register with backend — same endpoint as Android/iOS
     await supabase.from('device_tokens').upsert(
       { user_id: userId, token, platform: 'web' },
       { onConflict: 'user_id,token' },
     )
+    return { ok: true, reason: 'registered' }
   } catch (err) {
-    // Non-fatal — web push is a progressive enhancement
     console.warn('[push] Web push init failed:', err)
+    return { ok: false, reason: 'init-failed' }
   }
 }
 
-/**
- * Unregister the current browser's push token on sign-out.
- *
- * @param {string} userId
- * @param {import('@supabase/supabase-js').SupabaseClient} supabase
- */
 export async function cleanupWebPush(userId, supabase) {
   if (typeof window === 'undefined') return
   if (!hasFirebaseConfig()) return
 
   try {
-    const [{ getApps }, { getMessaging, deleteToken }] = await Promise.all([
+    const [{ getApps }, { getMessaging, getToken, deleteToken }] = await Promise.all([
       import('firebase/app'),
       import('firebase/messaging'),
     ])
