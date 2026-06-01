@@ -12,6 +12,26 @@
 import { supabase } from '../lib/supabase'
 
 export const notificationService = {
+  async findByDedupeKey(userId, type, dedupeKey) {
+    if (!userId || !type || !dedupeKey) return null
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('type', type)
+      .contains('data', { dedupe_key: dedupeKey })
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error('notificationService.findByDedupeKey error:', error.message)
+      return null
+    }
+
+    return data || null
+  },
+
   /**
    * Fetch all notifications for a user (newest first, max 50)
    */
@@ -106,6 +126,12 @@ export const notificationService = {
    */
   async create(userId, type, title, message = null, data = {}) {
     if (!userId) return null
+
+    const dedupeKey = data?.dedupe_key
+    if (dedupeKey) {
+      const existing = await this.findByDedupeKey(userId, type, dedupeKey)
+      if (existing) return existing
+    }
 
     // Check user's notification preferences before creating
     try {

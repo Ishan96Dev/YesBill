@@ -102,6 +102,17 @@ function relativeTime(dateStr) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+function notificationDedupeKey(notification) {
+  const dedupeKey = notification?.data?.dedupe_key;
+  if (dedupeKey) return `${notification.type || 'generic'}::${dedupeKey}`;
+
+  if (notification?.type === 'ai_config_incomplete') {
+    return 'singleton::ai_config_incomplete';
+  }
+
+  return `${notification?.type || 'generic'}::${notification?.title || ''}::${notification?.message || ''}`;
+}
+
 export default function AppLayout({
   children,
   fullHeight = false,
@@ -117,12 +128,14 @@ export default function AppLayout({
   const { notifications: allNotifs, unreadCount, markAsRead, markAllAsRead, deleteOne, loading: notifsLoading } =
     useNotifications(user?.id);
 
-  // Notification types where only one instance should ever be visible.
-  // Deduplicating at render-time cleans up any pre-existing DB duplicates without a migration.
-  const SINGLETON_NOTIF_TYPES = new Set(["ai_config_incomplete"]);
-  const dedupedNotifs = allNotifs.filter((n, idx, arr) => {
-    if (!SINGLETON_NOTIF_TYPES.has(n.type)) return true;
-    return arr.findIndex((x) => x.type === n.type) === idx; // keep only first (newest, array is sorted desc)
+  // Deduplicate at render-time so any older duplicate DB rows collapse
+  // immediately without requiring a migration or manual cleanup.
+  const seenNotificationKeys = new Set();
+  const dedupedNotifs = allNotifs.filter((notification) => {
+    const key = notificationDedupeKey(notification);
+    if (seenNotificationKeys.has(key)) return false;
+    seenNotificationKeys.add(key);
+    return true;
   });
 
   const notifications = notifPrefs

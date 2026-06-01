@@ -487,3 +487,5 @@ desktop.ini # Windows folder config
 *.pyo # Python bytecode
 .pytest_cache/ # Pytest cache
 *.orig # Merge conflict originals
+yesbill-mobile/google-services.base64.txt
+yesbill-mobile/google-services.json

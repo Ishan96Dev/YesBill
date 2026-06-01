@@ -32,6 +32,37 @@ class _YesBillAppState extends ConsumerState<YesBillApp> {
   @override
   void initState() {
     super.initState();
+    _bootstrapFuture = _bootstrap();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.close();
+    super.dispose();
+  }
+
+  Future<bool> _bootstrap() async {
+    final supabaseReady = await _initializeSupabase();
+    final firebaseReady = await _initializeFirebase();
+
+    if (supabaseReady) {
+      _bindAuthFcmSync();
+    }
+
+    if (AppConfig.enableFcm && supabaseReady && firebaseReady) {
+      unawaited(
+        ref.read(fcmServiceProvider).initialize().catchError((_) {
+          // Non-fatal: app remains usable without FCM.
+        }),
+      );
+    }
+
+    return supabaseReady;
+  }
+
+  void _bindAuthFcmSync() {
+    if (_authSubscription != null) return;
+
     _authSubscription = ref.listenManual<app_auth.AuthState>(
       app_auth.authProvider,
       (previous, next) {
@@ -46,28 +77,6 @@ class _YesBillAppState extends ConsumerState<YesBillApp> {
         }
       },
     );
-    _bootstrapFuture = _bootstrap();
-  }
-
-  @override
-  void dispose() {
-    _authSubscription?.close();
-    super.dispose();
-  }
-
-  Future<bool> _bootstrap() async {
-    final supabaseReady = await _initializeSupabase();
-    final firebaseReady = await _initializeFirebase();
-
-    if (AppConfig.enableFcm && supabaseReady && firebaseReady) {
-      unawaited(
-        ref.read(fcmServiceProvider).initialize().catchError((_) {
-          // Non-fatal: app remains usable without FCM.
-        }),
-      );
-    }
-
-    return supabaseReady;
   }
 
   Future<bool> _initializeSupabase() async {

@@ -102,7 +102,12 @@ export const servicesService = {
         userId, 'service_created',
         'New Service Added',
         `"${serviceData.name}" has been set up in your account`,
-        { path: '/services' }
+        {
+          path: '/services',
+          route: '/services',
+          service_id: data.id,
+          dedupe_key: `service_created:${data.id}`,
+        }
       )
     } catch (e) { console.error('[notif] service_created failed:', e?.message ?? e) }
 
@@ -128,7 +133,12 @@ export const servicesService = {
         userId, 'service_updated',
         'Service Updated',
         `"${data?.name || 'Service'}" details have been updated`,
-        { path: '/services' }
+        {
+          path: '/services',
+          route: '/services',
+          service_id: data.id,
+          dedupe_key: `service_updated:${data.id}:${data.updated_at ?? ''}`,
+        }
       )
     } catch (e) { console.error('[notif] service_updated failed:', e?.message ?? e) }
 

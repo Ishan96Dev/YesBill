@@ -74,6 +74,7 @@ export default function Services() {
   const pageReady = usePageReady(0, !authLoading);
   const [services, setServices] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [savingService, setSavingService] = useState(false);
 
   // Generate-now modal (fires after create/edit when today = billing date)
   const [showGenerateNowModal, setShowGenerateNowModal] = useState(false);
@@ -310,6 +311,7 @@ export default function Services() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (savingService) return;
 
     // Provider validation
     if (formData.service_role === "provider") {
@@ -328,6 +330,7 @@ export default function Services() {
     }
 
     try {
+      setSavingService(true);
       if (editingService) {
         const wasAutoOff = !editingService.auto_generate_bill;
         const updated = await servicesService.update(editingService.id, {
@@ -368,6 +371,8 @@ export default function Services() {
       console.error('Service save error:', err);
       toast({ title: 'Error', description: err.message || 'Could not save service', type: 'error' });
       handleCloseModal();
+    } finally {
+      setSavingService(false);
     }
   };
 
@@ -1052,9 +1057,12 @@ export default function Services() {
                     </Button>
                     <Button
                       type="submit"
+                      disabled={savingService}
                       className="flex-1 bg-gradient-to-r from-primary to-indigo-600"
                     >
-                      {editingService ? 'Update Service' : 'Add Service'}
+                      {savingService
+                        ? (editingService ? 'Updating...' : 'Adding...')
+                        : (editingService ? 'Update Service' : 'Add Service')}
                     </Button>
                   </div>
                 </form>

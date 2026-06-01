@@ -29,14 +29,67 @@ const FIREBASE_CONFIG = {
 }
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
+let currentInitPromise = null
+let foregroundListenerAttached = false
+let lastForegroundNotificationKey = ''
+let lastForegroundNotificationAt = 0
 
 function hasFirebaseConfig() {
   return Object.values(FIREBASE_CONFIG).every(Boolean) && Boolean(VAPID_KEY)
 }
 
+function buildNotificationKey(title, body, data = {}) {
+  const route = data?.route || data?.path || ''
+  return `${title}::${body || ''}::${route}`
+}
+
+function showForegroundBrowserNotification(title, body, data = {}) {
+  if (typeof window === 'undefined' || Notification.permission !== 'granted') return
+
+  const notificationKey = buildNotificationKey(title, body, data)
+  const now = Date.now()
+  if (notificationKey === lastForegroundNotificationKey && now - lastForegroundNotificationAt < 5000) {
+    return
+  }
+  lastForegroundNotificationKey = notificationKey
+  lastForegroundNotificationAt = now
+
+  const browserNotification = new Notification(title || 'YesBill', {
+    body: body || '',
+    icon: '/assets/icons/icon-192.png',
+    badge: '/assets/icons/icon-96.png',
+    tag: data?.dedupe_key || notificationKey,
+    renotify: false,
+  })
+
+  browserNotification.onclick = () => {
+    const route = data?.route || data?.path || '/dashboard'
+    window.focus()
+    window.location.assign(route)
+    browserNotification.close()
+  }
+}
+
+function attachForegroundListener(messaging, getMessagingOnMessage) {
+  if (foregroundListenerAttached) return
+  foregroundListenerAttached = true
+
+  getMessagingOnMessage(messaging, (payload) => {
+    const title = payload?.notification?.title || 'YesBill'
+    const body = payload?.notification?.body || ''
+    const data = payload?.data || {}
+    showForegroundBrowserNotification(title, body, data)
+  })
+}
+
 export async function initWebPush(userId, supabase, options = {}) {
   const { forcePrompt = false } = options
 
+  if (currentInitPromise && !forcePrompt) {
+    return currentInitPromise
+  }
+
+  currentInitPromise = (async () => {
   if (typeof window === 'undefined') return { ok: false, reason: 'ssr' }
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
     return { ok: false, reason: 'unsupported' }
@@ -58,7 +111,7 @@ export async function initWebPush(userId, supabase, options = {}) {
   }
 
   try {
-    const [{ initializeApp, getApps }, { getMessaging, getToken }] =
+    const [{ initializeApp, getApps }, { getMessaging, getToken, onMessage }] =
       await Promise.all([
         import('firebase/app'),
         import('firebase/messaging'),
@@ -70,6 +123,7 @@ export async function initWebPush(userId, supabase, options = {}) {
         : initializeApp(FIREBASE_CONFIG)
 
     const messaging = getMessaging(app)
+    attachForegroundListener(messaging, onMessage)
 
     let swRegistration
     try {
@@ -103,6 +157,13 @@ export async function initWebPush(userId, supabase, options = {}) {
     console.warn('[push] Web push init failed:', err)
     return { ok: false, reason: 'init-failed' }
   }
+  })()
+
+  const result = await currentInitPromise
+  if (forcePrompt || !result?.ok) {
+    currentInitPromise = null
+  }
+  return result
 }
 
 export async function cleanupWebPush(userId, supabase) {

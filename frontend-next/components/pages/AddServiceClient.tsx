@@ -82,6 +82,7 @@ export default function AddService() {
     client_email: "",
     client_address: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   // Generate-now modal state
   const [showGenerateNowModal, setShowGenerateNowModal] = useState(false);
@@ -133,6 +134,7 @@ export default function AddService() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
 
     // Provider validation
     if (formData.service_role === "provider") {
@@ -152,6 +154,7 @@ export default function AddService() {
     }
 
     try {
+      setSubmitting(true);
       const service = await servicesService.create(formData);
 
       // Check if today is the billing date for this service
@@ -181,6 +184,8 @@ export default function AddService() {
         description: err.message || "Could not create service",
         type: "error",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -690,9 +695,10 @@ export default function AddService() {
               </Button>
               <Button
                 type="submit"
+                disabled={submitting}
                 className="flex-1 h-14 rounded-xl shadow-xl shadow-primary/20 bg-gradient-to-r from-primary to-indigo-600"
               >
-                Add Service
+                {submitting ? "Adding..." : "Add Service"}
               </Button>
             </motion.div>
           </form>
